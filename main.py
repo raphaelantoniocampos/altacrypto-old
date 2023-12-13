@@ -1,5 +1,46 @@
 import requests
+import json
 import time
+
+import os
+import pandas as pd
+from dotenv import load_dotenv
+from binance.client import Client
+load_dotenv()
+
+api_key = os.environ.get('BINANCE_API_KEY')
+api_secret = os.environ.get('BINANCE_API_SECRET')
+
+# USING PYTHON-BINANCE
+
+client = Client(api_key, api_secret, testnet=True)
+
+tickers = client.get_all_tickers()
+
+df = pd.DataFrame(tickers)
+print(df)
+
+
+url = 'https://api1.binance.com'
+api_call = '/api/v3/ticker/price'
+headers = {'content-type': 'application/json', 'X-MBX-APIKEY': api_key}
+
+response = requests.get(url + api_call, headers = headers)
+response = json.loads(response.text)
+
+df = pd.DataFrame.from_records(response)
+print(df)
+
+
+
+
+
+
+
+
+
+'''
+Matheus Code
 
 # Configurações da API da Binance
 api_key = '8ecf6810f960e613064fd8fe43d70194bf64f1796892356971a83c0b6a606469'
@@ -87,3 +128,5 @@ if __name__ == "__main":
 
         except Exception as e:
             print(f"Erro: {e}")
+
+'''
