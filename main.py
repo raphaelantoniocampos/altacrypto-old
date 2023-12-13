@@ -1,36 +1,39 @@
-import requests
-import json
+import os
 import time
 
-import os
 import pandas as pd
 from dotenv import load_dotenv
 from binance.client import Client
 load_dotenv()
 
-api_key = os.environ.get('BINANCE_API_KEY')
-api_secret = os.environ.get('BINANCE_API_SECRET')
-
-# USING PYTHON-BINANCE
+api_key = os.environ.get('BINANCE_API_KEY_TEST')
+api_secret = os.environ.get('BINANCE_API_SECRET_TEST')
 
 client = Client(api_key, api_secret, testnet=True)
 
-tickers = client.get_all_tickers()
-
-df = pd.DataFrame(tickers)
-print(df)
 
 
-url = 'https://api1.binance.com'
-api_call = '/api/v3/ticker/price'
-headers = {'content-type': 'application/json', 'X-MBX-APIKEY': api_key}
 
-response = requests.get(url + api_call, headers = headers)
-response = json.loads(response.text)
+while True:
+    tickers = client.get_all_tickers()
 
-df = pd.DataFrame.from_records(response)
-print(df)
+    df = pd.DataFrame(tickers)
+    current_pairs = df[df['symbol'].str.endswith("USDT")]
 
+    time.sleep(30)
+    previous_pairs = current_pairs
+
+    tickers = client.get_all_tickers()
+    df = pd.DataFrame(tickers)
+    current_pairs = df[df['symbol'].str.endswith("USDT")]
+
+    for index, row in current_pairs.iterrows():
+        previous_pair = previous_pairs.loc[index]
+        if previous_pair['symbol'] == row['symbol']:
+            previous_price = float(previous_pair['price'])
+            current_price = float(row['price'])
+            variation = ((current_price - previous_price) / previous_price) * 100
+            print(f"pair {row['symbol']} - variation {variation}")
 
 
 
