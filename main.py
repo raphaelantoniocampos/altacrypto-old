@@ -6,40 +6,77 @@ from dotenv import load_dotenv
 from binance.client import Client
 load_dotenv()
 
+import pprint as pprint
+
 api_key = os.environ.get('BINANCE_API_KEY_TEST')
 api_secret = os.environ.get('BINANCE_API_SECRET_TEST')
 
 client = Client(api_key, api_secret, testnet=True)
 
 
+def update_variation():
+    while True:
+        tickers = client.get_all_tickers()
+
+        df = pd.DataFrame(tickers)
+        current_pairs = df[df['symbol'].str.endswith("USDT")]
+
+        time.sleep(30)
+        previous_pairs = current_pairs
+
+        tickers = client.get_all_tickers()
+        df = pd.DataFrame(tickers)
+        current_pairs = df[df['symbol'].str.endswith("USDT")]
+
+        for index, row in current_pairs.iterrows():
+            previous_pair = previous_pairs.loc[index]
+            if previous_pair['symbol'] == row['symbol']:
+                previous_price = float(previous_pair['price'])
+                current_price = float(row['price'])
+                variation = ((current_price - previous_price) / previous_price) * 100
+                print(f"pair {row['symbol']} - variation {variation}")
 
 
-while True:
+def velas():
+
     tickers = client.get_all_tickers()
 
     df = pd.DataFrame(tickers)
     current_pairs = df[df['symbol'].str.endswith("USDT")]
 
-    time.sleep(30)
-    previous_pairs = current_pairs
-
-    tickers = client.get_all_tickers()
-    df = pd.DataFrame(tickers)
-    current_pairs = df[df['symbol'].str.endswith("USDT")]
-
-    for index, row in current_pairs.iterrows():
-        previous_pair = previous_pairs.loc[index]
-        if previous_pair['symbol'] == row['symbol']:
-            previous_price = float(previous_pair['price'])
-            current_price = float(row['price'])
-            variation = ((current_price - previous_price) / previous_price) * 100
-            print(f"pair {row['symbol']} - variation {variation}")
+    for _, row in current_pairs.iterrows():
+        candles = client.get_klines(symbol=row['symbol'], interval=Client.KLINE_INTERVAL_1MINUTE, limit=10)
+        print(f"moeda: {row['symbol']} - {candles}")
+        print("\n")
 
 
+balance = client.get_asset_balance(asset='USDT')
+pprint.pprint(balance)
+
+tickers = client.get_all_tickers()
+
+df = pd.DataFrame(tickers)
+pares = df[df['symbol'].str.endswith("USDT")]
+price = 0
+for _, pair in pares.iterrows():
+    if pair['symbol'] == 'BTCUSDT':
+        price = pair['price']
 
 
+from binance.enums import *
 
 
+order = client.create_test_order(
+    symbol='BTCUSDT',
+    side=SIDE_BUY,
+    type=ORDER_TYPE_LIMIT,
+    timeInForce=TIME_IN_FORCE_GTC,
+    quantity=1,
+    price=str(price))
+
+print(order)
+
+pprint.pprint(balance)
 
 
 '''
