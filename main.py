@@ -1,5 +1,6 @@
 import os
 import time
+import datetime
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -11,7 +12,7 @@ import pprint as pprint
 api_key = os.environ.get('BINANCE_API_KEY_TEST')
 api_secret = os.environ.get('BINANCE_API_SECRET_TEST')
 
-client = Client(api_key, api_secret, testnet=True)
+client = Client(api_key, api_secret, testnet=False)
 
 
 def update_variation():
@@ -50,6 +51,11 @@ def velas():
         print("\n")
 
 def test_ontem():
+    tickers = client.get_all_tickers()
+
+    df = pd.DataFrame(tickers)
+    current_pairs = df[df['symbol'].str.endswith("USDT")]
+
     balance = client.get_asset_balance(asset='USDT')
     pprint.pprint(balance)
 
@@ -62,13 +68,15 @@ def test_ontem():
         if pair['symbol'] == 'BTCUSDT':
             price = pair['price']
 
-tickers = client.get_all_tickers()
 
-df = pd.DataFrame(tickers)
-current_pairs = df[df['symbol'].str.endswith("USDT")]
+
+def convert_time(time):
+    your_dt = datetime.datetime.fromtimestamp(time / 1000)
+    return your_dt.strftime("%Y-%m-%d -- %H:%M:%S")
+
 
 while True:
-    intervals = ['1m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d']
+    intervals = ['1m', '5m', '15m', '30m', '1h', '2h', '4h', '8h', '12h', '1d']
 
     for interval in intervals:
         klines = client.get_klines(symbol='BTCUSDT', interval=interval, limit=1)
@@ -76,8 +84,10 @@ while True:
 
         old_price = float(kline[1])
         new_price = float(kline[4])
+        open_time = kline[0]
+        close_time = kline[6]
 
         variation = ((new_price - old_price) / old_price) * 100
-        print(f"BTCUSDT\nIntervalo: {interval}\nVariação: {variation}%\n")
+        print(f"BTCUSDT\nOpen Time: {convert_time(open_time)}\nClose time: {convert_time(close_time)}\nIntervalo: {interval}\nVariação: {variation}%\n")
     
-    time.sleep(30)
+    time.sleep(60)
