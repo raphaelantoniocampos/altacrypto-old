@@ -68,7 +68,8 @@ df = pd.DataFrame(tickers)
 current_pairs = df[df['symbol'].str.endswith("USDT")]
 
 while True:
-    intervals = ['1m', '5m', '15m', '30m', '1h']
+    intervals = ['1m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d']
+
     for interval in intervals:
         klines = client.get_klines(symbol='BTCUSDT', interval=interval, limit=1)
         kline = klines[0]
