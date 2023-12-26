@@ -69,7 +69,7 @@ def main():
 
     tickers = client.get_all_tickers()
     df = pd.DataFrame(tickers)
-    usdt_pairs  = df[df['symbol'].str.endswith("USDT")].head(10)
+    usdt_pairs  = df[df['symbol'].str.endswith("USDT")].head(1)
     print(f"len(usdt_pairs): {len(usdt_pairs)}")
 
     for _, row in usdt_pairs.iterrows():

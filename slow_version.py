@@ -55,7 +55,7 @@ def main():
 
     tickers = client.get_all_tickers()
     df = pd.DataFrame(tickers)
-    usdt_pairs  = df[df['symbol'].str.endswith("USDT")].head(10)
+    usdt_pairs  = df[df['symbol'].str.endswith("USDT")]
 
     variations = {}
 
