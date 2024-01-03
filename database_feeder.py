@@ -18,7 +18,8 @@ class DatabaseFeeder:
         self.data_manager = DataManager(DB_PATH)
         self.binance_api = BinanceAPI(API_KEY, API_SECRET)
 
-    def format_symbol(self, symbol):
+    @classmethod 
+    def format_symbol(cls, symbol):
         """
         Adds "t" prefix to symbols starting with a digit.
         """
