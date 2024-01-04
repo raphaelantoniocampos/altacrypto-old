@@ -1,5 +1,6 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
+import time
 from dotenv import load_dotenv
 
 from data_manager import DataManager
@@ -30,26 +31,20 @@ class DatabaseFeeder:
         Runs fetch, format, and store operations for all USDT pairs.
         """
         pairs  = self.binance_api.fetch_usdt_pairs()
-        time_str = datetime.now().strftime('%H:%M')
-        date = datetime.now().strftime('%d/%m/%Y')
+        timestamp = int(time.time())
 
         for _, row in pairs.iterrows():
             symbol = self.format_symbol(row["symbol"])
 
-            price_snapshot = PriceSnapshot(symbol, time_str, date, row["price"])
-            if not self.data_manager.table_exists(symbol):
-                self.data_manager.create_table(symbol)
+            price_snapshot = PriceSnapshot(symbol, timestamp, row["price"])
+            self.data_manager.create_table(symbol)
+            self.data_manager.insert_price(price_snapshot)
 
-            if not self.data_manager.price_exists(price_snapshot):
-                self.data_manager.insert_price(price_snapshot)
-            else:
-                self.data_manager.update_price(price_snapshot)
-
-        print(f"USD prices updated at {date} - {time_str}")
+        print(f"USD prices updated at {datetime.fromtimestamp(timestamp)}")
 
     def run(self):
         self.update_usdt_prices()
 
 if __name__ == "__main__":
-    database_feeder = DatabaseFeeder()
+    database_feeder = DatabaseFeeder()      
     database_feeder.run()

@@ -1,10 +1,13 @@
+from datetime import datetime
+
 class PriceSnapshot:
-    def __init__(self, symbol, time, date, price):
+    def __init__(self, symbol, timestamp, price):
         self.symbol = symbol
-        self.time = time
-        self.date = date
+        self.timestamp = timestamp
         self.price = price
+        self.datetime = datetime.fromtimestamp(self.timestamp)
+        
 
     def __str__(self) -> str:
-        return f'Symbol: {self.symbol}\nTime: {self.time}\nDate: {self.date}\nPrice: {self.price}'
+        return f'Symbol: {self.symbol}\nTimestamp: {self.timestamp}\nPrice: {self.price}\nDatetime: {self.datetime}'
 
