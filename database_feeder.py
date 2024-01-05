@@ -1,5 +1,6 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
+import schedule
 import time
 from dotenv import load_dotenv
 
@@ -47,6 +48,9 @@ class DatabaseFeeder:
 
 if __name__ == "__main__":
     database_feeder = DatabaseFeeder()
-    for _ in range(1440):
-        database_feeder.run()
-        time.sleep(60)
+
+    schedule.every().minute.at(":00").do(database_feeder.run)
+
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
