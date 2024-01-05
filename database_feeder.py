@@ -47,4 +47,6 @@ class DatabaseFeeder:
 
 if __name__ == "__main__":
     database_feeder = DatabaseFeeder()
-    database_feeder.run()
+    for _ in range(1440):
+        database_feeder.run()
+        time.sleep(60)
