@@ -5,7 +5,7 @@ class BinanceAPI:
     def __init__(self, api_key, api_secret):
         self.api_key = api_key
         self.api_secret = api_secret
-        self.base_url = 'https://api.binance.com'
+        self.base_url = 'https://api.binance.us'
 
     
     def fetch_usdt_pairs(self):

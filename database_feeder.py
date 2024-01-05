@@ -12,7 +12,7 @@ load_dotenv()
 API_KEY = os.environ.get('BINANCE_API_KEY_TEST')
 API_SECRET = os.environ.get('BINANCE_API_SECRET_TEST')
 
-DB_PATH  = "database\coin_prices.db"
+DB_PATH  = "coin_prices.db"
 
 class DatabaseFeeder:
     def __init__(self):
