@@ -20,7 +20,7 @@ class DatabaseFeeder:
         self.data_manager = DataManager(DB_PATH)
         self.binance_api = BinanceAPI(API_KEY, API_SECRET)
 
-    @classmethod 
+    @classmethod
     def format_symbol(cls, symbol):
         """
         Adds "t" prefix to symbols starting with a digit.
@@ -49,7 +49,7 @@ class DatabaseFeeder:
 if __name__ == "__main__":
     database_feeder = DatabaseFeeder()
 
-    schedule.every().minute.at(":00").do(database_feeder.run)
+    schedule.every(5).minutes.at(":00").do(database_feeder.run)
 
     while True:
         schedule.run_pending()
