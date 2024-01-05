@@ -46,5 +46,5 @@ class DatabaseFeeder:
         self.update_usdt_prices()
 
 if __name__ == "__main__":
-    database_feeder = DatabaseFeeder()      
+    database_feeder = DatabaseFeeder()
     database_feeder.run()
