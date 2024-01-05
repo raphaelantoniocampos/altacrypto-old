@@ -11,7 +11,6 @@ class BinanceAPI:
     def fetch_usdt_pairs(self):
         try:
             endpoint = "/api/v3/ticker/price"
-            params = {"symbol": "USDT"}
             response = self._make_request(endpoint)
             tickers = response.json()
             coin_prices = pd.DataFrame(tickers)
@@ -30,16 +29,5 @@ class BinanceAPI:
             raise Exception(f"Request failed with status code {response.status_code}: {response.text}")
         
         return response
+   
     
-    '''def fetch_usdt_pairs(self):
-        """
-        Retrieves and filters USDT pairs from Binance.
-        """
-        try:
-            tickers = self.client.get_all_tickers()
-            coin_prices = pd.DataFrame(tickers)
-            return coin_prices[coin_prices["symbol"].str.endswith("USDT")]
-        except Exception as e:
-            print(f"Error fetching USDT pairs from Binance: {e}")
-            return pd.DataFrame()
-            '''
