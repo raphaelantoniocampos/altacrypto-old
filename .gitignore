@@ -1,5 +1,6 @@
 .env
 __pycache__
+
 inaccurate_version.py
 matheus_code.py
 slow_version.py
