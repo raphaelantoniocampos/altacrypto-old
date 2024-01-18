@@ -30,10 +30,8 @@ if __name__ == "__main__":
     data_manager = DataManager(DB_PATH)
     database_feeder = DatabaseFeeder(data_manager)
     binance_api = BinanceAPI(API_KEY, API_SECRET)
-    
-    run()
+
     schedule.every(5).minutes.at(":00").do(run)
     while True:
         schedule.run_pending()
         time.sleep(1)
-    
