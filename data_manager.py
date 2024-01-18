@@ -62,15 +62,15 @@ class DataManager:
         self._execute_sql(sql, f"Error inserting price for {price_snapshot.symbol}", params)
 
         deletion_timestamp = int((datetime.fromtimestamp(price_snapshot.timestamp) - timedelta(days=1)).timestamp())
-        self.delete_price(price_snapshot.symbol, deletion_timestamp)
+        self.delete_price(deletion_timestamp)
 
-    def delete_price(self, symbol, timestamp):
+    def delete_price(self, timestamp):
         """
         Deletes a specific price entry for a USD symbol from its table.
         """
         sql = f"DELETE FROM {self.coin_prices_table_name} WHERE timestamp < ?"
         params = (timestamp,)
-        self._execute_sql(sql, f"Error deleting price for {symbol}", params)
+        self._execute_sql(sql, f"Error deleting price for {self.coin_prices_table_name}", params)
 
     def get_coin_prices_dataframe(self):
         sql = f"SELECT symbol, timestamp, price FROM {self.coin_prices_table_name}"
