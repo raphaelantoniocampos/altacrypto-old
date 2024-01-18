@@ -1,24 +1,11 @@
-import os
 from datetime import datetime
-import schedule
-import time
-from dotenv import load_dotenv
-
-from data_manager import DataManager
-from binance_api import BinanceAPI
 from price_snapshot import PriceSnapshot
 
-load_dotenv()
 
-API_KEY = os.environ.get('BINANCE_API_KEY_TEST')
-API_SECRET = os.environ.get('BINANCE_API_SECRET_TEST')
-
-DB_PATH  = "coin_prices.db"
 
 class DatabaseFeeder:
-    def __init__(self):
-        self.data_manager = DataManager(DB_PATH)
-        self.binance_api = BinanceAPI(API_KEY, API_SECRET)
+    def __init__(self, data_manager):
+        self.data_manager = data_manager
 
     @classmethod
     def format_symbol(cls, symbol):
@@ -27,30 +14,17 @@ class DatabaseFeeder:
         """
         return 't' + symbol if symbol[0].isdigit() else symbol
 
-    def update_usdt_prices(self):
+    def update_usdt_prices(self, usdt_pairs, timestamp):
         """
         Runs fetch, format, and store operations for all USDT pairs.
         """
-        pairs  = self.binance_api.fetch_usdt_pairs()
-        timestamp = int(time.time())
+        # pairs  = self.binance_api.fetch_usdt_pairs()
+        # timestamp = int(time.time())
 
-        for _, row in pairs.iterrows():
+        for _, row in usdt_pairs.iterrows():
             symbol = self.format_symbol(row["symbol"])
-
-            price_snapshot = PriceSnapshot(symbol, timestamp, row["price"])
-            self.data_manager.create_table(symbol)
+            price = row['price']
+            price_snapshot = PriceSnapshot(symbol, timestamp, price)
             self.data_manager.insert_price(price_snapshot)
 
         print(f"USD prices updated at {datetime.fromtimestamp(timestamp)}")
-
-    def run(self):
-        self.update_usdt_prices()
-
-if __name__ == "__main__":
-    database_feeder = DatabaseFeeder()
-
-    schedule.every(5).minutes.at(":00").do(database_feeder.run)
-
-    while True:
-        schedule.run_pending()
-        time.sleep(1)

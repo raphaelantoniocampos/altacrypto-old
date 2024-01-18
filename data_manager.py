@@ -1,9 +1,12 @@
 import sqlite3
+import pandas as pd
 from datetime import datetime, timedelta
 
 class DataManager:
     def __init__(self, db_path):
         self.db_path = db_path
+        self.coin_prices_table_name = 'coin_prices'
+        self.create_coin_prices_table()
 
     def _execute_sql(self, sql, error_message, params=None):
         """
@@ -29,17 +32,19 @@ class DataManager:
         except sqlite3.Error as e:
             print(f"{error_message}: {e}")
 
-    def create_table(self, table_name):
+    def create_coin_prices_table(self):
         """
-        Creates a table for storing price data of a USD symbol.
+        
         """
         sql = f"""
-        CREATE TABLE IF NOT EXISTS {table_name} (
-            timestamp INTEGER PRIMARY KEY,
+        CREATE TABLE IF NOT EXISTS {self.coin_prices_table_name} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            symbol TEXT NOT NULL,
+            timestamp INTEGER NOT NULL,
             price REAL NOT NULL
         );
         """
-        self._execute_sql(sql, f"Error creating table {table_name}")
+        self._execute_sql(sql, f"Error creating coin_prices table")
 
     def table_exists(self, table_name):
         """
@@ -50,10 +55,10 @@ class DataManager:
 
     def insert_price(self, price_snapshot):
         """
-        Inserts price data for a USD symbol into its table.
+        Inserts price data for a USD symbol into the database.
         """
-        sql = f"INSERT INTO {price_snapshot.symbol} (timestamp, price) VALUES (?, ?)"
-        params = (price_snapshot.timestamp, price_snapshot.price)
+        sql = f"INSERT INTO {self.coin_prices_table_name} (symbol, timestamp, price) VALUES (?, ?, ?)"
+        params = (price_snapshot.symbol, price_snapshot.timestamp, price_snapshot.price)
         self._execute_sql(sql, f"Error inserting price for {price_snapshot.symbol}", params)
 
         deletion_timestamp = int((datetime.fromtimestamp(price_snapshot.timestamp) - timedelta(days=1)).timestamp())
@@ -63,8 +68,17 @@ class DataManager:
         """
         Deletes a specific price entry for a USD symbol from its table.
         """
-        sql = f"DELETE FROM {symbol} WHERE timestamp < ?"
+        sql = f"DELETE FROM {self.coin_prices_table_name} WHERE timestamp < ?"
         params = (timestamp,)
         self._execute_sql(sql, f"Error deleting price for {symbol}", params)
+
+    def get_coin_prices_dataframe(self):
+        sql = f"SELECT symbol, timestamp, price FROM {self.coin_prices_table_name}"
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                    df = pd.read_sql(sql, conn)
+                    return df
+        except sqlite3.Error as e:
+            print(f"{e}")
 
     
