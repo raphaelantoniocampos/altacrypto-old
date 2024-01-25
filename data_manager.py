@@ -13,12 +13,15 @@ class DataManager:
         """
         return 't' + symbol if symbol[0].isdigit() else symbol
 
-    def _execute_sql(self, sql, error_message, params=None):
+    def _execute_sql(self, sql, error_message, params=None, table_name = None):
         """
         Executes an SQL statement with optional parameters.
         """
         try:
             with sqlite3.connect(self.db_path) as conn:
+                if table_name:
+                    df = pd.read_sql(sql, conn).sort_index(ascending=False).reset_index(drop=True)
+                    return df
                 if params:
                     conn.execute(sql, params)
                 else:
@@ -42,7 +45,7 @@ class DataManager:
         except sqlite3.Error as e:
             print(f"{error_message}: {e}")
 
-    def create_coin_table(self, table_name):
+    def _create_coin_table(self, table_name):
         table_name = self.format_symbol(table_name)
         sql = f"""
         CREATE TABLE IF NOT EXISTS {table_name} (
@@ -66,6 +69,7 @@ class DataManager:
         Inserts price data for a USD symbol into the database.
         """
         table_name = self.format_symbol(price_snapshot.symbol)
+        self._create_coin_table(table_name)
         sql = f"INSERT INTO {table_name} (timestamp, price) VALUES (?, ?)"
         params = (price_snapshot.timestamp, price_snapshot.price)
         self._execute_sql(sql, f"Error inserting price for {table_name}", params)
@@ -83,17 +87,56 @@ class DataManager:
 
     def get_coin_prices_dataframe(self, table_name):
         table_name = self.format_symbol(table_name)
+        self._create_coin_table(table_name)
         sql = f"SELECT timestamp, price FROM {table_name}"
-        try:
-            with sqlite3.connect(self.db_path) as conn:
-                    df = pd.read_sql(sql, conn).sort_index(ascending=False).reset_index(drop=True)
-                    return df
-        except sqlite3.Error as e:
-            print(f"{e}")
+        df = self._execute_sql(sql, f"Error selecting from {table_name}", table_name= table_name)
+        df['symbol'] = table_name
+        return df
 
-    def get_distinct_timestamps(self, table_name):
-        table_name = self.format_symbol(table_name)
-        sql = f"SELECT DISTINCT timestamp FROM {table_name}"
-        data = self._fetch_all(sql, f"Error selecting timestamps from {table_name}")
-        return data
+    def get_all_coins_dataframes(self, usdt_pairs):
+        return [self.get_coin_prices_dataframe(row['symbol']) for _, row in usdt_pairs.iterrows()]
+
+    def _create_assets_table(self, table_name):
+        sql = f"""
+        CREATE TABLE IF NOT EXISTS {table_name} (
+            symbol TEXT PRIMARY KEY NOT NULL,
+            purchase_datetime TEXT NOT NULL,
+            purchase_price REAL NOT NULL,
+            highest_price REAL NOT NULL,
+            current_price REAL NOT NULL,
+            variation REAL NOT NULL
+        );
+        """
+        self._execute_sql(sql, f"Error creating {table_name} table")
     
+    def insert_purchase(self, asset):
+        table_name = 'Assets'
+        self._create_assets_table(table_name)
+        sql = f"INSERT INTO {table_name} (symbol, purchase_datetime, purchase_price, highest_price, current_price, variation) VALUES (?, ?, ?, ?, ?, ?)"
+        params = (asset.symbol, asset.purchase_datetime.strftime("%Y-%m-%d %H:%M:%S"), asset.purchase_price, asset.highest_price, asset.current_price, asset.variation)
+        self._execute_sql(sql, f"Error inserting price for {table_name}", params)
+
+    def get_assets_dataframe(self):
+        table_name = 'Assets'
+        self._create_assets_table(table_name)
+        sql = f"SELECT * FROM {table_name}"
+        return self._execute_sql(sql, f"Error selecting from {table_name}", table_name= table_name)
+
+    def update_asset(self, asset, variation):
+        table_name = 'Assets'
+        sql = f"UPDATE {table_name} SET current_price = ?, highest_price = ?, variation = ? WHERE symbol = ?"
+        params = (asset.current_price, asset.highest_price, variation, asset.symbol)
+        self._execute_sql(sql, f"Error inserting price for {table_name}", params)
+
+    def delete_from_assets(self, symbol):
+        table_name = 'Assets'
+        sql = f"DELETE FROM {table_name} WHERE symbol == ?"
+        params = (symbol,)
+        self._execute_sql(sql, f"Error deleting price for {table_name}", params)
+        self.drop_table(symbol)
+
+    def drop_table(self, table_name):
+        sql = f"DROP TABLE {table_name}"
+        self._execute_sql(sql, f'Error droping table {table_name}')
+
+# DataManager('trading_info.db').drop_table('Assets')
