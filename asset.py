@@ -1,11 +1,12 @@
 class Asset:
-    def __init__(self, symbol, purchase_datetime, purchase_price, highest_price, current_price, variation):
+    def __init__(self, symbol, purchase_datetime, purchase_price, highest_price, current_price, variation, obs = None):
         self.symbol = symbol
         self.purchase_datetime = purchase_datetime
         self.purchase_price = purchase_price
         self.highest_price = highest_price
         self.current_price = current_price
         self.variation = variation
+        self.obs = obs
     
     @classmethod
     def from_series(cls, series):

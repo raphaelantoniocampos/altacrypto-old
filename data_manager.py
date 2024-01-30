@@ -6,12 +6,15 @@ class DataManager:
     def __init__(self, db_path):
         self.db_path = db_path
 
-    @classmethod
-    def format_symbol(cls, symbol):
+    def _format_symbol(self, symbol):
         """
-        Adds "t" prefix to symbols starting with a digit.
+        Adds or remove "t" prefix to symbols starting with a digit.
         """
-        return 't' + symbol if symbol[0].isdigit() else symbol
+        if symbol[0].isdigit():
+            return 't' + symbol
+        if symbol[0] == 't':
+            return symbol[1:]
+        return symbol
 
     def _execute_sql(self, sql, error_message, params=None, table_name = None):
         """
@@ -46,7 +49,6 @@ class DataManager:
             print(f"{error_message}: {e}")
 
     def _create_coin_table(self, table_name):
-        table_name = self.format_symbol(table_name)
         sql = f"""
         CREATE TABLE IF NOT EXISTS {table_name} (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,13 +56,13 @@ class DataManager:
             price REAL NOT NULL
         );
         """
-        self._execute_sql(sql, f"Error creating {table_name} table")
+        self._execute_sql(sql, f"Error creating coin table: {table_name}")
 
     def table_exists(self, table_name):
         """
         Checks if a table exists in the database.
         """
-        table_name = self.format_symbol(table_name)
+        table_name = self._format_symbol(table_name)
         sql = f"SELECT name FROM sqlite_master WHERE type='table' AND name=?"
         return self._fetch_one(sql, (table_name,), f"Error checking table existence for {table_name}")
 
@@ -68,7 +70,7 @@ class DataManager:
         """
         Inserts price data for a USD symbol into the database.
         """
-        table_name = self.format_symbol(price_snapshot.symbol)
+        table_name = self._format_symbol(price_snapshot.symbol)
         self._create_coin_table(table_name)
         sql = f"INSERT INTO {table_name} (timestamp, price) VALUES (?, ?)"
         params = (price_snapshot.timestamp, price_snapshot.price)
@@ -86,7 +88,7 @@ class DataManager:
         self._execute_sql(sql, f"Error deleting price for {table_name}", params)
 
     def get_coin_prices_dataframe(self, table_name):
-        table_name = self.format_symbol(table_name)
+        table_name = self._format_symbol(table_name)
         self._create_coin_table(table_name)
         sql = f"SELECT timestamp, price FROM {table_name}"
         df = self._execute_sql(sql, f"Error selecting from {table_name}", table_name= table_name)
@@ -113,7 +115,7 @@ class DataManager:
         table_name = 'Assets'
         self._create_assets_table(table_name)
         sql = f"INSERT INTO {table_name} (symbol, purchase_datetime, purchase_price, highest_price, current_price, variation) VALUES (?, ?, ?, ?, ?, ?)"
-        params = (asset.symbol, asset.purchase_datetime.strftime("%Y-%m-%d %H:%M:%S"), asset.purchase_price, asset.highest_price, asset.current_price, asset.variation)
+        params = (asset.symbol, asset.purchase_datetime.strftime("%Y-%m-%d %H:%M:%S"), asset.current_price, asset.current_price, asset.current_price, 0)
         self._execute_sql(sql, f"Error inserting price for {table_name}", params)
 
     def get_assets_dataframe(self):
@@ -122,10 +124,10 @@ class DataManager:
         sql = f"SELECT * FROM {table_name}"
         return self._execute_sql(sql, f"Error selecting from {table_name}", table_name= table_name)
 
-    def update_asset(self, asset, variation):
+    def update_asset(self, asset):
         table_name = 'Assets'
         sql = f"UPDATE {table_name} SET current_price = ?, highest_price = ?, variation = ? WHERE symbol = ?"
-        params = (asset.current_price, asset.highest_price, variation, asset.symbol)
+        params = (asset.current_price, asset.highest_price, asset.variation, asset.symbol)
         self._execute_sql(sql, f"Error inserting price for {table_name}", params)
 
     def delete_from_assets(self, symbol):
@@ -140,3 +142,5 @@ class DataManager:
         self._execute_sql(sql, f'Error droping table {table_name}')
 
 # DataManager('trading_info.db').drop_table('Assets')
+#data_manager = DataManager('trading_info.db')
+#print(data_manager._format_symbol('1INCHUSDT'))
