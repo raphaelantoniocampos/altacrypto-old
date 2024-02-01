@@ -1,5 +1,5 @@
 from datetime import datetime
-from price_snapshot import PriceSnapshot
+from models.price_snapshot import PriceSnapshot
 
 class DatabaseFeeder:
     def __init__(self, data_manager):

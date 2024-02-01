@@ -1,11 +1,14 @@
 import schedule
 import time
+import csv
+import re
 
 import pandas as pd
 from datetime import datetime
 from constants import *
 
-from asset import Asset
+from models.asset import Asset
+from models.transaction_data import TransactionData
 from database_feeder import DatabaseFeeder
 from binance_api import BinanceAPI
 from data_manager import DataManager
@@ -24,6 +27,29 @@ def get_current_datetime(timestamp = None):
 def get_current_timestamp():
     return int(time.time())
 
+def timedelta_to_string(delta):
+    """Converts a datetime.timedelta object to a human-readable string."""
+
+    seconds = delta.total_seconds()
+
+    days = seconds // 86400  
+    seconds %= 86400  
+
+    hours = seconds // 3600  
+    seconds %= 3600  
+
+    minutes = seconds // 60  
+    seconds %= 60  
+
+    time_string = (
+        f"{days} day{'s' if days > 1 else ''} "
+        f"{hours} hour{'s' if hours > 1 else ''} "
+        f"{minutes} minute{'s' if minutes > 1 else ''} "
+        f"{seconds:.0f} second{'s' if seconds > 1 else ''}"
+    )
+
+    return time_string.strip()
+
 def fetch_and_analyze_assets_data():
     """Fetches price data, updates the database, analyzes assets, and generates recommendations."""
 
@@ -41,20 +67,13 @@ def evaluate_assets(asset_pairs):
     if not assets_dataframe.empty:
         for _, row in assets_dataframe.iterrows():
             asset = Asset.from_series(row)
-            asset = update_asset(asset, asset_pairs)
-            if should_asset_be_sold(asset, purchase_recommendations):
-                sell_asset(asset)
+            if asset.symbol != 'USDT':
+                asset.update_asset(float(asset_pairs.loc[asset_pairs['symbol'] == asset.symbol, 'price'].iloc[0]))
+                data_manager.update_asset(asset)
+                if should_asset_be_sold(asset, purchase_recommendations):
+                    sell_asset(asset)
 
     execute_purchase_recommendations(purchase_recommendations)
-    
-
-def update_asset(asset, asset_pairs):
-    asset.current_price = float(asset_pairs.loc[asset_pairs['symbol'] == asset.symbol, 'price'].iloc[0])
-    if asset.current_price > asset.highest_price:
-        asset.highest_price = asset.current_price
-    asset.variation = calculate_asset_variation(asset)
-    data_manager.update_asset(asset)
-    return asset
 
 def should_asset_be_sold(asset, purchase_recommendations):
     recommended_purchase_symbols = set(purchase_recommendations['symbol'])
@@ -64,7 +83,7 @@ def should_asset_be_sold(asset, purchase_recommendations):
         return True
     if asset.current_price <= asset.highest_price * (1 - UNDER_HIGHEST_PERCENTAGE / 100):
         return True
-    if asset.current_price >= asset.highest_price * (1 + ABOVE_PURCHASE_PERCENTAGE / 100):
+    if asset.variation >= ABOVE_PURCHASE_PERCENTAGE:
         return True
     return False
 
@@ -92,38 +111,98 @@ def process_interval_data(interval_dataframe):
     return interval_recommendations
         
 def execute_purchase_recommendations(purchase_recommendations):
-    current_datetime = get_current_datetime()
+    # current_datetime = get_current_datetime()
     assets_dataframe = data_manager.get_assets_dataframe()
     assets_symbols = set(assets_dataframe['symbol'])
+    operation_value = get_operation_value()
     for _, row in purchase_recommendations.iterrows():
         symbol = row['symbol']
         if symbol not in assets_symbols:
-            asset = Asset(symbol, current_datetime, row['current_price'], row['current_price'], row['current_price'], row['variation'], obs=row['interval'])
-            assets_symbols.add(asset.symbol)
-            buy_asset(asset)
+            if has_balance(operation_value):
+                buy_asset(row, operation_value)
+                assets_symbols.add(symbol)
+    
 
-def buy_asset(asset):
-    data_manager.insert_purchase(asset)
-    message =f"""{asset.symbol} COMPRADO - {asset.purchase_datetime}
-VARIACAO: {asset.variation:.2f}% 
-INTERVALO: {asset.obs}
-PRECO DE COMPRA: {asset.current_price}
-_____________________________________
+def has_balance(operation_value):
+    balance = data_manager.get_usdt_balance()
+    has_balance = balance >= operation_value
+    if not has_balance:
+        transaction_data = f"""Sem saldo para efetuar transacao
+SALDO USDT: {balance}
 """
-    log_asset_transaction(message)
+        log_asset_transaction(message=message)
+    return has_balance
+    
+
+def update_balance(value):
+    balance = data_manager.get_usdt_balance()
+    new_balance = round((balance + value), 2)
+    data_manager.update_usdt_balance(new_balance)
+    return new_balance
+
+def buy_asset(row, operation_value):
+    current_datetime = get_current_datetime()
+    symbol = row['symbol']
+    new_balance = update_balance(-operation_value)
+    quantity = operation_value / row['current_price']
+    asset = Asset(
+        symbol = symbol, 
+        quantity = quantity,
+        purchase_price = row['current_price'],
+        purchase_datetime = current_datetime,
+        highest_price = row['current_price'],
+        current_price = row['current_price'],
+        obs= f"{row['variation']:.2f}% - {row['interval']}"
+        )
+    time.sleep(3) # Simulates binance transaction
+    data_manager.insert_purchase(asset)
+    final_balance = data_manager.get_assets_dataframe()['current_value'].sum()
+    transaction_data = TransactionData(
+        date=current_datetime.date(),
+        time=current_datetime.strftime('%H:%M:%S'),
+        order_type="Compra",
+        quantity=asset.quantity,
+        coin=asset.symbol,
+        USDT_quantity=operation_value,
+        purchase_price=asset.current_price,
+        sell_price=None,
+        profit_loss=None,
+        variation=f'{row["variation"]:.2f}',
+        interval=row['interval'],
+        trading_fee=0.00,
+        USDT_balance=new_balance,
+        final_balance=final_balance
+    )
+    log_asset_transaction(transaction_data)
 
 def sell_asset(asset):
     current_datetime = get_current_datetime()
+
+    time.sleep(3) # Simulates binance transaction
+
     data_manager.delete_from_assets(asset.symbol)
-    message = f"""{asset.symbol} VENDIDO - {current_datetime}
-ADQUIRIDO EM {asset.purchase_datetime}
-PRECO DE COMPRA: {asset.purchase_price}
-MAIOR PRECO: {asset.highest_price}
-PRECO DE VENDA: {asset.current_price}
-VARIACAO: {asset.variation:.2f}%
-_____________________________________
-"""
-    log_asset_transaction(message)
+
+    profit_loss = asset.calculate_profit_loss()
+    new_balance = update_balance(asset.current_value)
+    interval = timedelta_to_string(current_datetime - datetime.strptime(asset.purchase_datetime, "%Y-%m-%d %H:%M:%S"))
+    final_balance = data_manager.get_assets_dataframe()['current_value'].sum()
+    transaction_data = TransactionData(
+        date=current_datetime.date(),
+        time=current_datetime.strftime('%H:%M:%S'),
+        order_type="Venda",
+        quantity=asset.quantity,
+        coin=asset.symbol,
+        USDT_quantity=asset.current_value,
+        purchase_price=asset.purchase_price,
+        sell_price=asset.current_price,
+        profit_loss=profit_loss,
+        variation=f'{asset.variation:.2f}',
+        interval=interval,
+        trading_fee=0.00,
+        USDT_balance=new_balance,
+        final_balance=final_balance
+    )
+    log_asset_transaction(transaction_data)
 
 def generate_price_change_data(interval_index, usdt_pairs, current_datetime):
     """Creates a DataFrame containing price variations for the given interval."""
@@ -148,13 +227,56 @@ def generate_price_change_data(interval_index, usdt_pairs, current_datetime):
             })
     return pd.DataFrame(variation_data)
 
-def log_asset_transaction(message):
-    current_datetime = get_current_datetime().date()
-    with open(f'logs/log-{current_datetime}.txt', 'a') as file:
-        file.write(f'{message}\n')
-    print(message)
+def log_asset_transaction(transaction_data):
+   current_datetime = get_current_datetime() 
+   current_date = current_datetime.date()
+   file_name = f'logs/log-{current_date}.csv'
+
+   fieldnames = ["Data", "Hora", "Tipo de ordem", "Quantidade", "Moeda", "Quantidade USDT", "Preco de compra", "Preco de venda", "Lucro/prejuizo", "Variacao", "Intervalo", "Taxa de negociacao", "Saldo USDT", "Saldo final"]
+   try:
+       with open(file_name, 'r') as file:
+           csv.reader(file)  
+   except FileNotFoundError:
+        with open(file_name, 'w', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writeheader()
+
+   with open(file_name, 'a', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        row = {
+            "Data": transaction_data.date,
+            "Hora": transaction_data.time,
+            "Tipo de ordem": transaction_data.order_type,
+            "Quantidade": transaction_data.quantity,
+            "Moeda": transaction_data.coin,
+            "Quantidade USDT": transaction_data.USDT_quantity,
+            "Preco de compra": transaction_data.purchase_price,
+            "Preco de venda": transaction_data.sell_price,
+            "Lucro/prejuizo": transaction_data.profit_loss,
+            "Variacao": transaction_data.variation,
+            "Intervalo": transaction_data.interval,
+            "Taxa de negociacao": transaction_data.trading_fee,
+            "Saldo USDT": transaction_data.USDT_balance,
+            "Saldo final": transaction_data.final_balance
+        }
+        writer.writerow(row)
+        print(transaction_data)
+
+def insert_usdt(value):
+    current_datetime = get_current_datetime()
+    data_manager.insert_usdt(value, current_datetime)
+
+def get_operation_value():
+    balance = data_manager.get_usdt_balance()
+    operation_value =  round(balance / (100 / OPERATION_VALUE_PERCENTAGE), 2)
+    if operation_value < 10:
+        operation_value = 10
+    return operation_value
 
 if __name__ == "__main__":
+    if not data_manager.get_usdt_balance():
+        insert_usdt(TESTING_INITIAL_BALANCE)
+
     fetch_and_analyze_assets_data()
 
     schedule.every(EXECUTION_FREQUENCY_MINUTES).minutes.at(":00").do(fetch_and_analyze_assets_data)
