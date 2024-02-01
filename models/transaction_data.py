@@ -18,18 +18,5 @@ class TransactionData:
         self.final_balance = final_balance
 
     def __str__(self):
-        return f"""{self.date}
-{self.time}
-{self.order_type}
-{self.quantity}
-{self.coin}
-{self.USDT_quantity}
-{self.purchase_price }
-{self.sell_price} 
-{self.profit_loss} 
-{self.variation} 
-{self.interval} 
-{self.trading_fee} 
-{self.USDT_balance}
-{self.final_balance}
-"""
+        return f"""{self.date} - {self.time}
+{self.coin} - {self.order_type}"""

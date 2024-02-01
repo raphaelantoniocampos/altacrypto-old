@@ -28,27 +28,10 @@ def get_current_timestamp():
     return int(time.time())
 
 def timedelta_to_string(delta):
-    """Converts a datetime.timedelta object to a human-readable string."""
-
-    seconds = delta.total_seconds()
-
-    days = seconds // 86400  
-    seconds %= 86400  
-
-    hours = seconds // 3600  
-    seconds %= 3600  
-
-    minutes = seconds // 60  
-    seconds %= 60  
-
-    time_string = (
-        f"{days} day{'s' if days > 1 else ''} "
-        f"{hours} hour{'s' if hours > 1 else ''} "
-        f"{minutes} minute{'s' if minutes > 1 else ''} "
-        f"{seconds:.0f} second{'s' if seconds > 1 else ''}"
-    )
-
-    return time_string.strip()
+    """Converte um objeto `datetime.timedelta` para uma string no formato HH:MM:SS."""
+    hours, remainder = divmod(delta.seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
 def fetch_and_analyze_assets_data():
     """Fetches price data, updates the database, analyzes assets, and generates recommendations."""
@@ -81,10 +64,11 @@ def should_asset_be_sold(asset, purchase_recommendations):
         return False
     if asset.variation <= (- UNDER_PURCHASE_PERCENTAGE):
         return True
-    if asset.current_price <= asset.highest_price * (1 - UNDER_HIGHEST_PERCENTAGE / 100):
-        return True
-    if asset.variation >= ABOVE_PURCHASE_PERCENTAGE:
-        return True
+    if asset.current_price > asset.purchase_price:
+        if asset.current_price <= asset.highest_price * (1 - UNDER_HIGHEST_PERCENTAGE / 100):
+            return True
+        if asset.variation >= ABOVE_PURCHASE_PERCENTAGE:
+            return True
     return False
 
 def calculate_asset_variation(asset):
@@ -111,7 +95,6 @@ def process_interval_data(interval_dataframe):
     return interval_recommendations
         
 def execute_purchase_recommendations(purchase_recommendations):
-    # current_datetime = get_current_datetime()
     assets_dataframe = data_manager.get_assets_dataframe()
     assets_symbols = set(assets_dataframe['symbol'])
     operation_value = get_operation_value()
@@ -121,16 +104,30 @@ def execute_purchase_recommendations(purchase_recommendations):
             if has_balance(operation_value):
                 buy_asset(row, operation_value)
                 assets_symbols.add(symbol)
+            else:
+                current_datetime = get_current_datetime()
+                transaction_data = TransactionData(
+                date=current_datetime.date(),
+                time=current_datetime.strftime('%H:%M:%S'),
+                order_type="Compra",
+                quantity=None,
+                coin=None,
+                USDT_quantity=None,
+                purchase_price=None,
+                sell_price=None,
+                profit_loss=None,
+                variation=None,
+                interval=None,
+                trading_fee=None,
+                USDT_balance=None,
+                final_balance=balance
+            )
+                log_asset_transaction(message=message)
     
 
 def has_balance(operation_value):
     balance = data_manager.get_usdt_balance()
     has_balance = balance >= operation_value
-    if not has_balance:
-        transaction_data = f"""Sem saldo para efetuar transacao
-SALDO USDT: {balance}
-"""
-        log_asset_transaction(message=message)
     return has_balance
     
 
