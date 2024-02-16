@@ -56,19 +56,20 @@ def evaluate_assets(asset_pairs):
                 if should_asset_be_sold(asset, purchase_recommendations):
                     sell_asset(asset)
 
-    execute_purchase_recommendations(purchase_recommendations)
+    execute_purchase_recommendations(purchase_recommendations, assets_dataframe)
 
 def should_asset_be_sold(asset, purchase_recommendations):
     recommended_purchase_symbols = set(purchase_recommendations['symbol'])
     if asset.symbol in recommended_purchase_symbols:
-        return False
+        pass
+        #return False
     if asset.variation <= (- UNDER_PURCHASE_PERCENTAGE):
         return True
-    if asset.current_price > asset.purchase_price:
-        if asset.current_price <= asset.highest_price * (1 - UNDER_HIGHEST_PERCENTAGE / 100):
-            return True
-        if asset.variation >= ABOVE_PURCHASE_PERCENTAGE:
-            return True
+    #if asset.current_price > asset.purchase_price:
+    if asset.current_price <= asset.highest_price * (1 - UNDER_HIGHEST_PERCENTAGE / 100):
+        return True
+    if asset.variation >= ABOVE_PURCHASE_PERCENTAGE:
+        return True
     return False
 
 def calculate_asset_variation(asset):
@@ -94,8 +95,7 @@ def process_interval_data(interval_dataframe):
         ]
     return interval_recommendations
         
-def execute_purchase_recommendations(purchase_recommendations):
-    assets_dataframe = data_manager.get_assets_dataframe()
+def execute_purchase_recommendations(purchase_recommendations, assets_dataframe):
     assets_symbols = set(assets_dataframe['symbol'])
     operation_value = get_operation_value()
     for _, row in purchase_recommendations.iterrows():

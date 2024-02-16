@@ -94,7 +94,7 @@ class DataManager:
             self._create_coin_table(table_name)
         sql = f"SELECT timestamp, price FROM {table_name}"
         df = self._execute_sql(sql, f"Error selecting from {table_name}", table_name= table_name)
-        df['symbol'] = table_name
+        df['symbol'] = self._format_symbol(table_name)
         return df
 
     def get_all_coins_dataframes(self, usdt_pairs):

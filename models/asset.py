@@ -38,7 +38,7 @@ class Asset:
             raise ValueError("Purchase price cannot be higher than highest price.")
 
         # Initialize attributes
-        self.symbol = symbol.upper()
+        self.symbol = symbol
         self.quantity = quantity
         self.purchase_price = purchase_price
         self.current_price = current_price
