@@ -7,7 +7,21 @@ class BinanceAPI:
         self.api_secret = api_secret
         self.base_url = 'https://api.binance.com'
 
-    
+    def query_binance_status(self):
+        try:
+            endpoint =  "/sapi/v1/system/status"
+            response = self._make_request(endpoint)
+            status = response.json()
+
+            if status['status'] == 0:
+                return True
+            else:
+                return False
+
+        except requests.RequestException as e:
+            print(f"Error connecting to binance API: {e}")
+            return False
+
     def fetch_usdt_pairs(self):
         try:
             endpoint = "/api/v3/ticker/price"
