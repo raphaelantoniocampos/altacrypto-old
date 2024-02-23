@@ -5,6 +5,8 @@ import re
 
 import pandas as pd
 from datetime import datetime
+import logging
+
 from constants import *
 
 from models.asset import Asset
@@ -13,29 +15,50 @@ from database_feeder import DatabaseFeeder
 from binance_api import BinanceAPI
 from data_manager import DataManager
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
+def get_datetime(timestamp = None):
+    """
+    Get the date and time from the provided timestamp.
 
-data_manager = DataManager(DB_PATH)
-database_feeder = DatabaseFeeder(data_manager)
-binance_api = BinanceAPI(API_KEY, API_SECRET)
+    Args:
+        timestamp (int, optional): Timestamp to be converted. If not provided, the current timestamp will be used.
 
-def get_current_datetime(timestamp = None):
+    Returns:
+        datetime: A datetime object representing the current date and time.
+    """
     if not timestamp:
         timestamp = get_current_timestamp()
     return datetime.fromtimestamp(timestamp)
 
 def get_current_timestamp():
+    """
+    Get the current timestamp.
+
+    Returns:
+        int: Current timestamp.
+    """
     return int(time.time())
 
 def timedelta_to_string(delta):
-    """Converte um objeto `datetime.timedelta` para uma string no formato HH:MM:SS."""
+    """
+    Convert a timedelta object to a string in HH:MM:SS format.
+
+    Args:
+        delta (timedelta): The timedelta object to be converted.
+
+    Returns:
+        str: String in HH:MM:SS format representing the time specified by delta.
+    """
     hours, remainder = divmod(delta.seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
     return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
 def fetch_and_analyze_assets_data():
-    """Fetches price data, updates the database, analyzes assets, and generates recommendations."""
-
+    """
+    Fetch price data, update the database, analyze assets, and generate recommendations.
+    """
     asset_pairs = binance_api.fetch_usdt_pairs()
     current_timestamp = get_current_timestamp()
     
@@ -43,7 +66,12 @@ def fetch_and_analyze_assets_data():
     evaluate_assets(asset_pairs)
                    
 def evaluate_assets(asset_pairs):
-    """Analyzes existing assets and makes sell decisions if necessary."""
+    """
+    Analyze existing assets and make sell decisions if necessary.
+
+    Args:
+        asset_pairs (DataFrame): DataFrame containing asset pairs data.
+    """
     purchase_recommendations = identify_purchase_recommendations(asset_pairs)
     assets_dataframe = data_manager.get_assets_dataframe()
 
@@ -59,6 +87,16 @@ def evaluate_assets(asset_pairs):
     execute_purchase_recommendations(purchase_recommendations, assets_dataframe)
 
 def should_asset_be_sold(asset, purchase_recommendations):
+    """
+    Determine if an asset should be sold based on purchase recommendations and predefined rules.
+
+    Args:
+        asset (Asset): The asset to be evaluated.
+        purchase_recommendations (DataFrame): DataFrame containing purchase recommendations.
+
+    Returns:
+        bool: True if the asset should be sold, False otherwise.
+    """
     recommended_purchase_symbols = set(purchase_recommendations['symbol'])
     if asset.symbol in recommended_purchase_symbols:
         pass
@@ -72,11 +110,17 @@ def should_asset_be_sold(asset, purchase_recommendations):
         return True
     return False
 
-def calculate_asset_variation(asset):
-    return round((((asset.current_price - asset.purchase_price) / asset.current_price) * 100), 2)
-
 def identify_purchase_recommendations(asset_pairs):
-    current_datetime = get_current_datetime()
+    """
+    Identify purchase recommendations based on price variations.
+
+    Args:
+        asset_pairs (DataFrame): DataFrame containing asset pairs data.
+
+    Returns:
+        DataFrame: DataFrame containing purchase recommendations.
+    """
+    current_datetime = get_datetime()
     purchase_recommendations = pd.DataFrame()
     for interval_in_minutes in INTERVAL_IN_MINUTES:
         interval_index = int(interval_in_minutes / EXECUTION_FREQUENCY_MINUTES)
@@ -89,6 +133,15 @@ def identify_purchase_recommendations(asset_pairs):
     return purchase_recommendations
 
 def process_interval_data(interval_dataframe):
+    """
+    Process interval data and generate purchase recommendations.
+
+    Args:
+        interval_dataframe (DataFrame): DataFrame containing price variations within an interval.
+
+    Returns:
+        DataFrame: DataFrame containing purchase recommendations.
+    """
     mean_variation = interval_dataframe['variation'].mean()
     interval_recommendations = interval_dataframe[
         interval_dataframe['variation'] >= mean_variation + PERCENTAGE_THRESHOLD
@@ -96,6 +149,13 @@ def process_interval_data(interval_dataframe):
     return interval_recommendations
         
 def execute_purchase_recommendations(purchase_recommendations, assets_dataframe):
+    """
+    Execute purchase recommendations by buying assets if conditions are met.
+
+    Args:
+        purchase_recommendations (DataFrame): DataFrame containing purchase recommendations.
+        assets_dataframe (DataFrame): DataFrame containing asset data.
+    """
     assets_symbols = set(assets_dataframe['symbol'])
     operation_value = get_operation_value()
     for _, row in purchase_recommendations.iterrows():
@@ -105,7 +165,7 @@ def execute_purchase_recommendations(purchase_recommendations, assets_dataframe)
                 buy_asset(row, operation_value)
                 assets_symbols.add(symbol)
             else:
-                current_datetime = get_current_datetime()
+                current_datetime = get_datetime()
                 transaction_data = TransactionData(
                 date=current_datetime.date(),
                 time=current_datetime.strftime('%H:%M:%S'),
@@ -126,19 +186,43 @@ def execute_purchase_recommendations(purchase_recommendations, assets_dataframe)
     
 
 def has_balance(operation_value):
+    """
+    Check if there is enough balance to perform an operation.
+
+    Args:
+        operation_value (float): The value of the operation.
+
+    Returns:
+        bool: True if there is enough balance, False otherwise.
+    """
     balance = data_manager.get_usdt_balance()
     has_balance = balance >= operation_value
     return has_balance
     
-
 def update_balance(value):
+    """
+    Update the balance in the database.
+
+    Args:
+        value (float): The value to be added or subtracted from the balance.
+
+    Returns:
+        float: The new balance after the update.
+    """
     balance = data_manager.get_usdt_balance()
     new_balance = round((balance + value), 2)
     data_manager.update_usdt_balance(new_balance)
     return new_balance
 
 def buy_asset(row, operation_value):
-    current_datetime = get_current_datetime()
+    """
+    Execute a buy operation for a given asset.
+
+    Args:
+        row (Series): Series containing asset data.
+        operation_value (float): The value of the operation.
+    """
+    current_datetime = get_datetime()
     symbol = row['symbol']
     new_balance = update_balance(-operation_value)
     quantity = operation_value / row['current_price']
@@ -173,7 +257,13 @@ def buy_asset(row, operation_value):
     log_asset_transaction(transaction_data)
 
 def sell_asset(asset):
-    current_datetime = get_current_datetime()
+    """
+    Execute a sell operation for a given asset.
+
+    Args:
+        asset (Asset): The asset to be sold.
+    """
+    current_datetime = get_datetime()
 
     time.sleep(3) # Simulates binance transaction
 
@@ -202,7 +292,17 @@ def sell_asset(asset):
     log_asset_transaction(transaction_data)
 
 def generate_price_change_data(interval_index, usdt_pairs, current_datetime):
-    """Creates a DataFrame containing price variations for the given interval."""
+    """
+    Generates a DataFrame containing price variations for a given interval.
+
+    Args:
+        interval_index (int): Index of the interval.
+        usdt_pairs (DataFrame): DataFrame containing USD pairs.
+        current_datetime (datetime): Current datetime.
+
+    Returns:
+        DataFrame: DataFrame containing price variations.
+    """
     variation_data = []
     interval_time = None
 
@@ -225,20 +325,26 @@ def generate_price_change_data(interval_index, usdt_pairs, current_datetime):
     return pd.DataFrame(variation_data)
 
 def log_asset_transaction(transaction_data):
-   current_datetime = get_current_datetime() 
-   current_date = current_datetime.date()
-   file_name = f'logs/log-{current_date}.csv'
+    """
+    Logs a transaction data into a CSV file.
 
-   fieldnames = ["Data", "Hora", "Tipo de ordem", "Quantidade", "Moeda", "Quantidade USDT", "Preco de compra", "Preco de venda", "Lucro/prejuizo", "Variacao", "Intervalo", "Taxa de negociacao", "Saldo USDT", "Saldo final"]
-   try:
-       with open(file_name, 'r') as file:
+    Args:
+        transaction_data (TransactionData): The transaction data to be logged.
+    """
+    current_datetime = get_datetime() 
+    current_date = current_datetime.date()
+    file_name = f'logs/log-{current_date}.csv'
+
+    fieldnames = ["Data", "Hora", "Tipo de ordem", "Quantidade", "Moeda", "Quantidade USDT", "Preco de compra", "Preco de venda", "Lucro/prejuizo", "Variacao", "Intervalo", "Taxa de negociacao", "Saldo USDT", "Saldo final"]
+    try:
+        with open(file_name, 'r') as file:
            csv.reader(file)  
-   except FileNotFoundError:
+    except FileNotFoundError:
         with open(file_name, 'w', newline='') as file:
             writer = csv.DictWriter(file, fieldnames=fieldnames)
             writer.writeheader()
 
-   with open(file_name, 'a', newline='') as file:
+    with open(file_name, 'a', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         row = {
             "Data": transaction_data.date,
@@ -257,13 +363,25 @@ def log_asset_transaction(transaction_data):
             "Saldo final": transaction_data.final_balance
         }
         writer.writerow(row)
-        print(transaction_data)
+        logger.info(transaction_data)
 
 def insert_usdt(value):
-    current_datetime = get_current_datetime()
+    """
+    Inserts USDT value into the database.
+
+    Args:
+        value (float): The USDT value to be inserted.
+    """
+    current_datetime = get_datetime()
     data_manager.insert_usdt(value, current_datetime)
 
 def get_operation_value():
+    """
+    Calculates the operation value based on the current USDT balance.
+
+    Returns:
+        float: The operation value.
+    """
     balance = data_manager.get_usdt_balance()
     operation_value =  round(balance / (100 / OPERATION_VALUE_PERCENTAGE), 2)
     if operation_value < 10:
@@ -271,6 +389,11 @@ def get_operation_value():
     return operation_value
 
 if __name__ == "__main__":
+
+    binance_api = BinanceAPI(API_KEY, API_SECRET)
+    data_manager = DataManager(DB_PATH)
+    database_feeder = DatabaseFeeder(data_manager)
+
     if not data_manager.get_usdt_balance():
         insert_usdt(TESTING_INITIAL_BALANCE)
 

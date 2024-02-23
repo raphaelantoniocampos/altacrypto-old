@@ -68,6 +68,7 @@ class Asset:
         self.current_value = self.calculate_current_value()
 
     def calculate_profit_loss(self):
+        """Calculates the profit or loss of the asset."""
         total_purchase_value = self.purchase_price * self.quantity
         return self.current_value - total_purchase_value
 
@@ -81,6 +82,7 @@ class Asset:
     
     @classmethod
     def from_series(cls, series):
+        """Creates an Asset object from a pandas Series."""
         symbol = series['symbol']
         quantity = series['quantity']
         purchase_price = series['purchase_price']
