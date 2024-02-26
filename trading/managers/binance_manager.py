@@ -1,7 +1,7 @@
 import requests
 import pandas as pd
 
-class BinanceAPI:
+class BinanceManager:
     """
     Provides methods to interact with the Binance API for retrieving data and checking system status.
 
@@ -18,10 +18,12 @@ class BinanceAPI:
             api_key (str): API key for accessing the Binance API.
             api_secret (str): API secret for accessing the Binance API.
         """
-        self.api_key = api_key
+        '''self.api_key = api_key
         self.api_secret = api_secret
         self.base_url = 'https://api.binance.com'
+        '''
 
+    @staticmethod
     def query_binance_status(self):
         """
         Queries the status of the Binance system.
@@ -43,6 +45,7 @@ class BinanceAPI:
             print(f"Error connecting to binance API: {e}")
             return False
 
+    @staticmethod
     def fetch_usdt_pairs(self):
         """
         Fetches USDT pairs from Binance.
@@ -61,6 +64,7 @@ class BinanceAPI:
             print(f"Error fetching USDT pairs from Binance: {e}")
             return pd.DataFrame()
 
+    @staticmethod
     def _make_request(self, endpoint, params=None):
         """
         Makes a request to the Binance API.

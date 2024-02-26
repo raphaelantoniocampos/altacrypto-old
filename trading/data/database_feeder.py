@@ -4,19 +4,9 @@ from models.price_snapshot import PriceSnapshot
 class DatabaseFeeder:
     """
     Updates the database with price snapshots for asset pairs.
-
-    Attributes:
-        data_manager (DataManager): The DataManager object for database interaction.
     """
-    def __init__(self, data_manager):
-        """
-        Initializes a DatabaseFeeder object with a DataManager.
-
-        Args:
-            data_manager (DataManager): The DataManager object for database interaction.
-        """
-        self.data_manager = data_manager
-
+    
+    @staticmethod
     def update_database(self, asset_pairs, current_timestamp):
         """
         Updates the database with price snapshots for asset pairs.

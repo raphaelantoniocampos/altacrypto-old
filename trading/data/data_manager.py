@@ -9,15 +9,8 @@ class DataManager:
     Attributes:
         db_path (str): Path to the SQLite database file.
     """
-    def __init__(self, db_path):
-        """
-        Initializes a DataManager object with the path to the SQLite database.
-
-        Args:
-            db_path (str): Path to the SQLite database file.
-        """
-        self.db_path = db_path
-
+    
+    @staticmethod
     def _format_symbol(self, symbol):
         """
         Adds or removes "t" prefix to symbols starting with a digit.
@@ -34,6 +27,7 @@ class DataManager:
             return symbol[1:]
         return symbol
 
+    @staticmethod
     def _execute_sql(self, sql, error_message, params=None, table_name = None):
         """
         Executes an SQL statement with optional parameters.
@@ -59,6 +53,7 @@ class DataManager:
         except sqlite3.Error as e:
             print(f"{error_message}: {e}")
     
+    @staticmethod
     def _fetch_one(self, sql, params, error_message):
         """
         Fetches a single result from the database.
@@ -78,6 +73,7 @@ class DataManager:
         except sqlite3.Error as e:
             print(f"{error_message}: {e}")
     
+    @staticmethod
     def _fetch_all(self, sql, error_message):
         """
         Fetches all results from the database.
@@ -96,6 +92,7 @@ class DataManager:
         except sqlite3.Error as e:
             print(f"{error_message}: {e}")
 
+    @staticmethod
     def _create_coin_table(self, table_name):
         """
         Creates a table for storing price data of a cryptocurrency.
@@ -112,6 +109,7 @@ class DataManager:
         """
         self._execute_sql(sql, f"Error creating coin table: {table_name}")
 
+    @staticmethod
     def table_exists(self, table_name):        
         """
         Checks if a table exists in the database.
@@ -126,6 +124,7 @@ class DataManager:
         sql = f"SELECT name FROM sqlite_master WHERE type='table' AND name=?"
         return bool(self._fetch_one(sql, (table_name,), f"Error checking table existence for {table_name}"))
 
+    @staticmethod
     def insert_price(self, price_snapshot):
         """
         Inserts price data for a USD symbol into the database.
@@ -143,6 +142,7 @@ class DataManager:
         deletion_timestamp = int((datetime.fromtimestamp(price_snapshot.timestamp) - timedelta(days=1)).timestamp())
         self.delete_prices(table_name, deletion_timestamp)
 
+    @staticmethod
     def delete_prices(self, table_name, timestamp):
         """
         Deletes price entries older than a specific timestamp for a USD symbol.
@@ -155,6 +155,7 @@ class DataManager:
         params = (timestamp,)
         self._execute_sql(sql, f"Error deleting price for {table_name}", params)
 
+    @staticmethod
     def _get_coin_prices_dataframe(self, table_name):
         """
         Retrieves price data for a USD symbol as a DataFrame.
@@ -173,6 +174,7 @@ class DataManager:
         df['symbol'] = self._format_symbol(table_name)
         return df
 
+    @staticmethod
     def get_all_coins_dataframes(self, usdt_pairs):
         """
         Retrieves price data for all USD symbols as a list of DataFrames.
@@ -185,6 +187,7 @@ class DataManager:
         """
         return [self._get_coin_prices_dataframe(row['symbol']) for _, row in usdt_pairs.iterrows()]
 
+    @staticmethod
     def _create_assets_table(self):
         """
         Creates a table for storing asset information.
@@ -205,6 +208,7 @@ class DataManager:
         """
         self._execute_sql(sql, f"Error creating {table_name} table")
     
+    @staticmethod
     def insert_purchase(self, asset):
         """
         Inserts asset purchase information into the database.
@@ -219,6 +223,7 @@ class DataManager:
         params = (self._format_symbol(asset.symbol), asset.quantity, asset.purchase_price, asset.current_value, asset.variation, asset.purchase_datetime.strftime("%Y-%m-%d %H:%M:%S"), asset.highest_price, asset.current_price, asset.obs)
         self._execute_sql(sql, f"Error inserting price for {table_name}", params)
 
+    @staticmethod
     def get_assets_dataframe(self):
         """
         Retrieves asset information from the database as a DataFrame.
@@ -232,6 +237,7 @@ class DataManager:
         sql = f"SELECT * FROM {table_name}"
         return self._execute_sql(sql, f"Error selecting from {table_name}", table_name= table_name)
 
+    @staticmethod
     def update_asset(self, asset):
         """
         Updates asset information in the database.
@@ -244,6 +250,7 @@ class DataManager:
         params = (asset.quantity, asset.current_value, asset.variation, asset.highest_price, asset.current_price, asset.symbol)
         self._execute_sql(sql, f"Error inserting price for {asset.symbol}", params)
 
+    @staticmethod
     def delete_from_assets(self, symbol):
         """
         Deletes asset information for a specific symbol from the database.
@@ -257,6 +264,7 @@ class DataManager:
         self._execute_sql(sql, f"Error deleting price for {table_name}", params)
         self.drop_table(symbol)
 
+    @staticmethod
     def drop_table(self, table_name):
         """
         Drops a table from the database.
@@ -266,7 +274,8 @@ class DataManager:
         """
         sql = f"DROP TABLE {table_name}"
         self._execute_sql(sql, f'Error droping table {table_name}')
-
+    
+    @staticmethod
     def insert_usdt(self, value, current_datetime):
         """
         Inserts USDT balance information into the database.
@@ -282,6 +291,7 @@ class DataManager:
         params = ('USDT', value, 1, value, 0, current_datetime.strftime("%Y-%m-%d %H:%M:%S"), 1, 1)
         self._execute_sql(sql, f"Error inserting USDT", params)
 
+    @staticmethod
     def get_usdt_balance(self):
         """
         Retrieves the current USDT balance from the database.
@@ -295,6 +305,7 @@ class DataManager:
         balance = self._fetch_one(sql, params, f"Error selecting USDT")
         return balance[0] if balance else 0 
 
+    @staticmethod
     def update_usdt_balance(self, value):
         """
         Updates the USDT balance in the database.
@@ -307,6 +318,7 @@ class DataManager:
         params = (value, value, 'USDT')
         self._execute_sql(sql, f"Error updating USDT", params)
 
+    @staticmethod
     def get_total_asset_value(db_path):
         """
         Obtains the sum of all 'current_value' entries in the 'Assets' table.
