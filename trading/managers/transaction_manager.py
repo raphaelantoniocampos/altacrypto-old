@@ -90,7 +90,7 @@ class TransactionManager:
         """
         current_datetime = get_datetime() 
         current_date = current_datetime.date()
-        file_name = f'logs/log-{current_date}.csv'
+        file_name = f'logs/log_execution_{current_date}.csv'
 
         fieldnames = ["Data", "Hora", "Tipo de ordem", "Quantidade", "Moeda", "Quantidade USDT", "Preco de compra", "Preco de venda", "Lucro/prejuizo", "Variacao", "Intervalo", "Taxa de negociacao", "Saldo USDT", "Saldo final"]
         try:
