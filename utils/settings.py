@@ -1,6 +1,8 @@
 import os
 from dotenv import load_dotenv
 
+from ..managers import data_manager
+
 load_dotenv()
 
 testing = True

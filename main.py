@@ -6,21 +6,12 @@ import re
 import pandas as pd
 from datetime import datetime
 
-
-import models
-import trading
 import utils.settings
-
+from untitled_crypto_bot.managers.asset_analyzer import AssetAnalyzer
 
 
 def main():
-    '''
-    binance_manager = BinanceManager(API_KEY, API_SECRET)
-    data_manager = DataManager(DB_PATH)
-    database_feeder = DatabaseFeeder(data_manager)
-    '''
-
-    schedule.every(EXECUTION_FREQUENCY_MINUTES).minutes.at(":00").do(trading.managers.asset_analyzer.run)
+    schedule.every(EXECUTION_FREQUENCY_MINUTES).minutes.at(":00").do(AssetAnalyzer.run)
     while True:
         schedule.run_pending()
         time.sleep(1)
