@@ -1,14 +1,13 @@
 import os
+import managers.data_manager as data_manager
 from dotenv import load_dotenv
-
-from ..managers import data_manager
 
 load_dotenv()
 
 testing = True
 if testing:
     API_KEY = os.environ.get('BINANCE_API_KEY_TEST')
-    API_SECRET = os.environ.get('BINANCE_API_SECRET_TEST')  
+    API_SECRET = os.environ.get('BINANCE_API_SECRET_TEST')
 
     TESTING_INITIAL_BALANCE = 100
 
