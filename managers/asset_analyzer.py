@@ -2,7 +2,7 @@ import pandas as pd
 
 from models.asset import Asset
 import utils.settings as settings
-import utils.datetime_utils as datetime_utils
+from utils.datetime_utils import DateTimeUtils
 from managers.balance_manager import BalanceManager
 from managers.transaction_manager import TransactionManager
 
@@ -80,7 +80,7 @@ class AssetAnalyzer:
         Returns:
             DataFrame: DataFrame containing purchase recommendations.
         """
-        current_datetime = datetime_utils.get_datetime()
+        current_datetime = DateTimeUtils.get_datetime()
         purchase_recommendations = pd.DataFrame()
         for interval_in_minutes in settings.INTERVAL_IN_MINUTES:
             interval_index = int(
@@ -118,7 +118,7 @@ class AssetAnalyzer:
                     TransactionManager.buy_asset(row, operation_value)
                     assets_symbols.add(symbol)
                 else:
-                    current_datetime = datetime_utils.get_datetime()
+                    current_datetime = DateTimeUtils.get_datetime()
                     TransactionManager.attempt_purchase(
                         current_datetime, has_balance[1]
                     )

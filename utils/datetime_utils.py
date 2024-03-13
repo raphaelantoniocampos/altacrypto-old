@@ -1,6 +1,10 @@
+import time
+import datetime
+
+
 class DateTimeUtils:
     @staticmethod
-    def get_datetime(timestamp = None):
+    def get_datetime(timestamp=None):
         """
         Get the date and time from the provided timestamp.
 
@@ -11,7 +15,7 @@ class DateTimeUtils:
             datetime: A datetime object representing the current date and time.
         """
         if not timestamp:
-            timestamp = get_current_timestamp()
+            timestamp = DateTimeUtils.get_current_timestamp()
         return datetime.fromtimestamp(timestamp)
 
     @staticmethod
