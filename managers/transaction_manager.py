@@ -1,9 +1,7 @@
 import csv
-import logging
+
 
 class TransactionManager:
-    logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(__name__)
 
     @staticmethod
     def buy_asset(row, operation_value):
@@ -46,7 +44,7 @@ class TransactionManager:
             USDT_balance=new_balance,
             final_balance=final_balance
         )
-        log_asset_transaction(transaction_data)
+        TransactionManager.log_transaction_data(transaction_data)
 
     @staticmethod
     def sell_asset(asset):
@@ -82,10 +80,10 @@ class TransactionManager:
             USDT_balance=new_balance,
             final_balance=final_balance
         )
-        log_asset_transaction(transaction_data)
+        TransactionManager.log_transaction_data(transaction_data)
 
     @staticmethod
-    def log_asset_transaction(transaction_data):
+    def log_transaction_data(transaction_data):
         """
         Logs a transaction data into a CSV file.
 
@@ -125,3 +123,23 @@ class TransactionManager:
             }
             writer.writerow(row)
             logger.info(transaction_data)
+
+    @staticmethod
+    def attempt_purchase(current_datetime, balance):
+        transaction_data = TransactionData(
+            date=current_datetime.date(),
+            time=current_datetime.strftime("%H:%M:%S"),
+            order_type="Compra",
+            quantity=None,
+            coin=None,
+            USDT_quantity=None,
+            purchase_price=None,
+            sell_price=None,
+            profit_loss=None,
+            variation=None,
+            interval=None,
+            trading_fee=None,
+            USDT_balance=None,
+            final_balance=balance,
+        )
+        TransactionManager.log_transaction_data(transaction_data)

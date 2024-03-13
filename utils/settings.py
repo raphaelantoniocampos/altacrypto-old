@@ -1,8 +1,13 @@
 import os
-import managers.data_manager as data_manager
+import logging
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Control Constants
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+DB_PATH = "trading_info.db"
 
 testing = True
 if testing:
@@ -18,7 +23,7 @@ else:
     API_KEY = os.environ.get('BINANCE_API_KEY')
     API_SECRET = os.environ.get('BINANCE_API_SECRET')
 
-
+# Usage Constants
 INTERVAL_IN_MINUTES = [5, 10, 15, 30, 60]
 EXECUTION_FREQUENCY_MINUTES = 5
 

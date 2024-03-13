@@ -1,6 +1,7 @@
 import requests
 import pandas as pd
 
+
 class BinanceManager:
     """
     Provides methods to interact with the Binance API for retrieving data and checking system status.
@@ -10,6 +11,7 @@ class BinanceManager:
         api_secret (str): API secret for accessing the Binance API.
         base_url (str): Base URL of the Binance API.
     """
+
     def __init__(self, api_key, api_secret):
         """
         Initializes a BinanceAPI object with API key and secret.
@@ -18,12 +20,10 @@ class BinanceManager:
             api_key (str): API key for accessing the Binance API.
             api_secret (str): API secret for accessing the Binance API.
         """
-        '''self.api_key = api_key
+        self.api_key = api_key
         self.api_secret = api_secret
         self.base_url = 'https://api.binance.com'
-        '''
 
-    @staticmethod
     def query_binance_status(self):
         """
         Queries the status of the Binance system.
@@ -32,7 +32,7 @@ class BinanceManager:
             bool: True if the system is operational, False otherwise.
         """
         try:
-            endpoint =  "/sapi/v1/system/status"
+            endpoint = "/sapi/v1/system/status"
             response = self._make_request(endpoint)
             status = response.json()
 
@@ -45,7 +45,6 @@ class BinanceManager:
             print(f"Error connecting to binance API: {e}")
             return False
 
-    @staticmethod
     def fetch_usdt_pairs(self):
         """
         Fetches USDT pairs from Binance.
@@ -64,7 +63,6 @@ class BinanceManager:
             print(f"Error fetching USDT pairs from Binance: {e}")
             return pd.DataFrame()
 
-    @staticmethod
     def _make_request(self, endpoint, params=None):
         """
         Makes a request to the Binance API.
@@ -82,10 +80,11 @@ class BinanceManager:
         url = f"{self.base_url}{endpoint}"
         headers = {"X-MBX-APIKEY": self.api_key}
         response = requests.get(url, params=params, headers=headers)
-        
+
         if response.status_code != 200:
-            raise Exception(f"Request failed with status code {response.status_code}: {response.text}")
-        
+            raise Exception(
+                f"Request failed with status code {response.status_code}: {response.text}"
+            )
+
         return response
-   
-    
+
