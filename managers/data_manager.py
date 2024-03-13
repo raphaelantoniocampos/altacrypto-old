@@ -133,7 +133,8 @@ class DataManager:
         sql = f"SELECT name FROM sqlite_master WHERE type='table' AND name=?"
         return bool(
             self._fetch_one(
-                sql, (table_name,), f"Error checking table existence for {table_name}"
+                sql, (table_name,), f"Error checking table existence for {
+                    table_name}"
             )
         )
 
@@ -149,7 +150,8 @@ class DataManager:
             self._create_coin_table(table_name)
         sql = f"INSERT INTO {table_name} (timestamp, price) VALUES (?, ?)"
         params = (price_snapshot.timestamp, price_snapshot.price)
-        self._execute_sql(sql, f"Error inserting price for {table_name}", params)
+        self._execute_sql(sql, f"Error inserting price for {
+                          table_name}", params)
 
         deletion_timestamp = int((datetime.fromtimestamp(
             price_snapshot.timestamp) - timedelta(days=1)).timestamp())
@@ -165,7 +167,8 @@ class DataManager:
         """
         sql = f"DELETE FROM {table_name} WHERE timestamp < ?"
         params = (timestamp,)
-        self._execute_sql(sql, f"Error deleting price for {table_name}", params)
+        self._execute_sql(sql, f"Error deleting price for {
+                          table_name}", params)
 
     def _get_coin_prices_dataframe(self, table_name):
         """
@@ -234,7 +237,8 @@ class DataManager:
         table_name = 'Assets'
         if not self.table_exists(table_name):
             self._create_assets_table()
-        sql = f"INSERT INTO {table_name} (symbol, quantity, purchase_price, current_value, variation, purchase_datetime, highest_price, current_price, obs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        sql = f"INSERT INTO {
+            table_name} (symbol, quantity, purchase_price, current_value, variation, purchase_datetime, highest_price, current_price, obs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         params = (
             self._format_symbol(asset.symbol),
             asset.quantity,
@@ -246,7 +250,8 @@ class DataManager:
             asset.current_price,
             asset.obs,
         )
-        self._execute_sql(sql, f"Error inserting price for {table_name}", params)
+        self._execute_sql(sql, f"Error inserting price for {
+                          table_name}", params)
 
     def get_assets_dataframe(self):
         """
@@ -255,7 +260,7 @@ class DataManager:
         Returns:
             pd.DataFrame: DataFrame containing asset information.
         """
-        table_name='Assets'
+        table_name = 'Assets'
         if not self.table_exists(table_name):
             self._create_assets_table()
         sql = f"SELECT * FROM {table_name}"
@@ -271,7 +276,8 @@ class DataManager:
             asset (Asset): Object containing updated asset data.
         """
         table_name = "Assets"
-        sql = f"UPDATE {table_name} SET quantity = ?, current_value = ?, variation = ?, highest_price = ?, current_price = ? WHERE symbol = ?"
+        sql = f"UPDATE {
+            table_name} SET quantity = ?, current_value = ?, variation = ?, highest_price = ?, current_price = ? WHERE symbol = ?"
         params = (
             asset.quantity,
             asset.current_value,
@@ -280,7 +286,8 @@ class DataManager:
             asset.current_price,
             asset.symbol,
         )
-        self._execute_sql(sql, f"Error inserting price for {asset.symbol}", params)
+        self._execute_sql(sql, f"Error inserting price for {
+                          asset.symbol}", params)
 
     def delete_from_assets(self, symbol):
         """
@@ -289,10 +296,11 @@ class DataManager:
         Args:
             symbol (str): Symbol of the asset to delete.
         """
-        table_name='Assets'
-        sql=f"DELETE FROM {table_name} WHERE symbol == ?"
-        params=(symbol,)
-        self._execute_sql(sql, f"Error deleting price for {table_name}", params)
+        table_name = 'Assets'
+        sql = f"DELETE FROM {table_name} WHERE symbol == ?"
+        params = (symbol,)
+        self._execute_sql(sql, f"Error deleting price for {
+                          table_name}", params)
         self.drop_table(symbol)
 
     def drop_table(self, table_name):
@@ -313,10 +321,11 @@ class DataManager:
             value (float): Quantity of USDT.
             current_datetime (datetime): Datetime of the balance.
         """
-        table_name='Assets'
+        table_name = 'Assets'
         if not self.table_exists(table_name):
             self._create_assets_table()
-        sql = f"INSERT INTO {table_name} (symbol, quantity, purchase_price, current_value, variation, purchase_datetime, highest_price, current_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        sql = f"INSERT INTO {
+            table_name} (symbol, quantity, purchase_price, current_value, variation, purchase_datetime, highest_price, current_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
         params = (
             "USDT",
             value,
@@ -336,9 +345,9 @@ class DataManager:
         Returns:
             float: Current USDT balance.
         """
-        table_name='Assets'
-        sql=f"SELECT quantity FROM {table_name} WHERE symbol == ?"
-        params=('USDT',)
+        table_name = 'Assets'
+        sql = f"SELECT quantity FROM {table_name} WHERE symbol == ?"
+        params = ('USDT',)
         balance = self._fetch_one(sql, params, "Error selecting USDT")
         return balance[0] if balance else 0
 
@@ -351,7 +360,8 @@ class DataManager:
         """
         table_name = "Assets"
         sql = (
-            f"UPDATE {table_name} SET quantity = ?, current_value = ? WHERE symbol = ?"
+            f"UPDATE {
+                table_name} SET quantity = ?, current_value = ? WHERE symbol = ?"
         )
         params = (value, value, "USDTself.")
         self._execute_sql(sql, f"Error updating USDT", params)
@@ -365,8 +375,8 @@ class DataManager:
         """
 
         with sqlite3.connect(self.db_path) as conn:
-            sql="SELECT SUM(current_value) FROM Assets"
-            result=conn.execute(sql).fetchone()
+            sql = "SELECT SUM(current_value) FROM Assets"
+            result = conn.execute(sql).fetchone()
             return result[0] if result else 0
 
     def feed_database(self, asset_pairs):
@@ -384,7 +394,8 @@ class DataManager:
             price_snapshot = PriceSnapshot(symbol, current_timestamp, price)
             self.insert_price(price_snapshot)
 
-        print(f"USD prices updated at {datetime.fromtimestamp(current_timestamp)}")
+        print(f"USD prices updated at {
+              datetime.fromtimestamp(current_timestamp)}")
 
 
 # DataManager('trading_info.db').drop_table('Assets')

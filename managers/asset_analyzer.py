@@ -27,7 +27,8 @@ class AssetAnalyzer:
         Args:
             asset_pairs (DataFrame): DataFrame containing asset pairs data.
         """
-        purchase_recommendations = self._identify_purchase_recommendations(asset_pairs)
+        purchase_recommendations = self._identify_purchase_recommendations(
+            asset_pairs)
         assets_dataframe = self.data_manager.get_assets_dataframe()
 
         if not assets_dataframe.empty:
@@ -86,11 +87,11 @@ class AssetAnalyzer:
             interval_index = int(
                 interval_in_minutes / settings.EXECUTION_FREQUENCY_MINUTES
             )
-            interval_dataframe = self.generate_price_change_data(
+            interval_dataframe = self._generate_price_change_data(
                 interval_index, asset_pairs, current_datetime
             )
             if not interval_dataframe.empty:
-                interval_recommendations = self.process_interval_data(
+                interval_recommendations = self._process_interval_data(
                     interval_dataframe
                 )
                 purchase_recommendations = pd.concat(
@@ -109,7 +110,8 @@ class AssetAnalyzer:
             assets_dataframe (DataFrame): DataFrame containing asset data.
         """
         assets_symbols = set(assets_dataframe['symbol'])
-        operation_value = BalanceManager.get_operation_value()
+        balance_manager = BalanceManager(self.data_manager)
+        operation_value = balance_manager.get_operation_value()
         for _, row in purchase_recommendations.iterrows():
             symbol = row['symbol']
             if symbol not in assets_symbols:
@@ -164,7 +166,8 @@ class AssetAnalyzer:
                 interval_time = pd.to_datetime(
                     (last_entry["timestamp"] - past_entry["timestamp"]), unit="s"
                 ).strftime("%H:%M:%S")
-                variation_percent = ((current_price - past_price) / current_price) * 100
+                variation_percent = (
+                    (current_price - past_price) / current_price) * 100
                 variation_data.append({
                     'symbol': last_entry['symbol'],
                     'interval': interval_time,
