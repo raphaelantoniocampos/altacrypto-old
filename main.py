@@ -1,14 +1,16 @@
 import time
 
-# import schedule
+import schedule
 from managers.asset_analyzer import AssetAnalyzer
 
-import utils.settings
+import utils.settings as settings
 
 
 def main():
-    schedule.every(EXECUTION_FREQUENCY_MINUTES).minutes.at(
-        ":00").do(AssetAnalyzer.run)
+    AssetAnalyzer.run()
+    schedule.every(settings.EXECUTION_FREQUENCY_MINUTES).minutes.at(":00").do(
+        AssetAnalyzer.run
+    )
     while True:
         schedule.run_pending()
         time.sleep(1)

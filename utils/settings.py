@@ -11,8 +11,8 @@ if testing:
 
     TESTING_INITIAL_BALANCE = 100
 
-    if not data_manager.get_database_usdt_balance():
-        insert_usdt(TESTING_INITIAL_BALANCE)
+    # if not data_manager.get_database_usdt_balance():
+    #    insert_usdt(TESTING_INITIAL_BALANCE)
 
 else:
     API_KEY = os.environ.get('BINANCE_API_KEY')
