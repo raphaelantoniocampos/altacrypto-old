@@ -173,9 +173,10 @@ class DataManager:
         if not table_exists(table_name):
             _create_coin_table(table_name)
         sql = f"SELECT timestamp, price FROM {table_name}"
-        df = _execute_sql(sql, f"Error selecting from {
-                          table_name}", table_name=table_name)
-        df['symbol'] = _format_symbol(table_name)
+        df = _execute_sql(
+            sql, f"Error selecting from {table_name}", table_name=table_name
+        )
+        df["symbol"] = _format_symbol(table_name)
         return df
 
     @staticmethod
@@ -192,7 +193,7 @@ class DataManager:
         return [_get_coin_prices_dataframe(row['symbol']) for _, row in usdt_pairs.iterrows()]
 
     @staticmethod
-    def _create_assets_table(:
+    def _create_assets_table():
         """
         Creates a table for storing asset information.
         """
@@ -223,8 +224,7 @@ class DataManager:
         table_name = 'Assets'
         if not table_exists(table_name):
             _create_assets_table()
-        sql = f"INSERT INTO {
-            table_name} (symbol, quantity, purchase_price, current_value, variation, purchase_datetime, highest_price, current_price, obs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        sql = f"INSERT INTO {table_name} (symbol, quantity, purchase_price, current_value, variation, purchase_datetime, highest_price, current_price, obs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         params = (
             _format_symbol(
                 asset.symbol), asset.quantity, asset.purchase_price, asset.current_value, asset.variation,
@@ -232,7 +232,7 @@ class DataManager:
         _execute_sql(sql, f"Error inserting price for {table_name}", params)
 
     @ staticmethod
-    def get_assets_dataframe(:
+    def get_assets_dataframe():
         """
         Retrieves asset information from the database as a DataFrame.
 
@@ -253,11 +253,16 @@ class DataManager:
         Args:
             asset (Asset): Object containing updated asset data.
         """
-        table_name='Assets'
-        sql=f"UPDATE {
-            table_name} SET quantity = ?, current_value = ?, variation = ?, highest_price = ?, current_price = ? WHERE symbol = ?"
-        params=(
-            asset.quantity, asset.current_value, asset.variation, asset.highest_price, asset.current_price, asset.symbol)
+        table_name = "Assets"
+        sql = f"UPDATE {table_name} SET quantity = ?, current_value = ?, variation = ?, highest_price = ?, current_price = ? WHERE symbol = ?"
+        params = (
+            asset.quantity,
+            asset.current_value,
+            asset.variation,
+            asset.highest_price,
+            asset.current_price,
+            asset.symbol,
+        )
         _execute_sql(sql, f"Error inserting price for {asset.symbol}", params)
 
     @ staticmethod
@@ -297,10 +302,17 @@ class DataManager:
         table_name='Assets'
         if not table_exists(table_name):
             _create_assets_table()
-        sql=f"INSERT INTO {
-            table_name} (symbol, quantity, purchase_price, current_value, variation, purchase_datetime, highest_price, current_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-        params=('USDT', value, 1, value, 0,
-                current_datetime.strftime("%Y-%m-%d %H:%M:%S"), 1, 1)
+        sql = f"INSERT INTO {table_name} (symbol, quantity, purchase_price, current_value, variation, purchase_datetime, highest_price, current_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        params = (
+            "USDT",
+            value,
+            1,
+            value,
+            0,
+            current_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+            1,
+            1,
+        )
         _execute_sql(sql, f"Error inserting USDT", params)
 
     @ staticmethod
@@ -325,10 +337,11 @@ class DataManager:
         Args:
             value (float): New USDT balance.
         """
-        table_name='Assets'
-        sql=f"UPDATE {
-            table_name} SET quantity = ?, current_value = ? WHERE symbol = ?"
-        params=(value, value, 'USDT')
+        table_name = "Assets"
+        sql = (
+            f"UPDATE {table_name} SET quantity = ?, current_value = ? WHERE symbol = ?"
+        )
+        params = (value, value, "USDT")
         _execute_sql(sql, f"Error updating USDT", params)
 
     @ staticmethod
