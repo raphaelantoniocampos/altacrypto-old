@@ -12,7 +12,7 @@ class BalanceManager:
         """
         balance = data_manager.get_usdt_balance()
         has_balance = balance >= operation_value
-        return has_balance
+        return (has_balance, balance)
 
     @staticmethod
     def update_balance(value):
@@ -50,7 +50,8 @@ class BalanceManager:
             float: The operation value.
         """
         balance = data_manager.get_usdt_balance()
-        operation_value =  round(balance / (100 / OPERATION_VALUE_PERCENTAGE), 2)
+        operation_value = round(
+            balance / (100 / OPERATION_VALUE_PERCENTAGE), 2)
         if operation_value < 10:
             operation_value = 10
         return operation_value
