@@ -1,6 +1,7 @@
-import requests
 import pandas as pd
+import requests
 
+import utils.settings as settings
 
 class BinanceManager:
     """
@@ -42,7 +43,7 @@ class BinanceManager:
                 return False
 
         except requests.RequestException as e:
-            print(f"Error connecting to binance API: {e}")
+            settings.logger.info(f"Error connecting to binance API: {e}")
             return False
 
     def fetch_usdt_pairs(self):
@@ -60,7 +61,7 @@ class BinanceManager:
             return coin_prices[coin_prices["symbol"].str.endswith("USDT")]
 
         except Exception as e:
-            print(f"Error fetching USDT pairs from Binance: {e}")
+            settings.logger.info(f"Error fetching USDT pairs from Binance: {e}")
             return pd.DataFrame()
 
     def _make_request(self, endpoint, params=None):
@@ -86,3 +87,4 @@ class BinanceManager:
                 f"Request failed with status code {response.status_code}: {response.text}")
 
         return response
+

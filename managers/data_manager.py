@@ -67,7 +67,7 @@ class DataManager:
                 else:
                     conn.execute(sql)
         except sqlite3.Error as e:
-            print(f"{error_message}: {e}")
+            settings.logger.info(f"{error_message}: {e}")
 
     def _fetch_one(self, sql, params, error_message):
         """
@@ -86,7 +86,7 @@ class DataManager:
                 result = conn.execute(sql, params).fetchone()
                 return result if result else None
         except sqlite3.Error as e:
-            print(f"{error_message}: {e}")
+            settings.logger.info(f"{error_message}: {e}")
 
     def _fetch_all(self, sql, error_message):
         """
@@ -104,7 +104,7 @@ class DataManager:
                 result = conn.execute(sql).fetchall()
                 return result
         except sqlite3.Error as e:
-            print(f"{error_message}: {e}")
+            settings.logger.info(f"{error_message}: {e}")
 
     def _create_coin_table(self, table_name):
         """
@@ -133,7 +133,7 @@ class DataManager:
             bool: True if the table exists, otherwise False.
         """
         table_name = self._format_symbol(table_name)
-        sql = f"SELECT name FROM sqlite_master WHERE type='table' AND name=?"
+        sql = "SELECT name FROM sqlite_master WHERE type='table' AND name=?"
         return bool(
             self._fetch_one(sql, (table_name,), f"Error checking table existence for {table_name}"))
 
@@ -150,7 +150,6 @@ class DataManager:
         sql = f"INSERT INTO {table_name} (timestamp, price) VALUES (?, ?)"
         params = (price_snapshot.timestamp, price_snapshot.price)
         self._execute_sql(sql, f"Error inserting price for {table_name}", params)
-
         deletion_timestamp = int((datetime.fromtimestamp(
             price_snapshot.timestamp) - timedelta(days=1)).timestamp())
         self.delete_prices(table_name, deletion_timestamp)
@@ -353,7 +352,7 @@ class DataManager:
         sql = (
             f"UPDATE {table_name} SET quantity = ?, current_value = ? WHERE symbol = ?"
         )
-        params = (value, value, "USDTself.")
+        params = (value, value, "USDT")
         self._execute_sql(sql, f"Error updating USDT", params)
 
     def get_total_asset_value(self):
@@ -384,6 +383,5 @@ class DataManager:
             price_snapshot = PriceSnapshot(symbol, current_timestamp, price)
             self.insert_price(price_snapshot)
 
-        print(f"USD prices updated at {datetime.fromtimestamp(current_timestamp)}")
-
+        settings.logger.info(f"USD prices updated at {datetime.fromtimestamp(current_timestamp)}")
 
