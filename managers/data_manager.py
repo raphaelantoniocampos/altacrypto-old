@@ -387,7 +387,3 @@ class DataManager:
         print(f"USD prices updated at {datetime.fromtimestamp(current_timestamp)}")
 
 
-# DataManager('trading_info.db').drop_table('Assets')
-# data_manager = DataManager('trading_info.db')
-# print(data_manager._format_symbol('1INCHUSDT'))
-

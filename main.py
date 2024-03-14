@@ -8,6 +8,7 @@ from managers.data_manager import DataManager
 import utils.settings as settings
 from utils.datetime_utils import DateTimeUtils
 
+# import utils.manage_database
 
 def main():
     binance_manager = BinanceManager(settings.API_KEY, settings.API_SECRET)
