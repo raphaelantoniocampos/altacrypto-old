@@ -3,14 +3,14 @@ import pandas as pd
 from models.asset import Asset
 import utils.settings as settings
 from utils.datetime_utils import DateTimeUtils
-from managers.balance_manager import BalanceManager
 from managers.transaction_manager import TransactionManager
 
 
 class AssetAnalyzer:
-    def __init__(self, binance_manager, data_manager):
+    def __init__(self, binance_manager, data_manager, balance_manager):
         self.binance_manager = binance_manager
         self.data_manager = data_manager
+        self.balance_manager = balance_manager
 
     def run(self):
         """
@@ -43,14 +43,16 @@ class AssetAnalyzer:
                         )
                     )
                     self.data_manager.update_asset(asset)
-                    if self.should_asset_be_sold(asset, purchase_recommendations):
-                        self.sell_asset(asset)
+                    if self._should_asset_be_sold(asset):
+                        TransactionManager.sell_asset(
+                            asset, self.balance_manager, self.data_manager
+                        )
 
         self._execute_purchase_recommendations(
             purchase_recommendations, assets_dataframe
         )
 
-    def _should_asset_be_sold(self, asset, purchase_recommendations):
+    def _should_asset_be_sold(self, asset):
         """
         Determine if an asset should be sold based on purchase recommendations and predefined rules.
 
@@ -110,14 +112,15 @@ class AssetAnalyzer:
             assets_dataframe (DataFrame): DataFrame containing asset data.
         """
         assets_symbols = set(assets_dataframe['symbol'])
-        balance_manager = BalanceManager(self.data_manager)
-        operation_value = balance_manager.get_operation_value()
+        operation_value = self.balance_manager.get_operation_value()
         for _, row in purchase_recommendations.iterrows():
             symbol = row['symbol']
             if symbol not in assets_symbols:
-                has_balance = TransactionManager.has_balance(operation_value)
+                has_balance = self.balance_manager.has_balance(operation_value)
                 if has_balance[0]:
-                    TransactionManager.buy_asset(row, operation_value)
+                    TransactionManager.buy_asset(
+                        row, operation_value, self.balance_manager, self.data_manager
+                    )
                     assets_symbols.add(symbol)
                 else:
                     current_datetime = DateTimeUtils.get_datetime()
@@ -177,3 +180,4 @@ class AssetAnalyzer:
                     'variation': variation_percent
                 })
         return pd.DataFrame(variation_data)
+

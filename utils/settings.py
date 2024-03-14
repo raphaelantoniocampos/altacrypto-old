@@ -7,7 +7,7 @@ load_dotenv()
 # Control Constants
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-DB_PATH = "trading_info.db"
+DB_PATH = "data/trading_info.db"
 
 testing = True
 if testing:
