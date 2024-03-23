@@ -179,7 +179,7 @@ class DataManager:
         params = (timestamp,)
         self._execute_sql(sql, f"Error deleting price for {table_name}", params)
 
-    def _get_coin_prices_dataframe(self, table_name: str) -> pd.DataFrame | None:
+    def _get_coin_prices_dataframe(self, table_name: str) -> pd.DataFrame:
         """
         Retrieves price data for a USD symbol as a DataFrame.
 
@@ -196,11 +196,9 @@ class DataManager:
         df = self._execute_sql(
             sql, f"Error selecting from {table_name}", table_name=table_name
         )
-        if df:
+        if df is not None:
             df["symbol"] = self._format_symbol(table_name)
-            return df
-        else:
-            return None
+        return df
 
     def get_all_coins_dataframes(self, usdt_pairs: pd.DataFrame) -> list[pd.DataFrame]:
         """
