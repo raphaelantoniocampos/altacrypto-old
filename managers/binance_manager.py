@@ -3,6 +3,7 @@ import requests
 
 import utils.settings as settings
 
+
 class BinanceManager:
     """
     Provides methods to interact with the Binance API for retrieving data and checking system status.
@@ -13,7 +14,7 @@ class BinanceManager:
         base_url (str): Base URL of the Binance API.
     """
 
-    def __init__(self, api_key, api_secret):
+    def __init__(self, api_key: str, api_secret: str):
         """
         Initializes a BinanceAPI object with API key and secret.
 
@@ -25,7 +26,7 @@ class BinanceManager:
         self.api_secret = api_secret
         self.base_url = 'https://api.binance.com'
 
-    def query_binance_status(self):
+    def query_binance_status(self) -> bool:
         """
         Queries the status of the Binance system.
 
@@ -46,7 +47,7 @@ class BinanceManager:
             settings.logger.info(f"Error connecting to binance API: {e}")
             return False
 
-    def fetch_usdt_pairs(self):
+    def fetch_usdt_pairs(self) -> pd.DataFrame:
         """
         Fetches USDT pairs from Binance.
 
@@ -64,7 +65,7 @@ class BinanceManager:
             settings.logger.info(f"Error fetching USDT pairs from Binance: {e}")
             return pd.DataFrame()
 
-    def _make_request(self, endpoint, params=None):
+    def _make_request(self, endpoint: str, params: dict | None = None) -> requests.Response:
         """
         Makes a request to the Binance API.
 

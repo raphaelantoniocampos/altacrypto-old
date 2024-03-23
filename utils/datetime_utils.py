@@ -1,10 +1,10 @@
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class DateTimeUtils:
     @staticmethod
-    def get_datetime(timestamp=None):
+    def get_datetime(timestamp: int | None = None) -> datetime:
         """
         Get the date and time from the provided timestamp.
 
@@ -19,7 +19,7 @@ class DateTimeUtils:
         return datetime.fromtimestamp(timestamp)
 
     @staticmethod
-    def get_current_timestamp():
+    def get_current_timestamp() -> int:
         """
         Get the current timestamp.
 
@@ -29,7 +29,7 @@ class DateTimeUtils:
         return int(time.time())
 
     @staticmethod
-    def timedelta_to_string(delta):
+    def timedelta_to_string(delta: timedelta) -> str:
         """
         Convert a timedelta object to a string in HH:MM:SS format.
 

@@ -1,18 +1,30 @@
 import pandas as pd
+from datetime import datetime
 
 from models.asset import Asset
 import utils.settings as settings
 from utils.datetime_utils import DateTimeUtils
 from managers.transaction_manager import TransactionManager
+from managers.binance_manager import BinanceManager
+from managers.data_manager import DataManager
+from managers.balance_manager import BalanceManager
 
 
 class AssetAnalyzer:
-    def __init__(self, binance_manager, data_manager, balance_manager):
+    """TODO: Document class."""
+
+    def __init__(
+        self,
+        binance_manager: BinanceManager,
+        data_manager: DataManager,
+        balance_manager: BalanceManager,
+    ):
+        """TODO: Document method."""
         self.binance_manager = binance_manager
         self.data_manager = data_manager
         self.balance_manager = balance_manager
 
-    def run(self):
+    def run(self) -> None:
         """
         Fetch price data, update the database, analyze assets, and generate recommendations.
         """
@@ -20,7 +32,7 @@ class AssetAnalyzer:
         self.data_manager.feed_database(asset_pairs)
         self._evaluate_assets(asset_pairs)
 
-    def _evaluate_assets(self, asset_pairs):
+    def _evaluate_assets(self, asset_pairs: pd.DataFrame) -> None:
         """
         Analyze existing assets and make sell decisions if necessary.
 
@@ -52,7 +64,7 @@ class AssetAnalyzer:
             purchase_recommendations, assets_dataframe
         )
 
-    def _should_asset_be_sold(self, asset):
+    def _should_asset_be_sold(self, asset: Asset) -> bool:
         """
         Determine if an asset should be sold based on purchase recommendations and predefined rules.
 
@@ -73,7 +85,9 @@ class AssetAnalyzer:
             return True
         return False
 
-    def _identify_purchase_recommendations(self, asset_pairs):
+    def _identify_purchase_recommendations(
+        self, asset_pairs: pd.DataFrame
+    ) -> pd.DataFrame:
         """
         Identify purchase recommendations based on price variations.
 
@@ -102,8 +116,8 @@ class AssetAnalyzer:
         return purchase_recommendations
 
     def _execute_purchase_recommendations(
-        self, purchase_recommendations, assets_dataframe
-    ):
+        self, purchase_recommendations: pd.DataFrame, assets_dataframe: pd.DataFrame
+    ) -> None:
         """
         Execute purchase recommendations by buying assets if conditions are met.
 
@@ -128,7 +142,7 @@ class AssetAnalyzer:
                         current_datetime, has_balance[1]
                     )
 
-    def _process_interval_data(self, interval_dataframe):
+    def _process_interval_data(self, interval_dataframe: pd.DataFrame) -> pd.DataFrame:
         """
         Process interval data and generate purchase recommendations.
 
@@ -145,7 +159,9 @@ class AssetAnalyzer:
         ]
         return interval_recommendations
 
-    def _generate_price_change_data(self, interval_index, usdt_pairs, current_datetime):
+    def _generate_price_change_data(
+        self, interval_index: int, usdt_pairs: pd.DataFrame, current_datetime: datetime
+    ) -> pd.DataFrame:
         """
         Generates a DataFrame containing price variations for a given interval.
 

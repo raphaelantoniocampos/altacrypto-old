@@ -1,26 +1,29 @@
 import csv
 import logging
+from models.transaction_data import TransactionData
+from utils.datetime_utils import DateTimeUtils
+
 
 class LoggingManager:
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
 
     @staticmethod
-    def log_asset_transaction(transaction_data):
+    def log_asset_transaction(transaction_data: TransactionData) -> None:
         """
         Logs a transaction data into a CSV file.
 
         Args:
             transaction_data (TransactionData): The transaction data to be logged.
         """
-        current_datetime = get_datetime() 
+        current_datetime = DateTimeUtils.get_datetime()
         current_date = current_datetime.date()
         file_name = f'../../logs/log_execution_{current_date}.csv'
 
         fieldnames = ["Data", "Hora", "Tipo de ordem", "Quantidade", "Moeda", "Quantidade USDT", "Preco de compra", "Preco de venda", "Lucro/prejuizo", "Variacao", "Intervalo", "Taxa de negociacao", "Saldo USDT", "Saldo final"]
         try:
             with open(file_name, 'r') as file:
-                csv.reader(file)  
+                csv.reader(file)
         except FileNotFoundError:
             with open(file_name, 'w', newline='') as file:
                 writer = csv.DictWriter(file, fieldnames=fieldnames)
@@ -45,4 +48,4 @@ class LoggingManager:
                 "Saldo final": transaction_data.final_balance
             }
             writer.writerow(row)
-            logger.info(transaction_data)
+            LoggingManager.logger.info(transaction_data)

@@ -1,3 +1,4 @@
+import pandas as pd
 import csv
 from utils.datetime_utils import DateTimeUtils
 import utils.settings as settings
@@ -5,18 +6,22 @@ from models.asset import Asset
 from models.transaction_data import TransactionData
 import time
 from datetime import datetime
+from managers.balance_manager import BalanceManager
+from managers.data_manager import DataManager
 
 
 class TransactionManager:
 
     @staticmethod
-    def buy_asset(row, operation_value, balance_manager, data_manager):
+    def buy_asset(row: pd.Series, operation_value: float, balance_manager: BalanceManager, data_manager: DataManager) -> None:
         """
         Execute a buy operation for a given asset.
 
         Args:
             row (Series): Series containing asset data.
             operation_value (float): The value of the operation.
+            balance_manager (BalanceManager): BalanceManager object.
+            data_manager (DataManager): DataManager object.
         """
         current_datetime = DateTimeUtils.get_datetime()
         symbol = row['symbol']
@@ -54,12 +59,14 @@ class TransactionManager:
         TransactionManager.log_transaction_data(transaction_data)
 
     @staticmethod
-    def sell_asset(asset, balance_manager, data_manager):
+    def sell_asset(asset: Asset, balance_manager: BalanceManager, data_manager: DataManager) -> None:
         """
         Execute a sell operation for a given asset.
 
         Args:
             asset (Asset): The asset to be sold.
+            balance_manager (BalanceManager): BalanceManager object.
+            data_manager (DataManager): DataManager object.
         """
         current_datetime = DateTimeUtils.get_datetime()
         # Simulates binance transaction
@@ -69,8 +76,7 @@ class TransactionManager:
         new_balance = balance_manager.update_balance(asset.current_value)
         interval = DateTimeUtils.timedelta_to_string(
             current_datetime
-            - datetime.strptime(asset.purchase_datetime, "%Y-%m-%d %H:%M:%S")
-        )
+            - asset.purchase_datetime)
         final_balance = data_manager.get_assets_dataframe()["current_value"].sum()
         transaction_data = TransactionData(
             date=current_datetime.date(),
@@ -91,7 +97,7 @@ class TransactionManager:
         TransactionManager.log_transaction_data(transaction_data)
 
     @staticmethod
-    def log_transaction_data(transaction_data):
+    def log_transaction_data(transaction_data: TransactionData) -> None:
         """
         Logs a transaction data into a CSV file.
 
@@ -133,7 +139,8 @@ class TransactionManager:
             settings.logger.info(transaction_data)
 
     @staticmethod
-    def attempt_purchase(current_datetime, balance):
+    def attempt_purchase(current_datetime: datetime, balance: float) -> None:
+        """TODO: document method."""
         transaction_data = TransactionData(
             date=current_datetime.date(),
             time=current_datetime.strftime("%H:%M:%S"),
@@ -151,4 +158,3 @@ class TransactionManager:
             final_balance=balance,
         )
         TransactionManager.log_transaction_data(transaction_data)
-

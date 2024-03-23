@@ -6,6 +6,7 @@ import pandas as pd
 
 import utils.settings as settings
 from models.price_snapshot import PriceSnapshot
+from models.asset import Asset
 from utils.datetime_utils import DateTimeUtils
 
 
@@ -27,7 +28,7 @@ class DataManager:
         self.db_path = settings.DB_PATH
 
     @staticmethod
-    def _format_symbol(symbol):
+    def _format_symbol(symbol: str) -> str:
         """
         Adds or removes "t" prefix to symbols starting with a digit.
 
@@ -43,7 +44,13 @@ class DataManager:
             return symbol[1:]
         return symbol
 
-    def _execute_sql(self, sql, error_message, params=None, table_name=None):
+    def _execute_sql(
+        self,
+        sql: str,
+        error_message: str,
+        params: tuple | None = None,
+        table_name: str | None = None,
+    ) -> pd.DataFrame | None:
         """
         Executes an SQL statement with optional parameters.
 
@@ -59,17 +66,21 @@ class DataManager:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 if table_name:
-                    df = pd.read_sql(sql, conn).sort_index(
-                        ascending=False).reset_index(drop=True)
-                    return df
+                    dataframe = (
+                        pd.read_sql(sql, conn)
+                        .sort_index(ascending=False)
+                        .reset_index(drop=True)
+                    )
+                    return dataframe
                 if params:
                     conn.execute(sql, params)
                 else:
                     conn.execute(sql)
         except sqlite3.Error as e:
             settings.logger.info(f"{error_message}: {e}")
+        return None
 
-    def _fetch_one(self, sql, params, error_message):
+    def _fetch_one(self, sql: str, params: tuple, error_message: str) -> tuple | None:
         """
         Fetches a single result from the database.
 
@@ -87,8 +98,9 @@ class DataManager:
                 return result if result else None
         except sqlite3.Error as e:
             settings.logger.info(f"{error_message}: {e}")
+        return None
 
-    def _fetch_all(self, sql, error_message):
+    def _fetch_all(self, sql: str, error_message: str) -> list[tuple] | None:
         """
         Fetches all results from the database.
 
@@ -105,8 +117,9 @@ class DataManager:
                 return result
         except sqlite3.Error as e:
             settings.logger.info(f"{error_message}: {e}")
+        return None
 
-    def _create_coin_table(self, table_name):
+    def _create_coin_table(self, table_name: str) -> None:
         """
         Creates a table for storing price data of a cryptocurrency.
 
@@ -122,7 +135,7 @@ class DataManager:
         """
         self._execute_sql(sql, f"Error creating coin table: {table_name}")
 
-    def table_exists(self, table_name):
+    def table_exists(self, table_name: str) -> bool:
         """
         Checks if a table exists in the database.
 
@@ -137,7 +150,7 @@ class DataManager:
         return bool(
             self._fetch_one(sql, (table_name,), f"Error checking table existence for {table_name}"))
 
-    def insert_price(self, price_snapshot):
+    def insert_price(self, price_snapshot: PriceSnapshot) -> None:
         """
         Inserts price data for a USD symbol into the database.
 
@@ -154,7 +167,7 @@ class DataManager:
             price_snapshot.timestamp) - timedelta(days=1)).timestamp())
         self.delete_prices(table_name, deletion_timestamp)
 
-    def delete_prices(self, table_name, timestamp):
+    def delete_prices(self, table_name: str, timestamp: int) -> None:
         """
         Deletes price entries older than a specific timestamp for a USD symbol.
 
@@ -166,7 +179,7 @@ class DataManager:
         params = (timestamp,)
         self._execute_sql(sql, f"Error deleting price for {table_name}", params)
 
-    def _get_coin_prices_dataframe(self, table_name):
+    def _get_coin_prices_dataframe(self, table_name: str) -> pd.DataFrame | None:
         """
         Retrieves price data for a USD symbol as a DataFrame.
 
@@ -183,10 +196,13 @@ class DataManager:
         df = self._execute_sql(
             sql, f"Error selecting from {table_name}", table_name=table_name
         )
-        df["symbol"] = self._format_symbol(table_name)
-        return df
+        if df:
+            df["symbol"] = self._format_symbol(table_name)
+            return df
+        else:
+            return None
 
-    def get_all_coins_dataframes(self, usdt_pairs):
+    def get_all_coins_dataframes(self, usdt_pairs: pd.DataFrame) -> list[pd.DataFrame]:
         """
         Retrieves price data for all USD symbols as a list of DataFrames.
 
@@ -203,7 +219,7 @@ class DataManager:
 
     def _create_assets_table(
         self,
-    ):
+    ) -> None:
         """
         Creates a table for storing asset information.
         """
@@ -223,7 +239,7 @@ class DataManager:
         """
         self._execute_sql(sql, f"Error creating {table_name} table")
 
-    def insert_purchase(self, asset):
+    def insert_purchase(self, asset: Asset) -> None:
         """
         Inserts asset purchase information into the database.
 
@@ -247,7 +263,7 @@ class DataManager:
         )
         self._execute_sql(sql, f"Error inserting price for {table_name}", params)
 
-    def get_assets_dataframe(self):
+    def get_assets_dataframe(self) -> pd.DataFrame:
         """
         Retrieves asset information from the database as a DataFrame.
 
@@ -262,7 +278,7 @@ class DataManager:
             sql, f"Error selecting from {table_name}", table_name=table_name
         )
 
-    def update_asset(self, asset):
+    def update_asset(self, asset: Asset) -> None:
         """
         Updates asset information in the database.
 
@@ -281,7 +297,7 @@ class DataManager:
         )
         self._execute_sql(sql, f"Error inserting price for {asset.symbol}", params)
 
-    def delete_from_assets(self, symbol):
+    def delete_from_assets(self, symbol: str) -> None:
         """
         Deletes asset information for a specific symbol from the database.
 
@@ -294,7 +310,7 @@ class DataManager:
         self._execute_sql(sql, f"Error deleting price for {table_name}", params)
         self.drop_table(symbol)
 
-    def drop_table(self, table_name):
+    def drop_table(self, table_name: str) -> None:
         """
         Drops a table from the database.
 
@@ -304,7 +320,7 @@ class DataManager:
         sql = f"DROP TABLE {table_name}"
         self._execute_sql(sql, f"Error droping table {table_name}")
 
-    def insert_usdt(self, value, current_datetime):
+    def insert_usdt(self, value: float, current_datetime: datetime) -> None:
         """
         Inserts USDT balance information into the database.
 
@@ -328,7 +344,7 @@ class DataManager:
         )
         self._execute_sql(sql, "Error inserting USDT", params)
 
-    def get_database_usdt_balance(self):
+    def get_database_usdt_balance(self) -> float:
         """
         Retrieves the current USDT balance from the database.
 
@@ -341,7 +357,7 @@ class DataManager:
         balance = self._fetch_one(sql, params, "Error selecting USDT")
         return balance[0] if balance else 0
 
-    def update_usdt_balance(self, value):
+    def update_usdt_balance(self, value: float) -> None:
         """
         Updates the USDT balance in the database.
 
@@ -355,7 +371,7 @@ class DataManager:
         params = (value, value, "USDT")
         self._execute_sql(sql, f"Error updating USDT", params)
 
-    def get_total_asset_value(self):
+    def get_total_asset_value(self) -> float:
         """
         Obtains the sum of all 'current_value' entries in the 'Assets' table.
 
@@ -368,13 +384,12 @@ class DataManager:
             result = conn.execute(sql).fetchone()
             return result[0] if result else 0
 
-    def feed_database(self, asset_pairs):
+    def feed_database(self, asset_pairs: pd.DataFrame) -> None:
         """
         Updates the database with price snapshots for asset pairs.
 
         Args:
             asset_pairs (pd.DataFrame): DataFrame containing asset pairs and their prices.
-            current_timestamp (int): Current timestamp for the price snapshots.
         """
         current_timestamp = DateTimeUtils.get_current_timestamp()
         for _, row in asset_pairs.iterrows():
@@ -384,4 +399,3 @@ class DataManager:
             self.insert_price(price_snapshot)
 
         settings.logger.info(f"USD prices updated at {datetime.fromtimestamp(current_timestamp)}")
-
