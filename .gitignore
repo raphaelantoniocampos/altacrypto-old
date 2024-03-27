@@ -1,4 +1,3 @@
-data/trading_info.db
 .env
 .mypy_cache
 .venv
