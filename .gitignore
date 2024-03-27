@@ -1,6 +1,5 @@
 data/trading_info.db
 .env
 .mypy_cache
-mypy.ini
 .venv
 
