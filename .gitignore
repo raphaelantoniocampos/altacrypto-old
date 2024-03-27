@@ -1,4 +1,4 @@
-data
+data/*
 .env
 .mypy_cache
 mypy.ini
