@@ -74,9 +74,7 @@ class TransactionManager:
         data_manager.delete_from_assets(asset.symbol)
         profit_loss = asset.calculate_profit_loss()
         new_balance = balance_manager.update_balance(asset.current_value)
-        interval = DateTimeUtils.timedelta_to_string(
-            current_datetime
-            - asset.purchase_datetime)
+        interval = DateTimeUtils.timedelta_to_string(current_datetime - asset.purchase_datetime)
         final_balance = data_manager.get_assets_dataframe()["current_value"].sum()
         transaction_data = TransactionData(
             date=current_datetime.date(),
