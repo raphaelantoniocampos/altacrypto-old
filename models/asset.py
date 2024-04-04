@@ -71,11 +71,13 @@ class Asset:
     def from_series(cls, series: pd.Series) -> "Asset":
         """Creates an Asset object from a pandas Series."""
         symbol = series["symbol"]
-        quantity = series["quantity"]
-        purchase_price = series["purchase_price"]
-        current_price = series["current_price"]
-        purchase_datetime = series["purchase_datetime"]
-        highest_price = series["highest_price"]
+        quantity = float(series["quantity"])
+        purchase_price = float(series["purchase_price"])
+        current_price = float(series["current_price"])
+        purchase_datetime = datetime.datetime.strptime(
+            series["purchase_datetime"], "%Y-%m-%d %H:%M:%S"
+        )
+        highest_price = float(series["highest_price"])
         obs = series["obs"]
 
         return cls(symbol, quantity, purchase_price, purchase_datetime, highest_price, current_price, obs)
