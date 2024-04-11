@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime
 
 from models.asset import Asset
-import utils.settings as settings
+from utils.user_settings import UserSettings
 from utils.datetime_utils import DateTimeUtils
 from managers.transaction_manager import TransactionManager
 from managers.binance_manager import BinanceManager
@@ -15,11 +15,13 @@ class AssetAnalyzer:
 
     def __init__(
         self,
+        user_settings: UserSettings,
         binance_manager: BinanceManager,
         data_manager: DataManager,
         balance_manager: BalanceManager,
     ):
         """TODO: Document method."""
+        self.user_settings = user_settings
         self.binance_manager = binance_manager
         self.data_manager = data_manager
         self.balance_manager = balance_manager
@@ -57,7 +59,10 @@ class AssetAnalyzer:
                     self.data_manager.update_asset(asset)
                     if self._should_asset_be_sold(asset):
                         TransactionManager.sell_asset(
-                            asset, self.balance_manager, self.data_manager
+                            asset,
+                            self.balance_manager,
+                            self.data_manager,
+                            self.user_settings,
                         )
 
         self._execute_purchase_recommendations(
@@ -75,13 +80,13 @@ class AssetAnalyzer:
         Returns:
             bool: True if the asset should be sold, False otherwise.
         """
-        if asset.variation <= (-settings.UNDER_PURCHASE_PERCENTAGE):
+        if asset.variation <= (-self.user_settings.under_purchase_percentage):
             return True
         if asset.current_price <= asset.highest_price * (
-            1 - settings.UNDER_HIGHEST_PERCENTAGE / 100
+            1 - self.user_settings.under_highest_percentage / 100
         ):
             return True
-        if asset.variation >= settings.ABOVE_PURCHASE_PERCENTAGE:
+        if asset.variation >= self.user_settings.above_purchase_percentage:
             return True
         return False
 
@@ -99,9 +104,9 @@ class AssetAnalyzer:
         """
         current_datetime = DateTimeUtils.get_datetime()
         purchase_recommendations = pd.DataFrame()
-        for interval_in_minutes in settings.INTERVAL_IN_MINUTES:
+        for interval_in_minutes in self.user_settings.interval_in_minutes:
             interval_index = int(
-                interval_in_minutes / settings.EXECUTION_FREQUENCY_MINUTES
+                interval_in_minutes / self.user_settings.execution_frequency_minutes
             )
             interval_dataframe = self._generate_price_change_data(
                 interval_index, asset_pairs, current_datetime
@@ -133,13 +138,17 @@ class AssetAnalyzer:
                 has_balance = self.balance_manager.has_balance(operation_value)
                 if has_balance[0]:
                     TransactionManager.buy_asset(
-                        row, operation_value, self.balance_manager, self.data_manager
+                        row,
+                        operation_value,
+                        self.balance_manager,
+                        self.data_manager,
+                        self.user_settings,
                     )
                     assets_symbols.add(symbol)
                 else:
                     current_datetime = DateTimeUtils.get_datetime()
                     TransactionManager.attempt_purchase(
-                        current_datetime, has_balance[1]
+                        current_datetime, has_balance[1], self.user_settings
                     )
 
     def _process_interval_data(self, interval_dataframe: pd.DataFrame) -> pd.DataFrame:
@@ -155,7 +164,7 @@ class AssetAnalyzer:
         mean_variation = interval_dataframe['variation'].mean()
         interval_recommendations = interval_dataframe[
             interval_dataframe["variation"]
-            >= mean_variation + settings.PERCENTAGE_THRESHOLD
+            >= mean_variation + self.user_settings.percentage_threshold
         ]
         return interval_recommendations
 
@@ -196,4 +205,5 @@ class AssetAnalyzer:
                     'variation': variation_percent
                 })
         return pd.DataFrame(variation_data)
+
 

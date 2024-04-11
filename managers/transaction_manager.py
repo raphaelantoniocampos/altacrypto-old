@@ -1,7 +1,7 @@
 import pandas as pd
 import csv
 from utils.datetime_utils import DateTimeUtils
-import utils.settings as settings
+from utils.user_settings import UserSettings
 from models.asset import Asset
 from models.transaction_data import TransactionData
 import time
@@ -13,7 +13,13 @@ from managers.data_manager import DataManager
 class TransactionManager:
 
     @staticmethod
-    def buy_asset(row: pd.Series, operation_value: float, balance_manager: BalanceManager, data_manager: DataManager) -> None:
+    def buy_asset(
+        row: pd.Series,
+        operation_value: float,
+        balance_manager: BalanceManager,
+        data_manager: DataManager,
+        user_settings: UserSettings,
+    ) -> None:
         """
         Execute a buy operation for a given asset.
 
@@ -56,10 +62,15 @@ class TransactionManager:
             USDT_balance=new_balance,
             final_balance=final_balance
         )
-        TransactionManager.log_transaction_data(transaction_data)
+        TransactionManager.log_transaction_data(user_settings, transaction_data)
 
     @staticmethod
-    def sell_asset(asset: Asset, balance_manager: BalanceManager, data_manager: DataManager) -> None:
+    def sell_asset(
+        asset: Asset,
+        balance_manager: BalanceManager,
+        data_manager: DataManager,
+        user_settings: UserSettings,
+    ) -> None:
         """
         Execute a sell operation for a given asset.
 
@@ -92,10 +103,12 @@ class TransactionManager:
             USDT_balance=new_balance,
             final_balance=final_balance
         )
-        TransactionManager.log_transaction_data(transaction_data)
+        TransactionManager.log_transaction_data(user_settings, transaction_data)
 
     @staticmethod
-    def log_transaction_data(transaction_data: TransactionData) -> None:
+    def log_transaction_data(
+        user_settings: UserSettings, transaction_data: TransactionData
+    ) -> None:
         """
         Logs a transaction data into a CSV file.
 
@@ -134,10 +147,12 @@ class TransactionManager:
                 "Saldo final": transaction_data.final_balance
             }
             writer.writerow(row)
-            settings.logger.info(transaction_data)
+            user_settings.logger.info(transaction_data)
 
     @staticmethod
-    def attempt_purchase(current_datetime: datetime, balance: float) -> None:
+    def attempt_purchase(
+        current_datetime: datetime, balance: float, user_settings: UserSettings
+    ) -> None:
         """TODO: document method."""
         transaction_data = TransactionData(
             date=current_datetime.date(),
@@ -155,4 +170,5 @@ class TransactionManager:
             USDT_balance=None,
             final_balance=balance,
         )
-        TransactionManager.log_transaction_data(transaction_data)
+        TransactionManager.log_transaction_data(user_settings, transaction_data)
+

@@ -1,7 +1,7 @@
 import pandas as pd
 import requests
 
-import utils.settings as settings
+from utils.user_settings import UserSettings
 
 
 class BinanceManager:
@@ -14,7 +14,7 @@ class BinanceManager:
         base_url (str): Base URL of the Binance API.
     """
 
-    def __init__(self, api_key: str, api_secret: str):
+    def __init__(self, user_settings: UserSettings, api_key: str, api_secret: str):
         """
         Initializes a BinanceAPI object with API key and secret.
 
@@ -22,6 +22,7 @@ class BinanceManager:
             api_key (str): API key for accessing the Binance API.
             api_secret (str): API secret for accessing the Binance API.
         """
+        self.user_settings = user_settings
         self.api_key = api_key
         self.api_secret = api_secret
         self.base_url = 'https://api.binance.com'
@@ -44,7 +45,7 @@ class BinanceManager:
                 return False
 
         except requests.RequestException as e:
-            settings.logger.info(f"Error connecting to binance API: {e}")
+            self.user_settings.logger.info(f"Error connecting to binance API: {e}")
             return False
 
     def fetch_usdt_pairs(self) -> pd.DataFrame:
@@ -62,7 +63,9 @@ class BinanceManager:
             return coin_prices[coin_prices["symbol"].str.endswith("USDT")]
 
         except Exception as e:
-            settings.logger.info(f"Error fetching USDT pairs from Binance: {e}")
+            self.user_settings.logger.info(
+                f"Error fetching USDT pairs from Binance: {e}"
+            )
             return pd.DataFrame()
 
     def _make_request(self, endpoint: str, params: dict | None = None) -> requests.Response:
@@ -88,4 +91,5 @@ class BinanceManager:
                 f"Request failed with status code {response.status_code}: {response.text}")
 
         return response
+
 

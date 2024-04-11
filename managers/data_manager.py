@@ -4,7 +4,7 @@ from datetime import timedelta
 
 import pandas as pd
 
-import utils.settings as settings
+from utils.user_settings import UserSettings
 from models.price_snapshot import PriceSnapshot
 from models.asset import Asset
 from utils.datetime_utils import DateTimeUtils
@@ -18,14 +18,15 @@ class DataManager:
         db_path (str): Path to the SQLite database file.
     """
 
-    def __init__(self):
+    def __init__(self, db_path: str, user_settings: UserSettings):
         """
         Initializes a DataManager object with the path to the SQLite database.
 
         Args:
             db_path (str): Path to the SQLite database file.
         """
-        self.db_path = settings.DB_PATH
+        self.db_path = db_path
+        self.user_settings = user_settings
 
     @staticmethod
     def _format_symbol(symbol: str) -> str:
@@ -77,7 +78,7 @@ class DataManager:
                 else:
                     conn.execute(sql)
         except sqlite3.Error as e:
-            settings.logger.info(f"{error_message}: {e}")
+            self.user_settings.logger.info(f"{error_message}: {e}")
         return None
 
     def _fetch_one(self, sql: str, params: tuple, error_message: str) -> tuple | None:
@@ -97,7 +98,7 @@ class DataManager:
                 result = conn.execute(sql, params).fetchone()
                 return result if result else None
         except sqlite3.Error as e:
-            settings.logger.info(f"{error_message}: {e}")
+            self.user_settings.logger.info(f"{error_message}: {e}")
         return None
 
     def _fetch_all(self, sql: str, error_message: str) -> list[tuple] | None:
@@ -116,7 +117,7 @@ class DataManager:
                 result = conn.execute(sql).fetchall()
                 return result
         except sqlite3.Error as e:
-            settings.logger.info(f"{error_message}: {e}")
+            self.user_settings.logger.info(f"{error_message}: {e}")
         return None
 
     def _create_coin_table(self, table_name: str) -> None:
@@ -396,4 +397,7 @@ class DataManager:
             price_snapshot = PriceSnapshot(symbol, current_timestamp, price)
             self.insert_price(price_snapshot)
 
-        settings.logger.info(f"USD prices updated at {datetime.fromtimestamp(current_timestamp)}")
+        self.user_settings.logger.info(
+            f"USD prices updated at {datetime.fromtimestamp(current_timestamp)}"
+        )
+

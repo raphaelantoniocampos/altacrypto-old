@@ -1,10 +1,11 @@
-import utils.settings as settings
+from utils.user_settings import UserSettings
 from utils.datetime_utils import DateTimeUtils
 from managers.data_manager import DataManager
 
 
 class BalanceManager:
-    def __init__(self, data_manager: DataManager):
+    def __init__(self, user_settings: UserSettings, data_manager: DataManager):
+        self.user_settings = user_settings
         self.data_manager = data_manager
 
     def has_balance(self, operation_value: float) -> tuple[bool, float]:
@@ -49,8 +50,9 @@ class BalanceManager:
         """
         balance = self.data_manager.get_database_usdt_balance()
         operation_value = round(
-            balance / (100 / settings.OPERATION_VALUE_PERCENTAGE), 2
+            balance / (100 / self.user_settings.operation_value_percentage), 2
         )
         if operation_value < 10:
             operation_value = 10
         return operation_value
+
