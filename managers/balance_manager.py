@@ -54,5 +54,6 @@ class BalanceManager:
         )
         if operation_value < 10:
             operation_value = 10
+        if operation_value > self.user_settings.maximum_operation_value:
+            operation_value = self.user_settings.maximum_operation_value
         return operation_value
-
