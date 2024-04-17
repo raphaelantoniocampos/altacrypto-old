@@ -61,11 +61,13 @@ class Asset:
 
     def __str__(self) -> str:
         """Returns a string representation of the asset."""
-        return f"Symbol: {self.symbol}, Quantity: {self.quantity}, " \
-               f"Purchase Price: {self.purchase_price:.2f}, " \
-               f"Current Price: {self.current_price:.2f}, " \
-               f"Variation: {self.variation:.2f}%, " \
-               f"Highest Price: {self.highest_price:.2f}"
+        return (
+            f"Symbol: {self.symbol}, Quantity: {self.quantity}, \n"
+            f"Purchase Price: {self.purchase_price:.2f}, \n"
+            f"Current Price: {self.current_price:.2f}, \n"
+            f"Variation: {self.variation:.2f}%, \n"
+            f"Highest Price: {self.highest_price:.2f}"
+        )
 
     @classmethod
     def from_series(cls, series: pd.Series) -> "Asset":
@@ -80,4 +82,13 @@ class Asset:
         highest_price = float(series["highest_price"])
         obs = series["obs"]
 
-        return cls(symbol, quantity, purchase_price, purchase_datetime, highest_price, current_price, obs)
+        return cls(
+            symbol,
+            quantity,
+            purchase_price,
+            purchase_datetime,
+            highest_price,
+            current_price,
+            obs,
+        )
+

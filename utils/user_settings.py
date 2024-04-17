@@ -1,15 +1,10 @@
 import os
 import logging
-from dotenv import load_dotenv
-
 
 class UserSettings:
 
     def __init__(
         self,
-        api_key: str = "",
-        api_secret: str = "",
-        db_path: str = "data/trading_info.db",
         testing: bool = False,
         interval_in_minutes: list = [5, 10, 15, 30, 60],
         execution_frequency_minutes: int = 5,
@@ -20,9 +15,6 @@ class UserSettings:
         operation_value_percentage: float = 5,
         maximum_operation_value: float = 100.0,
     ):
-        self.api_key = api_key
-        self.api_secret = api_secret
-        self.db_path = db_path
         self.testing = testing
         self.interval_in_minutes = interval_in_minutes
         self.execution_frequency_minutes = execution_frequency_minutes
@@ -36,8 +28,6 @@ class UserSettings:
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
 
-        load_dotenv()
-
         if testing:
             self.api_key = str(os.environ.get("BINANCE_API_KEY_TEST"))
             self.api_secret = str(os.environ.get("BINANCE_API_SECRET_TEST"))
@@ -45,4 +35,5 @@ class UserSettings:
         else:
             self.api_key = str(os.environ.get("BINANCE_API_KEY"))
             self.api_secret = str(os.environ.get("BINANCE_API_SECRET"))
+
 

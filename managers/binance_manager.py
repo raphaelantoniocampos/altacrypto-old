@@ -83,7 +83,8 @@ class BinanceManager:
             Exception: If the request fails with a non-200 status code.
         """
         url = f"{self.base_url}{endpoint}"
-        headers = {"X-MBX-APIKEY": self.api_key}
+        # headers = {"X-MBX-APIKEY": self.api_key}
+        headers = {}
         response = requests.get(url, params=params, headers=headers)
 
         if response.status_code != 200:
@@ -91,5 +92,4 @@ class BinanceManager:
                 f"Request failed with status code {response.status_code}: {response.text}")
 
         return response
-
 
