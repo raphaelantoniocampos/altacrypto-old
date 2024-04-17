@@ -1,7 +1,5 @@
-import os
-import logging
-
 class UserSettings:
+    """TODO: Document Class"""
 
     def __init__(
         self,
@@ -24,16 +22,3 @@ class UserSettings:
         self.above_purchase_percentage = above_purchase_percentage
         self.operation_value_percentage = operation_value_percentage
         self.maximum_operation_value = maximum_operation_value
-
-        logging.basicConfig(level=logging.INFO)
-        self.logger = logging.getLogger(__name__)
-
-        if testing:
-            self.api_key = str(os.environ.get("BINANCE_API_KEY_TEST"))
-            self.api_secret = str(os.environ.get("BINANCE_API_SECRET_TEST"))
-            self.testing_initial_balance = 100
-        else:
-            self.api_key = str(os.environ.get("BINANCE_API_KEY"))
-            self.api_secret = str(os.environ.get("BINANCE_API_SECRET"))
-
-

@@ -1,3 +1,6 @@
+from models.asset import Asset
+
+
 class Wallet:
     """Represents a user's wallet."""
 
@@ -19,4 +22,3 @@ class Wallet:
         """Returns a string representation of the wallet."""
         assets_info = "\n".join(str(asset) for asset in self.assets)
         return f"Wallet Balance: {self.balance:.2f}\nAssets:\n{assets_info}"
-
