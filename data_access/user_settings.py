@@ -3,7 +3,7 @@ class UserSettings:
 
     def __init__(
         self,
-        testing: bool = False,
+        testing: bool = True,
         interval_in_minutes: list = [5, 10, 15, 30, 60],
         execution_frequency_minutes: int = 5,
         percentage_threshold: int = 10,

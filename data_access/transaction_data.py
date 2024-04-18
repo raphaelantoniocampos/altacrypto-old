@@ -63,4 +63,3 @@ class TransactionData:
         """
         return f"""{self.date} - {self.time}
 {self.coin} - {self.order_type}"""
-

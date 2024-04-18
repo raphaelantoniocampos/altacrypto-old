@@ -1,13 +1,13 @@
 import pandas as pd
 import csv
+import logging
 from utils.datetime_utils import DateTimeUtils
-from utils.user_settings import UserSettings
-from models.asset import Asset
-from models.transaction_data import TransactionData
+from data_access.asset import Asset
+from data_access.transaction_data import TransactionData
 import time
 from datetime import datetime
-from managers.balance_manager import BalanceManager
-from managers.data_manager import DataManager
+from core.balance_manager import BalanceManager
+from core.database_manager import DatabaseManager
 
 
 class TransactionManager:
@@ -17,8 +17,7 @@ class TransactionManager:
         row: pd.Series,
         operation_value: float,
         balance_manager: BalanceManager,
-        data_manager: DataManager,
-        user_settings: UserSettings,
+        database_manager: DatabaseManager,
     ) -> None:
         """
         Execute a buy operation for a given asset.
@@ -30,9 +29,9 @@ class TransactionManager:
             data_manager (DataManager): DataManager object.
         """
         current_datetime = DateTimeUtils.get_datetime()
-        symbol = row['symbol']
+        symbol = row["symbol"]
         new_balance = balance_manager.update_balance(-operation_value)
-        quantity = operation_value / row['current_price']
+        quantity = operation_value / row["current_price"]
         asset = Asset(
             symbol=symbol,
             quantity=quantity,
@@ -44,11 +43,11 @@ class TransactionManager:
         )
         # Simulates binance transaction
         time.sleep(3)
-        data_manager.insert_purchase(asset)
-        final_balance = data_manager.get_assets_dataframe()['current_value'].sum()
+        database_manager.insert_purchase(asset)
+        final_balance = database_manager.get_assets_dataframe()["current_value"].sum()
         transaction_data = TransactionData(
             date=current_datetime.date(),
-            time=current_datetime.strftime('%H:%M:%S'),
+            time=current_datetime.strftime("%H:%M:%S"),
             order_type="Compra",
             quantity=asset.quantity,
             coin=asset.symbol,
@@ -57,19 +56,18 @@ class TransactionManager:
             sell_price=None,
             profit_loss=None,
             variation=f'{row["variation"]:.2f}',
-            interval=row['interval'],
+            interval=row["interval"],
             trading_fee=0.00,
             USDT_balance=new_balance,
-            final_balance=final_balance
+            final_balance=final_balance,
         )
-        TransactionManager.log_transaction_data(user_settings, transaction_data)
+        TransactionManager.log_transaction_data(transaction_data)
 
     @staticmethod
     def sell_asset(
         asset: Asset,
         balance_manager: BalanceManager,
-        data_manager: DataManager,
-        user_settings: UserSettings,
+        database_manager: DatabaseManager,
     ) -> None:
         """
         Execute a sell operation for a given asset.
@@ -82,14 +80,16 @@ class TransactionManager:
         current_datetime = DateTimeUtils.get_datetime()
         # Simulates binance transaction
         time.sleep(3)
-        data_manager.delete_from_assets(asset.symbol)
+        database_manager.delete_from_assets(asset.symbol)
         profit_loss = asset.calculate_profit_loss()
         new_balance = balance_manager.update_balance(asset.current_value)
-        interval = DateTimeUtils.timedelta_to_string(current_datetime - asset.purchase_datetime)
-        final_balance = data_manager.get_assets_dataframe()["current_value"].sum()
+        interval = DateTimeUtils.timedelta_to_string(
+            current_datetime - asset.purchase_datetime
+        )
+        final_balance = database_manager.get_assets_dataframe()["current_value"].sum()
         transaction_data = TransactionData(
             date=current_datetime.date(),
-            time=current_datetime.strftime('%H:%M:%S'),
+            time=current_datetime.strftime("%H:%M:%S"),
             order_type="Venda",
             quantity=asset.quantity,
             coin=asset.symbol,
@@ -97,18 +97,16 @@ class TransactionManager:
             purchase_price=asset.purchase_price,
             sell_price=asset.current_price,
             profit_loss=profit_loss,
-            variation=f'{asset.variation:.2f}',
+            variation=f"{asset.variation:.2f}",
             interval=interval,
             trading_fee=0.00,
             USDT_balance=new_balance,
-            final_balance=final_balance
+            final_balance=final_balance,
         )
-        TransactionManager.log_transaction_data(user_settings, transaction_data)
+        TransactionManager.log_transaction_data(transaction_data)
 
     @staticmethod
-    def log_transaction_data(
-        user_settings: UserSettings, transaction_data: TransactionData
-    ) -> None:
+    def log_transaction_data(transaction_data: TransactionData) -> None:
         """
         Logs a transaction data into a CSV file.
 
@@ -117,18 +115,33 @@ class TransactionManager:
         """
         current_datetime = DateTimeUtils.get_datetime()
         current_date = current_datetime.date()
-        file_name = f'logs/log_execution_{current_date}.csv'
+        file_name = f"logs/log_execution_{current_date}.csv"
 
-        fieldnames = ["Data", "Hora", "Tipo de ordem", "Quantidade", "Moeda", "Quantidade USDT", "Preco de compra", "Preco de venda", "Lucro/prejuizo", "Variacao", "Intervalo", "Taxa de negociacao", "Saldo USDT", "Saldo final"]
+        fieldnames = [
+            "Data",
+            "Hora",
+            "Tipo de ordem",
+            "Quantidade",
+            "Moeda",
+            "Quantidade USDT",
+            "Preco de compra",
+            "Preco de venda",
+            "Lucro/prejuizo",
+            "Variacao",
+            "Intervalo",
+            "Taxa de negociacao",
+            "Saldo USDT",
+            "Saldo final",
+        ]
         try:
-            with open(file_name, 'r') as file:
+            with open(file_name, "r") as file:
                 csv.reader(file)
         except FileNotFoundError:
-            with open(file_name, 'w', newline='') as file:
+            with open(file_name, "w", newline="") as file:
                 writer = csv.DictWriter(file, fieldnames=fieldnames)
                 writer.writeheader()
 
-        with open(file_name, 'a', newline='') as file:
+        with open(file_name, "a", newline="") as file:
             writer = csv.DictWriter(file, fieldnames=fieldnames)
             row = {
                 "Data": transaction_data.date,
@@ -144,14 +157,17 @@ class TransactionManager:
                 "Intervalo": transaction_data.interval,
                 "Taxa de negociacao": transaction_data.trading_fee,
                 "Saldo USDT": transaction_data.USDT_balance,
-                "Saldo final": transaction_data.final_balance
+                "Saldo final": transaction_data.final_balance,
             }
             writer.writerow(row)
-            user_settings.logger.info(transaction_data)
+            logging.basicConfig(level=logging.INFO)
+            logger = logging.getLogger("altacrypto")
+            logger.info(transaction_data)
 
     @staticmethod
     def attempt_purchase(
-        current_datetime: datetime, balance: float, user_settings: UserSettings
+        current_datetime: datetime,
+        balance: float,
     ) -> None:
         """TODO: document method."""
         transaction_data = TransactionData(
@@ -170,5 +186,4 @@ class TransactionManager:
             USDT_balance=None,
             final_balance=balance,
         )
-        TransactionManager.log_transaction_data(user_settings, transaction_data)
-
+        TransactionManager.log_transaction_data(transaction_data)

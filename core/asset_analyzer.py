@@ -1,13 +1,13 @@
 import pandas as pd
 from datetime import datetime
 
-from models.asset import Asset
-from utils.user_settings import UserSettings
+from data_access.asset import Asset
+from utils.global_settings import GlobalSettings
 from utils.datetime_utils import DateTimeUtils
-from managers.transaction_manager import TransactionManager
-from managers.binance_manager import BinanceManager
-from managers.data_manager import DataManager
-from managers.balance_manager import BalanceManager
+from core.transaction_manager import TransactionManager
+from core.binance_manager import BinanceManager
+from data_access.database_manager import DatabaseManager
+from core.balance_manager import BalanceManager
 
 
 class AssetAnalyzer:
@@ -15,15 +15,13 @@ class AssetAnalyzer:
 
     def __init__(
         self,
-        user_settings: UserSettings,
         binance_manager: BinanceManager,
-        data_manager: DataManager,
+        database_manager: DatabaseManager,
         balance_manager: BalanceManager,
     ):
         """TODO: Document method."""
-        self.user_settings = user_settings
         self.binance_manager = binance_manager
-        self.data_manager = data_manager
+        self.database_manager = database_manager
         self.balance_manager = balance_manager
 
     def run(self) -> None:
@@ -41,8 +39,7 @@ class AssetAnalyzer:
         Args:
             asset_pairs (DataFrame): DataFrame containing asset pairs data.
         """
-        purchase_recommendations = self._identify_purchase_recommendations(
-            asset_pairs)
+        purchase_recommendations = self._identify_purchase_recommendations(asset_pairs)
         assets_dataframe = self.data_manager.get_assets_dataframe()
 
         if not assets_dataframe.empty:
@@ -130,10 +127,10 @@ class AssetAnalyzer:
             purchase_recommendations (DataFrame): DataFrame containing purchase recommendations.
             assets_dataframe (DataFrame): DataFrame containing asset data.
         """
-        assets_symbols = set(assets_dataframe['symbol'])
+        assets_symbols = set(assets_dataframe["symbol"])
         operation_value = self.balance_manager.get_operation_value()
         for _, row in purchase_recommendations.iterrows():
-            symbol = row['symbol']
+            symbol = row["symbol"]
             if symbol not in assets_symbols:
                 has_balance = self.balance_manager.has_balance(operation_value)
                 if has_balance[0]:
@@ -161,7 +158,7 @@ class AssetAnalyzer:
         Returns:
             DataFrame: DataFrame containing purchase recommendations.
         """
-        mean_variation = interval_dataframe['variation'].mean()
+        mean_variation = interval_dataframe["variation"].mean()
         interval_recommendations = interval_dataframe[
             interval_dataframe["variation"]
             >= mean_variation + self.user_settings.percentage_threshold
@@ -194,16 +191,15 @@ class AssetAnalyzer:
                 interval_time = pd.to_datetime(
                     (last_entry["timestamp"] - past_entry["timestamp"]), unit="s"
                 ).strftime("%H:%M:%S")
-                variation_percent = (
-                    (current_price - past_price) / current_price) * 100
-                variation_data.append({
-                    'symbol': last_entry['symbol'],
-                    'interval': interval_time,
-                    'current_datetime': current_datetime,
-                    'current_price': current_price,
-                    'past_price': past_price,
-                    'variation': variation_percent
-                })
+                variation_percent = ((current_price - past_price) / current_price) * 100
+                variation_data.append(
+                    {
+                        "symbol": last_entry["symbol"],
+                        "interval": interval_time,
+                        "current_datetime": current_datetime,
+                        "current_price": current_price,
+                        "past_price": past_price,
+                        "variation": variation_percent,
+                    }
+                )
         return pd.DataFrame(variation_data)
-
-

@@ -44,7 +44,9 @@ class Asset:
 
     def calculate_variation(self) -> float:
         """Calculates the variation of the asset."""
-        return round((((self.current_price - self.purchase_price) / self.current_price) * 100), 2)
+        return round(
+            (((self.current_price - self.purchase_price) / self.current_price) * 100), 2
+        )
 
     def update_asset(self, new_price: float) -> None:
         """Updates the current price, the highest price if the new price is higher and recalculates variation."""
@@ -91,4 +93,3 @@ class Asset:
             current_price,
             obs,
         )
-
