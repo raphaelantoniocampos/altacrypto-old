@@ -16,7 +16,6 @@ def main():
     schedule.every(global_settings.EXECUTION_FREQUENCY_MINUTES).minutes.at(":00").do(
         asset_analyzer.run
     )
-
     while True:
         schedule.run_pending()
         time.sleep(1)
