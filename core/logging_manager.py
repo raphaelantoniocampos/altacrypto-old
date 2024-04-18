@@ -6,7 +6,7 @@ from utils.datetime_utils import DateTimeUtils
 
 class LoggingManager:
     logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger("altacrypto")
 
     @staticmethod
     def log_asset_transaction(transaction_data: TransactionData) -> None:
@@ -49,3 +49,4 @@ class LoggingManager:
             }
             writer.writerow(row)
             LoggingManager.logger.info(transaction_data)
+

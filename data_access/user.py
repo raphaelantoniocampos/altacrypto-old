@@ -46,7 +46,15 @@ class User:
             string.ascii_uppercase + string.digits, k=8))
         return random_id
 
-    def _create_user_table(self) -> None:
+    @staticmethod
+    def get_all_users(database_manager: DatabaseManager):
+        table_name = "Users"
+        sql = f"SELECT id FROM Users"
+        result = database_manager.fetch_all(sql, "Error fetching all users")
+        return [row[0] for row in result] if result else []
+
+    @staticmethod
+    def create_user_table(database_manager: DatabaseManager) -> None:
         """
         Creates a table for storing user information.
         """
@@ -59,11 +67,12 @@ class User:
             name TEXT NOT NULL,
             api_key TEXT NOT NULL,
             secret_key TEXT NOT NULL,
-            initial_balance REAL NOT NULL
+            initial_balance REAL
         );
         """
-        self._execute_sql(sql, f"Error creating {table_name} table")
+        database_manager.execute_sql(sql, f"Error creating {table_name} table")
 
     def __str__(self) -> str:
         """Returns a string representation of the user."""
         return f"ID: {self.id}, Name: {self.name}, API Key: {self.api_key}, Secret Key: {self.secret_key}, {self.wallet}"
+

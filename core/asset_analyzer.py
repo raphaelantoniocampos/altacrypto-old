@@ -1,46 +1,38 @@
-import pandas as pd
+import asyncio
 from datetime import datetime
 
-from data_access.asset import Asset
-from utils.global_settings import GlobalSettings
-from utils.datetime_utils import DateTimeUtils
-from core.transaction_manager import TransactionManager
+import pandas as pd
+
 from core.binance_manager import BinanceManager
+from data_access.asset import Asset
 from data_access.database_manager import DatabaseManager
-from core.balance_manager import BalanceManager
+from utils.datetime_utils import DateTimeUtils
+from utils.global_settings import GlobalSettings
 
 
 class AssetAnalyzer:
     """TODO: Document class."""
 
-    def __init__(
-        self,
-        binance_manager: BinanceManager,
-        database_manager: DatabaseManager,
-        balance_manager: BalanceManager,
-    ):
-        """TODO: Document method."""
-        self.binance_manager = binance_manager
-        self.database_manager = database_manager
-        self.balance_manager = balance_manager
-
     def run(self) -> None:
         """
         Fetch price data, update the database, analyze assets, and generate recommendations.
         """
-        asset_pairs = self.binance_manager.fetch_usdt_pairs()
-        self.data_manager.feed_database(asset_pairs)
+        binance_manager = BinanceManager()
+        database_manager = DatabaseManager(GlobalSettings.CRYPTO_PRICES_DB_PATH)
+        asset_pairs = binance_manager.fetch_usdt_pairs()
+        database_manager.feed_database(asset_pairs)
         self._evaluate_assets(asset_pairs)
 
-    def _evaluate_assets(self, asset_pairs: pd.DataFrame) -> None:
+    async def _evaluate_assets(self) -> None:
         """
         Analyze existing assets and make sell decisions if necessary.
 
         Args:
             asset_pairs (DataFrame): DataFrame containing asset pairs data.
         """
+        database_manager = DatabaseManager(GlobalSettings.USER_DATA_DB_PATH)
         purchase_recommendations = self._identify_purchase_recommendations(asset_pairs)
-        assets_dataframe = self.data_manager.get_assets_dataframe()
+        assets_dataframe = database_manager.get_assets_dataframe()
 
         if not assets_dataframe.empty:
             for _, row in assets_dataframe.iterrows():
@@ -57,7 +49,6 @@ class AssetAnalyzer:
                     if self._should_asset_be_sold(asset):
                         TransactionManager.sell_asset(
                             asset,
-                            self.balance_manager,
                             self.data_manager,
                             self.user_settings,
                         )
@@ -137,7 +128,6 @@ class AssetAnalyzer:
                     TransactionManager.buy_asset(
                         row,
                         operation_value,
-                        self.balance_manager,
                         self.data_manager,
                         self.user_settings,
                     )
@@ -203,3 +193,4 @@ class AssetAnalyzer:
                     }
                 )
         return pd.DataFrame(variation_data)
+

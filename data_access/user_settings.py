@@ -22,3 +22,40 @@ class UserSettings:
         self.above_purchase_percentage = above_purchase_percentage
         self.operation_value_percentage = operation_value_percentage
         self.maximum_operation_value = maximum_operation_value
+
+    def get_operation_value(self) -> float:
+        """
+        Calculates the operation value based on the current USDT balance.
+        Returns:
+            float: The operation value.
+        """
+        balance = self.data_manager.get_database_usdt_balance()
+        operation_value = round(
+            balance / (100 / self.user_settings.operation_value_percentage), 2
+        )
+        if operation_value < 10:
+            operation_value = 10
+        if operation_value > self.user_settings.maximum_operation_value:
+            operation_value = self.user_settings.maximum_operation_value
+        return operation_value
+
+    @staticmethod
+    def create_user_settings_table(database_manager: DatabaseManager) -> None:
+        table_name = "UserSettings"
+        sql = f"""
+        CREATE TABLE IF NOT EXISTS {table_name} (
+        user_id INTEGER PRIMARY KEY,
+        testing INTEGER,
+        interval_in_minutes TEXT,
+        execution_frequency_minutes INTEGER,
+        percentage_threshold INTEGER,
+        under_purchase_percentage REAL,
+        under_highest_percentage REAL,
+        above_purchase_percentage REAL,
+        operation_value_percentage REAL,
+        maximum_operation_value REAL,
+        FOREIGN KEY (user_id) REFERENCES User(id)
+    )
+        """
+        database_manager.execute_sql(sql, f"Error creating {table_name} table")
+

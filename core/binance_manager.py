@@ -71,3 +71,4 @@ class BinanceManager:
                 f"Request failed with status code {response.status_code}: {response.text}")
 
         return response
+

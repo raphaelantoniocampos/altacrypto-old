@@ -81,7 +81,7 @@ class CryptoPryce:
         Returns:
             pd.DataFrame: DataFrame containing price data.
         """
-        table_name = self.database_manager._format_symbol(table_name)
+        table_name = self.database_manager.format_symbol(table_name)
         if not self.database_manager.table_exists(table_name):
             self._create_coin_table(table_name)
         sql = f"SELECT timestamp, price FROM {table_name}"
@@ -89,7 +89,7 @@ class CryptoPryce:
             sql, f"Error selecting from {table_name}", table_name=table_name
         )
         if df is not None:
-            df["symbol"] = self.database_manager._format_symbol(table_name)
+            df["symbol"] = self.database_manager.format_symbol(table_name)
         return df
 
     def get_all_coins_dataframes(self, usdt_pairs: pd.DataFrame) -> list[pd.DataFrame]:
@@ -113,3 +113,4 @@ class CryptoPryce:
             f"Symbol: {self.symbol}, Timestamp: {self.timestamp}, "
             f"Price: {self.price:.2f}, Datetime: {self.datetime}"
         )
+

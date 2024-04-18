@@ -1,6 +1,6 @@
 import sqlite3
 from datetime import datetime
-
+import inspect
 import pandas as pd
 
 from utils.datetime_utils import DateTimeUtils
@@ -24,7 +24,7 @@ class DatabaseManager:
         self.db_path = db_path
 
     @staticmethod
-    def _format_symbol(symbol: str) -> str:
+    def format_symbol(symbol: str) -> str:
         """
         Adds or removes "t" prefix to symbols starting with a digit.
 
@@ -76,7 +76,7 @@ class DatabaseManager:
             self.user_settings.logger.info(f"{error_message}: {e}")
         return None
 
-    def _fetch_one(self, sql: str, params: tuple, error_message: str) -> tuple | None:
+    def fetch_one(self, sql: str, params: tuple, error_message: str) -> tuple | None:
         """
         Fetches a single result from the database.
 
@@ -96,7 +96,7 @@ class DatabaseManager:
             self.user_settings.logger.info(f"{error_message}: {e}")
         return None
 
-    def _fetch_all(self, sql: str, error_message: str) -> list[tuple] | None:
+    def fetch_all(self, sql: str, error_message: str) -> list[tuple] | None:
         """
         Fetches all results from the database.
 
@@ -125,7 +125,7 @@ class DatabaseManager:
         Returns:
             bool: True if the table exists, otherwise False.
         """
-        table_name = self._format_symbol(table_name)
+        table_name = self.format_symbol(table_name)
         sql = "SELECT name FROM sqlite_master WHERE type='table' AND name=?"
         return bool(
             self._fetch_one(
@@ -142,70 +142,6 @@ class DatabaseManager:
         """
         sql = f"DROP TABLE {table_name}"
         self._execute_sql(sql, f"Error droping table {table_name}")
-
-    def insert_usdt(self, value: float, current_datetime: datetime) -> None:
-        """
-        Inserts USDT balance information into the database.
-
-        Args:
-            value (float): Quantity of USDT.
-            current_datetime (datetime): Datetime of the balance.
-        """
-        table_name = "Assets"
-        if not self.table_exists(table_name):
-            self._create_assets_table()
-        sql = f"INSERT INTO {table_name} (symbol, quantity, purchase_price, current_value, variation, purchase_datetime, highest_price, current_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-        params = (
-            "USDT",
-            value,
-            1,
-            value,
-            0,
-            current_datetime.strftime("%Y-%m-%d %H:%M:%S"),
-            1,
-            1,
-        )
-        self._execute_sql(sql, "Error inserting USDT", params)
-
-    def get_database_usdt_balance(self) -> float:
-        """
-        Retrieves the current USDT balance from the database.
-
-        Returns:
-            float: Current USDT balance.
-        """
-        table_name = "Assets"
-        sql = f"SELECT quantity FROM {table_name} WHERE symbol == ?"
-        params = ("USDT",)
-        balance = self._fetch_one(sql, params, "Error selecting USDT")
-        return balance[0] if balance else 0
-
-    def update_usdt_balance(self, value: float) -> None:
-        """
-        Updates the USDT balance in the database.
-
-        Args:
-            value (float): New USDT balance.
-        """
-        table_name = "Assets"
-        sql = (
-            f"UPDATE {table_name} SET quantity = ?, current_value = ? WHERE symbol = ?"
-        )
-        params = (value, value, "USDT")
-        self._execute_sql(sql, f"Error updating USDT", params)
-
-    def get_total_asset_value(self) -> float:
-        """
-        Obtains the sum of all 'current_value' entries in the 'Assets' table.
-
-        Returns:
-            float: Sum of all 'current_value' entries.
-        """
-
-        with sqlite3.connect(self.db_path) as conn:
-            sql = "SELECT SUM(current_value) FROM Assets"
-            result = conn.execute(sql).fetchone()
-            return result[0] if result else 0
 
     def feed_database(self, asset_pairs: pd.DataFrame) -> None:
         """
@@ -224,3 +160,4 @@ class DatabaseManager:
         self.user_settings.logger.info(
             f"USD prices updated at {datetime.fromtimestamp(current_timestamp)}"
         )
+
