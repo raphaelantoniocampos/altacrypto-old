@@ -194,3 +194,4 @@ class AssetAnalyzer:
                 )
         return pd.DataFrame(variation_data)
 
+
