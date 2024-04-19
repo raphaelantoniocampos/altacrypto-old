@@ -5,6 +5,8 @@ import pandas as pd
 
 from core.binance_manager import BinanceManager
 from data_access.asset import Asset
+from data_access.user import User
+from data_access.crypto_price import CryptoPrice
 from data_access.database_manager import DatabaseManager
 from utils.datetime_utils import DateTimeUtils
 from utils.global_settings import GlobalSettings
@@ -19,11 +21,13 @@ class AssetAnalyzer:
         """
         binance_manager = BinanceManager()
         database_manager = DatabaseManager(GlobalSettings.CRYPTO_PRICES_DB_PATH)
-        asset_pairs = binance_manager.fetch_usdt_pairs()
-        database_manager.feed_database(asset_pairs)
-        self._evaluate_assets(asset_pairs)
+        crypto_prices = binance_manager.fetch_usdt_pairs()
+        CryptoPrice.feed_database(crypto_prices)
+        users = User.get_all_users()
+        for user in users:
+            self._evaluate_assets(user)
 
-    async def _evaluate_assets(self) -> None:
+    def _evaluate_assets(self, user: User) -> None:
         """
         Analyze existing assets and make sell decisions if necessary.
 
@@ -193,5 +197,4 @@ class AssetAnalyzer:
                     }
                 )
         return pd.DataFrame(variation_data)
-
 

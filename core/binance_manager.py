@@ -1,6 +1,9 @@
 import pandas as pd
 import requests
 
+from data_access.crypto_price import CryptoPrice
+from utils.datetime_utils import DateTimeUtils
+from utils.global_settings import GlobalSettings
 
 class BinanceManager:
 
@@ -29,25 +32,29 @@ class BinanceManager:
                 f"Error connecting to binance API: {e}")
             return False
 
-    def fetch_usdt_pairs(self) -> pd.DataFrame:
+    def fetch_usdt_pairs(self) -> list[CryptoPrice]:
         """
         Fetches USDT pairs from Binance.
 
         Returns:
-            pd.DataFrame: DataFrame containing USDT pairs.
+            list[CryptoPrice]: cointaing USDT pairs.
         """
         try:
             endpoint = "/api/v3/ticker/price"
             response = self._make_request(endpoint)
             tickers = response.json()
             coin_prices = pd.DataFrame(tickers)
-            return coin_prices[coin_prices["symbol"].str.endswith("USDT")]
+            crypto_prices = []
+            current_timestamp = DateTimeUtils.get_current_timestamp()
+            for _, row in coin_prices.iterrows():
+                if str(row["symbol"]).endswith("USDT"):
+                    crypto_price = CryptoPrice.from_series(row, current_timestamp)
+                    crypto_prices.append(crypto_price)
+            return crypto_prices
 
         except Exception as e:
-            self.user_settings.logger.info(
-                f"Error fetching USDT pairs from Binance: {e}"
-            )
-            return pd.DataFrame()
+            GlobalSettings.logger.info(f"Error fetching USDT pairs from Binance: {e}")
+            return crypto_prices
 
     def _make_request(self, endpoint: str, params: dict | None = None) -> requests.Response:
         """

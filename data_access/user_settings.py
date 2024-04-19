@@ -1,3 +1,6 @@
+from data_access.database_manager import DatabaseManager
+
+
 class UserSettings:
     """TODO: Document Class"""
 
@@ -39,8 +42,7 @@ class UserSettings:
             operation_value = self.user_settings.maximum_operation_value
         return operation_value
 
-    @staticmethod
-    def create_user_settings_table(database_manager: DatabaseManager) -> None:
+    def _create_user_settings_table(self) -> None:
         table_name = "UserSettings"
         sql = f"""
         CREATE TABLE IF NOT EXISTS {table_name} (
@@ -57,5 +59,4 @@ class UserSettings:
         FOREIGN KEY (user_id) REFERENCES User(id)
     )
         """
-        database_manager.execute_sql(sql, f"Error creating {table_name} table")
-
+        self.database_manager.execute_sql(sql, f"Error creating {table_name} table")

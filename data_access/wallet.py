@@ -1,6 +1,6 @@
 import pandas as pd
 
-from models.asset import Asset
+from data_access.asset import Asset
 from utils.global_settings import GlobalSettings
 from data_access.database_manager import DatabaseManager
 
@@ -8,27 +8,25 @@ from data_access.database_manager import DatabaseManager
 class Wallet:
     """Represents a user's wallet."""
 
-    def __init__(self, user_id: int, balance: float):
+    def __init__(self, user_id: int, balance: float, assets: list[Asset]):
         self.user_id = user_id
         self.balance = balance
-        self.assets: List[Asset] = []
-        self.database_manager = DatabaseManager(GlobalSettings().user_data_db_path)
+        self.assets = assets
+        self.database_manager = DatabaseManager(GlobalSettings().USER_DATA_DB_PATH)
 
-    @staticmethod
-    def create_wallet_table(database_manager: DatabaseManager) -> None:
-        """
-        Creates a table for storing wallet information.
-        """
+    @classmethod
+    def _create_wallet_table(cls) -> None:
+        """TODO: Document method"""
         table_name = "Wallets"
         sql = f"""
-        CREATE TABLE IF NOT EXISTS Wallets (
+        CREATE TABLE IF NOT EXISTS {table_name} (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id TEXT NOT NULL,
             balance REAL NOT NULL,
             FOREIGN KEY (user_id) REFERENCES Users(id)
         );
         """
-        database_manager.execute_sql(sql, f"Error creating {table_name} table")
+        self.database_manager.execute_sql(sql, f"Error creating {table_name} table")
 
     def get_wallet_usdt_balance(self) -> float:
         """
@@ -329,4 +327,5 @@ class Wallet:
         """Returns a string representation of the wallet."""
         assets_info = "\n".join(str(asset) for asset in self.assets)
         return f"Wallet Balance: {self.balance:.2f}\nAssets:\n{assets_info}"
+
 

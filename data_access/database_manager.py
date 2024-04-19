@@ -1,9 +1,5 @@
 import sqlite3
-from datetime import datetime
-import inspect
 import pandas as pd
-
-from utils.datetime_utils import DateTimeUtils
 
 
 class DatabaseManager:
@@ -128,7 +124,7 @@ class DatabaseManager:
         table_name = self.format_symbol(table_name)
         sql = "SELECT name FROM sqlite_master WHERE type='table' AND name=?"
         return bool(
-            self._fetch_one(
+            self.fetch_one(
                 sql, (table_name,), f"Error checking table existence for {table_name}"
             )
         )
@@ -141,23 +137,7 @@ class DatabaseManager:
             table_name (str): Name of the table to drop.
         """
         sql = f"DROP TABLE {table_name}"
-        self._execute_sql(sql, f"Error droping table {table_name}")
+        self.execute_sql(sql, f"Error droping table {table_name}")
 
-    def feed_database(self, asset_pairs: pd.DataFrame) -> None:
-        """
-        Updates the database with price snapshots for asset pairs.
 
-        Args:
-            asset_pairs (pd.DataFrame): DataFrame containing asset pairs and their prices.
-        """
-        current_timestamp = DateTimeUtils.get_current_timestamp()
-        for _, row in asset_pairs.iterrows():
-            symbol = row["symbol"]
-            price = row["price"]
-            price_snapshot = PriceSnapshot(symbol, current_timestamp, price)
-            self.insert_price(price_snapshot)
-
-        self.user_settings.logger.info(
-            f"USD prices updated at {datetime.fromtimestamp(current_timestamp)}"
-        )
 

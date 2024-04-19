@@ -1,6 +1,6 @@
 import random
 import string
-from utils.user_settings import UserSettings
+from data_access.user_settings import UserSettings
 from data_access.wallet import Wallet
 from data_access.database_manager import DatabaseManager
 
@@ -46,15 +46,15 @@ class User:
             string.ascii_uppercase + string.digits, k=8))
         return random_id
 
-    @staticmethod
-    def get_all_users(database_manager: DatabaseManager):
+    @classmethod
+    def get_all_users(cls) -> list["User"]:
         table_name = "Users"
-        sql = f"SELECT id FROM Users"
-        result = database_manager.fetch_all(sql, "Error fetching all users")
+        sql = f"SELECT id, login, password, name, api_key, secret_key FROM {table_name}"
+        result = cls.database_manager.fetch_all(sql, "Error fetching all users")
         return [row[0] for row in result] if result else []
 
-    @staticmethod
-    def create_user_table(database_manager: DatabaseManager) -> None:
+    @classmethod
+    def create_users_table(cls) -> None:
         """
         Creates a table for storing user information.
         """
@@ -67,12 +67,10 @@ class User:
             name TEXT NOT NULL,
             api_key TEXT NOT NULL,
             secret_key TEXT NOT NULL,
-            initial_balance REAL
         );
         """
-        database_manager.execute_sql(sql, f"Error creating {table_name} table")
+        self.database_manager.execute_sql(sql, f"Error creating {table_name} table")
 
     def __str__(self) -> str:
         """Returns a string representation of the user."""
         return f"ID: {self.id}, Name: {self.name}, API Key: {self.api_key}, Secret Key: {self.secret_key}, {self.wallet}"
-

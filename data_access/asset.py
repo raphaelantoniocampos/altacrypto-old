@@ -88,8 +88,7 @@ class Asset:
             params,
         )
 
-    @staticmethod
-    def create_assets_table(database_manager: DatabaseManager) -> None:
+    def _create_assets_table(self) -> None:
         """
         Creates a table for storing assets.
         """
