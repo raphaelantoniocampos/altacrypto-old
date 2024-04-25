@@ -1,11 +1,3 @@
-import pymongo
-
-data_agora = {"date":new Timestamp()}
-print(data_agora)
-print(type(data_agora))
-
-# TESTES ACIMA #
-
 import pandas as pd
 import os
 from dotenv import load_dotenv
@@ -21,6 +13,7 @@ class DatabaseManager:
         self.dbname = self.get_database()
 
     def get_database(self) -> pymongo.MongoClient:
+        """TODO: Document method"""
         load_dotenv()
         mongo_user = os.getenv("MONGO_USER")
         mongo_password = os.getenv("MONGO_PASSWORD")
@@ -32,7 +25,7 @@ class DatabaseManager:
         """TODO: Document method"""
         return self.dbname[f"{collection_name}"]
 
-    def create_crypto_price(self, crypto_price: CryptoPrice) -> None:
+    def add_crypto_price(self, crypto_price: CryptoPrice) -> None:
         """TODO: Document method"""
         try:
             collection_name = self.get_collection("crypto_prices")
