@@ -1,31 +1,29 @@
 import time
 import schedule
+import logging
 
-# from core.asset_analyzer import AssetAnalyzer
+from core.crypto_trader import CryptoTrader
 from utils.global_settings import GlobalSettings
+from core.binance_manager import BinanceManager
 from data_access.database_manager import DatabaseManager
 
 
 def main():
+    logging.basicConfig(level=logging.INFO)
     global_settings = GlobalSettings()
-    global_settings.logger.info("Starting bot")
-    """
-    asset_analyzer = AssetAnalyzer()
+
+    binance_manager = BinanceManager()
+    database_manager = DatabaseManager()
+    crypto_snapshots = binance_manager.fetch_usdt_pairs()
+    database_manager.feed_database(crypto_snapshots)
+
+    crypto_trader = CryptoTrader()
     schedule.every(global_settings.EXECUTION_FREQUENCY_MINUTES).minutes.at(":00").do(
-        asset_analyzer.run
+        crypto_trader.run
     )
-    """
+    crypto_trader.run  # line for testing
 
-    # testing
-    database = DatabaseManager()
-    collection_name = database.get_collection("crypto_prices")
-    cursor = collection_name.find()
-    for document in cursor:
-        print(document)
-
-    # asset_analyzer.run()  # line for testing
-
-    while False:
+    while True:
         schedule.run_pending()
         time.sleep(1)
 

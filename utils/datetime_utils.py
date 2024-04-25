@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 
 class DateTimeUtils:
     @staticmethod
+    """
     def get_datetime(timestamp: int | None = None) -> datetime:
         """
         Get the date and time from the provided timestamp.
@@ -42,3 +43,4 @@ class DateTimeUtils:
         hours, remainder = divmod(delta.seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
         return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+"""

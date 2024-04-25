@@ -1,14 +1,17 @@
 import pandas as pd
 import requests
+import logging
+import time
 
-from data_access.crypto_price import CryptoPrice
-from utils.datetime_utils import DateTimeUtils
+from data_access.crypto_snapshot import CryptoSnapshot
 from utils.global_settings import GlobalSettings
+
 
 class BinanceManager:
 
     def __init__(self):
         self.base_url = 'https://api.binance.com'
+        self.logger = logging.getLogger(__name__)
 
     def query_binance_status(self) -> bool:
         """
@@ -32,29 +35,29 @@ class BinanceManager:
                 f"Error connecting to binance API: {e}")
             return False
 
-    def fetch_usdt_pairs(self) -> list[CryptoPrice]:
+    def fetch_usdt_pairs(self) -> list[CryptoSnapshot]:
         """
         Fetches USDT pairs from Binance.
 
         Returns:
-            list[CryptoPrice]: cointaing USDT pairs.
+            list[CryptoSnapshot]: cointaing USDT pairs.
         """
         try:
             endpoint = "/api/v3/ticker/price"
             response = self._make_request(endpoint)
             tickers = response.json()
             coin_prices = pd.DataFrame(tickers)
-            crypto_prices = []
-            current_timestamp = DateTimeUtils.get_current_timestamp()
+            crypto_snapshots = []
+            current_timestamp = int(time.time())
             for _, row in coin_prices.iterrows():
                 if str(row["symbol"]).endswith("USDT"):
-                    crypto_price = CryptoPrice.from_series(row, current_timestamp)
-                    crypto_prices.append(crypto_price)
-            return crypto_prices
+                    crypto_snapshot = CryptoSnapshot.from_series(row, current_timestamp)
+                    crypto_snapshots.append(crypto_snapshot)
+            return crypto_snapshots
 
         except Exception as e:
-            GlobalSettings.logger.info(f"Error fetching USDT pairs from Binance: {e}")
-            return crypto_prices
+            self.logger.info(f"Error fetching USDT pairs from Binance: {e}")
+            return crypto_snapshots
 
     def _make_request(self, endpoint: str, params: dict | None = None) -> requests.Response:
         """

@@ -5,8 +5,8 @@ import pandas as pd
 
 from data_access.asset import Asset
 
-from data_access.user import User
-from data_access.database_manager import DatabaseManager
+from models.user import User
+from core.database_manager import DatabaseManager
 from utils.global_settings import GlobalSettings
 
 
@@ -17,6 +17,7 @@ class CryptoTrader:
         """
         Fetch price data, update the database, analyze assets, and generate recommendations.
         """
+
         users = User.get_all_users()
         for user in users:
             self._evaluate_assets(user)
@@ -191,4 +192,3 @@ class CryptoTrader:
                     }
                 )
         return pd.DataFrame(variation_data)
-

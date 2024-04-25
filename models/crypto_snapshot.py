@@ -1,6 +1,7 @@
 import pandas as pd
 
-class CryptoPrice:
+
+class CryptoSnapshot:
     """TODO: Document class"""
 
     def __init__(self, symbol: str, timestamp: int, price: float):
@@ -9,7 +10,7 @@ class CryptoPrice:
         self.snapshot = {"timestamp": timestamp, "price": price}
 
     def __str__(self) -> str:
-        """Returns a string representation of the price snapshot."""
+        """Returns a string representation of the crypto snapshot."""
         return f"Symbol: {self.symbol}\nSnapshot: {self.snapshot}"
 
     @classmethod

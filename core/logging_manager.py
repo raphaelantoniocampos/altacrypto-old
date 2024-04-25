@@ -50,3 +50,4 @@ class LoggingManager:
             writer.writerow(row)
             LoggingManager.logger.info(transaction_data)
 
+
