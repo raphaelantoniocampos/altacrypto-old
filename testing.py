@@ -63,3 +63,4 @@ user = User(
 
 # database_manager.add_user(user)
 generate_documents(10)
+
