@@ -1,8 +1,7 @@
-import random
-import string
-from data_access.user_settings import UserSettings
-from data_access.wallet import Wallet
-from data_access.database_manager import DatabaseManager
+from datetime import datetime
+from hashlib import sha256
+from models.user_settings import UserSettings
+from models.asset import Asset
 
 
 class User:
@@ -11,22 +10,30 @@ class User:
     def __init__(
         self,
         login: str,
-        password: str,
         name: str,
         api_key: str,
         secret_key: str,
-        initial_balance: float,
+        user_settings: UserSettings,
+        assets: list[Asset],
+        created_at: datetime = datetime.now(),
+        id="",
+        hashed_password: bytes = b"",
+        str_password: str = "",
     ):
-        self.id = self._generate_id()
+        self.id = id
         self.login = login
-        self.password = password
         self.name = name
         self.api_key = api_key
         self.secret_key = secret_key
-        self.wallet = Wallet()
         self.user_settings = UserSettings()
-        self.database_manager = DatabaseManager(
-            self.global_settings.user_data_db_path)
+        self.assets = assets
+        self.created_at = created_at
+        if hashed_password:
+            self.hashed_password = hashed_password
+        elif str_password:
+            self.hashed_password = self.encode_password(str_password)
+        else:
+            raise ValueError("A password must be provided")
 
         """
         if self.user_settings.testing:
@@ -40,37 +47,9 @@ class User:
                     f"Inserting USDT: {user_settings.testing_initial_balance}")
         """
 
-    def _generate_id(self) -> str:
-        """Generates a random ID for the user."""
-        random_id = "".join(random.choices(
-            string.ascii_uppercase + string.digits, k=8))
-        return random_id
-
-    @classmethod
-    def get_all_users(cls) -> list["User"]:
-        table_name = "Users"
-        sql = f"SELECT id, login, password, name, api_key, secret_key FROM {table_name}"
-        result = cls.database_manager.fetch_all(sql, "Error fetching all users")
-        return [row[0] for row in result] if result else []
-
-    @classmethod
-    def create_users_table(cls) -> None:
-        """
-        Creates a table for storing user information.
-        """
-        table_name = "Users"
-        sql = f"""
-        CREATE TABLE IF NOT EXISTS {table_name} (
-            id INTEGER PRIMARY KEY,
-            login TEXT NOT NULL,
-            password TEXT NOT NULL,
-            name TEXT NOT NULL,
-            api_key TEXT NOT NULL,
-            secret_key TEXT NOT NULL,
-        );
-        """
-        self.database_manager.execute_sql(sql, f"Error creating {table_name} table")
+    def encode_password(self, str_password):
+        return sha256(str_password.encode("utf-8")).digest()
 
     def __str__(self) -> str:
         """Returns a string representation of the user."""
-        return f"ID: {self.id}, Name: {self.name}, API Key: {self.api_key}, Secret Key: {self.secret_key}, {self.wallet}"
+        return f"ID: {self.id}, Name: {self.name}, API Key: {self.api_key}, Secret Key: {self.secret_key}, {self.assets}, {self.user_settings}"

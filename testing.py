@@ -2,9 +2,10 @@ import random
 import string
 import time
 from core.database_manager import DatabaseManager
-from models.crypto_snapshot import CryptoSnapshot
+from models.crypto_data import CryptoData
+from models.user import User
+from models.user_settings import UserSettings
 from datetime import datetime, timedelta
-import pandas as pd
 
 
 def generate_symbol() -> str:
@@ -13,6 +14,7 @@ def generate_symbol() -> str:
 
 
 def generate_documents(quantity: int):
+    database_manager = DatabaseManager()
     for i in range(quantity):
         symbol = generate_symbol()
         timestamps = []
@@ -21,18 +23,17 @@ def generate_documents(quantity: int):
             timestamps.append(timestamp)
         timestamps.sort()
         for timestamp in timestamps:
+            crypto_data_list = []
             price = (random.random()) * (random.randint(1, 1000))
-            crypto_snapshot = CryptoSnapshot(symbol, timestamp, price)
-            database_manager = DatabaseManager()
-            database_manager.add_crypto_snapshot(crypto_snapshot)
-
-
-# generate_documents(10)
+            snapshots = [{"timestamp": timestamp, "price": price}]
+            crypto_data = CryptoData(symbol, snapshots)
+            crypto_data_list.append(crypto_data)
+            database_manager.feed_database(crypto_data_list)
 
 
 def add_one():
     database_manager = DatabaseManager()
-    collection = database_manager.get_collection("crypto_snapshots_tests")
+    collection = database_manager.get_collection("crypto_data")
     cursor = collection.find({})
     symbols = []
     for document in cursor:
@@ -40,23 +41,25 @@ def add_one():
         symbols.append(symbol)
 
     for symbol in symbols:
-        crypto_snapshot = CryptoSnapshot(
+        crypto_data = CryptoData(
             symbol=symbol,
             timestamp=(int(time.time())),
             price=((random.random()) * (random.randint(1, 1000))),
         )
-        print(crypto_snapshot)
-        database_manager.add_crypto_snapshot(crypto_snapshot)
+        print(crypto_data)
 
 
-"""
 database_manager = DatabaseManager()
-crypto_snapshot = CryptoSnapshot(symbol="XWBJ8O", timestamp=100000, price=2000.00)
-timestamps = []
-for i in range(36):
-    timestamp = int((datetime.now() - timedelta(hours=i)).timestamp())
-    timestamps.append(timestamp)
 
-"""
-database_manager = DatabaseManager()
-print(database_manager.get_all_crypto_snapshots())
+user = User(
+    login="gomjas",
+    name="raphas",
+    api_key="132312",
+    secret_key="12312",
+    user_settings=UserSettings(),
+    assets=[],
+    str_password="umdois12",
+)
+
+# database_manager.add_user(user)
+generate_documents(10)

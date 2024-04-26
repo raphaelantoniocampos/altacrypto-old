@@ -3,22 +3,26 @@ from datetime import datetime
 
 import pandas as pd
 
-from data_access.asset import Asset
+from models.asset import Asset
 
 from models.user import User
 from core.database_manager import DatabaseManager
 from utils.global_settings import GlobalSettings
+from core.binance_manager import BinanceManager
 
 
 class CryptoTrader:
     """TODO: Document class."""
 
-    def run(self) -> None:
-        """
-        Fetch price data, update the database, analyze assets, and generate recommendations.
-        """
+    def start(self) -> None:
+        """TODO: Document method"""
+        binance_manager = BinanceManager()
+        database_manager = DatabaseManager()
 
-        users = User.get_all_users()
+        crypto_data_list = binance_manager.fetch_usdt_pairs()
+        database_manager.feed_database(crypto_data_list)
+
+        users = []
         for user in users:
             self._evaluate_assets(user)
 

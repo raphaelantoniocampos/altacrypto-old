@@ -1,8 +1,6 @@
 import datetime
 import pandas as pd
 
-from data_access.database_manager import DatabaseManager
-
 
 class Asset:
     """Represents an investment asset with details like symbol, quantity, prices, and performance."""
@@ -62,6 +60,7 @@ class Asset:
         total_purchase_value = self.purchase_price * self.quantity
         return self.current_value - total_purchase_value
 
+'''
     def add_asset(
         self, database_manager: DatabaseManager, asset: "Asset", wallet_id: int
     ) -> None:
@@ -456,3 +455,4 @@ class Asset:
         return f"Wallet Balance: {self.balance:.2f}\nAssets:\n{assets_info}"
 
 
+'''
