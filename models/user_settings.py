@@ -1,11 +1,12 @@
+from typing import List
+
+
 class UserSettings:
     """TODO: Document Class"""
 
     def __init__(
         self,
         testing: bool = True,
-        interval_in_minutes: list = [5, 10, 15, 30, 60],
-        execution_frequency_minutes: int = 5,
         percentage_threshold: int = 10,
         under_purchase_percentage: float = 3.0,
         under_highest_percentage: float = 3.0,
@@ -14,8 +15,6 @@ class UserSettings:
         maximum_operation_value: float = 100.0,
     ):
         self.testing = testing
-        self.interval_in_minutes = interval_in_minutes
-        self.execution_frequency_minutes = execution_frequency_minutes
         self.percentage_threshold = percentage_threshold
         self.under_purchase_percentage = under_purchase_percentage
         self.under_highest_percentage = under_highest_percentage
@@ -38,4 +37,3 @@ class UserSettings:
         if operation_value > self.user_settings.maximum_operation_value:
             operation_value = self.user_settings.maximum_operation_value
         return operation_value
-

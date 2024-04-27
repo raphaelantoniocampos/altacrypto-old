@@ -4,9 +4,11 @@ from dotenv import load_dotenv
 import pymongo
 import logging
 from bson.timestamp import Timestamp
+from typing import List
 
 from models.crypto_data import CryptoData
 from models.user import User
+from models.user_settings import UserSettings
 from datetime import datetime, timedelta
 
 
@@ -32,12 +34,12 @@ class DatabaseManager:
         return self.dbname[f"{collection_name}"]
 
     # CryptoData
-    def feed_database(self, crypto_data_list: list[CryptoData]) -> None:
+    def feed_database(self, crypto_data_list: List[CryptoData]) -> None:
         """
         Updates the database with crypto data.
 
         Args:
-        crypto_data_list (list['CryptoData']): containing asset pairs and their prices.
+        crypto_data_list (List['CryptoData']): containing asset pairs and their prices.
         """
         try:
             collection = self.get_collection("crypto_data")
@@ -92,10 +94,10 @@ class DatabaseManager:
         symbol: str,
     ) -> None:
         """TODO: Document method"""
-        deletion_timetamp = Timestamp(
-            int((datetime.now() - timedelta(days=1)).timestamp()), 0
-        )
         try:
+            deletion_timestamp = Timestamp(
+                int((datetime.now() - timedelta(days=1)).timestamp()), 0
+            )
             collection = self.get_collection("crypto_data")
             collection.update_one(
                 {"symbol": symbol},
@@ -118,23 +120,23 @@ class DatabaseManager:
         document = collection.find_one({"symbol": symbol})
         return pd.DataFrame(document)
 
-    def get_all_crypto_data(self) -> list[pd.DataFrame]:
+    def get_all_crypto_data(self) -> List[pd.DataFrame]:
         """
         Retrieves price data for all USD symbols as a list of DataFrames.
-
-        Args:
-            usdt_pairs (pd.DataFrame): DataFrame containing USD symbol pairs.
 
         Returns:
             list: List of DataFrames containing crypto data for each symbol.
         """
-        collection = self.get_collection("crypto_data")
-        cursor = collection.find()
-        dataframe_list = []
-        for document in cursor:
-            snap = pd.DataFrame(document)
-            dataframe_list.append(snap)
-        return dataframe_list
+        try:
+            collection = self.get_collection("crypto_data")
+            cursor = collection.find()
+            dataframe_list = []
+            for document in cursor:
+                snap = pd.DataFrame(document)
+                dataframe_list.append(snap)
+            return dataframe_list
+        except pymongo.errors.PyMongoError as e:
+            self.logger.info(f"Error getting crypto data: {e}")
 
     # Users
     def add_user(self, user: User) -> None:
@@ -146,6 +148,7 @@ class DatabaseManager:
                     "login": user.login,
                     "hashed_password": user.hashed_password,
                     "name": user.name,
+                    "tier": user.tier,
                     "api_key": user.api_key,
                     "secret_key": user.secret_key,
                     "user_settings": user.user_settings.__dict__,
@@ -156,64 +159,27 @@ class DatabaseManager:
         except pymongo.errors.PyMongoError as e:
             self.logger.info(f"Error adding user {user.login} to database: {e}")
 
-
-'''
-    def delete_crypto_snapshots(
-        self,
-        symbol: str,
-        deletion_timestamp: int,
-    ) -> None:
+    def get_all_users(self) -> List[User]:
         """TODO: Document method"""
         try:
-            collection = self.get_collection("crypto_snapshots")
-            collection.update_one(
-                {"symbol": symbol},
-                {"$pull": {"snapshots": {"timestamp": {"$lt": deletion_timestamp}}}},
-            )
+            collection = self.get_collection("user_data")
+            cursor = collection.find()
+            users = []
+            for document in cursor:
+                user = User(
+                    id=document["_id"],
+                    login=document["login"],
+                    hashed_password=document["hashed_password"],
+                    name=document["name"],
+                    tier=document["tier"],
+                    api_key=document["api_key"],
+                    secret_key=document["secret_key"],
+                    user_settings=UserSettings(**document["user_settings"]),
+                    assets=document["assets"],
+                    created_at=document["created_at"],
+                )
+                users.append(user)
+            return users
         except pymongo.errors.PyMongoError as e:
-            self.logger.info(f"Error deleting snapshot from {symbol}: {e}")
-
-    def get_crypto_snapshot(self, symbol: str) -> pd.DataFrame:
-        """
-        Retrieves price data for a USD symbol as a DataFrame.
-
-        Args:
-            symbol (str): Symbol of the document to fetch data from.
-
-        Returns:
-            pd.DataFrame: DataFrame containing price data.
-        """
-        collection = self.get_collection("crypto_snapshots")
-        document = collection.find_one({"symbol": symbol})
-        return pd.DataFrame(document)
-    def get_all_users(self) -> list["User"]:
-        table_name = "Users"
-        sql = f"SELECT id, login, password, name, api_key, secret_key FROM {table_name}"
-        result = cls.database_manager.fetch_all(sql, "Error fetching all users")
-        return [row[0] for row in result] if result else []
-
-    @classmethod
-    def create_users_table(cls) -> None:
-        """
-        Creates a table for storing user information.
-        """
-        table_name = "Users"
-        sql = f"""
-        CREATE TABLE IF NOT EXISTS {table_name} (
-            id INTEGER PRIMARY KEY,
-            login TEXT NOT NULL,
-            password TEXT NOT NULL,
-            name TEXT NOT NULL,
-            api_key TEXT NOT NULL,
-            secret_key TEXT NOT NULL,
-        );
-        """
-        self.database_manager.execute_sql(sql, f"Error creating {table_name} table")
-'''
-
-
-
-
-
-
-
+            self.logger.info(f"Erro ao obter dados dos usuários: {e}")
+            return []

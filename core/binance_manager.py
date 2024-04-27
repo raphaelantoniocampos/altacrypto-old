@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 import logging
 import time
+from typing import List
 
 from models.crypto_data import CryptoData
 
@@ -34,12 +35,12 @@ class BinanceManager:
                 f"Error connecting to binance API: {e}")
             return False
 
-    def fetch_usdt_pairs(self) -> list[CryptoData]:
+    def fetch_usdt_pairs(self) -> List[CryptoData]:
         """
         Fetches USDT pairs from Binance.
 
         Returns:
-            list[CryptoData]: cointaing USDT pairs.
+            List[CryptoData]: cointaing USDT pairs.
         """
         try:
             endpoint = "/api/v3/ticker/price"
@@ -50,7 +51,8 @@ class BinanceManager:
             current_timestamp = int(time.time())
             for _, row in coin_prices.iterrows():
                 if str(row["symbol"]).endswith("USDT"):
-                    crypto_data = CryptoData.from_series(row, current_timestamp)
+                    crypto_data = CryptoData.from_series(
+                        row, current_timestamp)
                     crypto_data_list.append(crypto_data)
             return crypto_data_list
 
@@ -80,4 +82,3 @@ class BinanceManager:
                 f"Request failed with status code {response.status_code}: {response.text}")
 
         return response
-

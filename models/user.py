@@ -1,5 +1,7 @@
 from datetime import datetime
 from hashlib import sha256
+from typing import List
+
 from models.user_settings import UserSettings
 from models.asset import Asset
 
@@ -11,10 +13,11 @@ class User:
         self,
         login: str,
         name: str,
+        tier: str,
         api_key: str,
         secret_key: str,
         user_settings: UserSettings,
-        assets: list[Asset],
+        assets: List[Asset],
         created_at: datetime = datetime.now(),
         id="",
         hashed_password: bytes = b"",
@@ -23,6 +26,7 @@ class User:
         self.id = id
         self.login = login
         self.name = name
+        self.tier = tier
         self.api_key = api_key
         self.secret_key = secret_key
         self.user_settings = UserSettings()
@@ -52,4 +56,4 @@ class User:
 
     def __str__(self) -> str:
         """Returns a string representation of the user."""
-        return f"ID: {self.id}, Name: {self.name}, API Key: {self.api_key}, Secret Key: {self.secret_key}, {self.assets}, {self.user_settings}"
+        return f"User: {self.login} - Name: {self.name} - Tier: {self.tier}"

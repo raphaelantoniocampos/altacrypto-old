@@ -6,36 +6,32 @@ import pandas as pd
 from models.asset import Asset
 
 from models.user import User
-from core.database_manager import DatabaseManager
 from utils.global_settings import GlobalSettings
+from core.database_manager import DatabaseManager
 from core.binance_manager import BinanceManager
 
 
 class CryptoTrader:
     """TODO: Document class."""
 
+    def __init__(self, database_manager: DatabaseManager):
+        self.database_manager = database_manager
+
     def start(self) -> None:
         """TODO: Document method"""
         binance_manager = BinanceManager()
-        database_manager = DatabaseManager()
 
         crypto_data_list = binance_manager.fetch_usdt_pairs()
-        database_manager.feed_database(crypto_data_list)
+        self.database_manager.feed_database(crypto_data_list)
 
-        users = []
+        users = self.database_manager.get_all_users()
         for user in users:
             self._evaluate_assets(user)
 
     def _evaluate_assets(self, user: User) -> None:
-        """
-        Analyze existing assets and make sell decisions if necessary.
-
-        Args:
-            asset_pairs (DataFrame): DataFrame containing asset pairs data.
-        """
-        database_manager = DatabaseManager(GlobalSettings.USER_DATA_DB_PATH)
-        purchase_recommendations = self._identify_purchase_recommendations(asset_pairs)
-        assets_dataframe = database_manager.get_assets_dataframe()
+        """TODO: Document method"""
+        purchase_recommendations = self._identify_purchase_recommendations()
+        assets_dataframe = self.database_manager.get_assets_dataframe()
 
         if not assets_dataframe.empty:
             for _, row in assets_dataframe.iterrows():
@@ -81,27 +77,19 @@ class CryptoTrader:
             return True
         return False
 
-    def _identify_purchase_recommendations(
-        self, asset_pairs: pd.DataFrame
-    ) -> pd.DataFrame:
+    def _identify_purchase_recommendations(self: pd.DataFrame) -> pd.DataFrame:
         """
         Identify purchase recommendations based on price variations.
-
-        Args:
-            asset_pairs (DataFrame): DataFrame containing asset pairs data.
 
         Returns:
             DataFrame: DataFrame containing purchase recommendations.
         """
-        current_datetime = DateTimeUtils.get_datetime()
         purchase_recommendations = pd.DataFrame()
-        for interval_in_minutes in self.user_settings.interval_in_minutes:
+        for interval in GlobalSettings.INTERVALS:
             interval_index = int(
-                interval_in_minutes / self.user_settings.execution_frequency_minutes
-            )
+                interval / GlobalSettings.EXECUTION_FREQUENCY_MINUTES)
             interval_dataframe = self._generate_price_change_data(
-                interval_index, asset_pairs, current_datetime
-            )
+                interval_index)
             if not interval_dataframe.empty:
                 interval_recommendations = self._process_interval_data(
                     interval_dataframe
@@ -158,33 +146,34 @@ class CryptoTrader:
         ]
         return interval_recommendations
 
-    def _generate_price_change_data(
-        self, interval_index: int, usdt_pairs: pd.DataFrame, current_datetime: datetime
-    ) -> pd.DataFrame:
+    def _generate_price_change_data(self, interval_index: int) -> pd.DataFrame:
         """
         Generates a DataFrame containing price variations for a given interval.
 
         Args:
             interval_index (int): Index of the interval.
-            usdt_pairs (DataFrame): DataFrame containing USD pairs.
-            current_datetime (datetime): Current datetime.
 
         Returns:
             DataFrame: DataFrame containing price variations.
         """
         variation_data = []
         interval_time = None
-
-        for df in self.data_manager.get_all_coins_dataframes(usdt_pairs):
+        current_datetime = datetime.now()
+        for df in self.database_manager.get_all_crypto_data():
             if len(df) > interval_index:
                 last_entry = df.iloc[0]
                 past_entry = df.iloc[interval_index]
-                current_price = last_entry["price"]
-                past_price = past_entry["price"]
+                current_price = last_entry["snapshots"].get("price")
+                past_price = past_entry["snapshots"].get("price")
                 interval_time = pd.to_datetime(
-                    (last_entry["timestamp"] - past_entry["timestamp"]), unit="s"
+                    (
+                        last_entry["snapshots"].get("timestamp")
+                        - past_entry["snapshots"].get("timestamp")
+                    ),
+                    unit="s",
                 ).strftime("%H:%M:%S")
-                variation_percent = ((current_price - past_price) / current_price) * 100
+                variation_percent = (
+                    (current_price - past_price) / current_price) * 100
                 variation_data.append(
                     {
                         "symbol": last_entry["symbol"],

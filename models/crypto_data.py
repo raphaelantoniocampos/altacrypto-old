@@ -1,11 +1,13 @@
 import pandas as pd
+from typing import List
 from bson.timestamp import Timestamp
+from models.snapshot_dict import SnapshotDict
 
 
 class CryptoData:
     """TODO: Document class"""
 
-    def __init__(self, symbol: str, snapshots: list[dict] = []):
+    def __init__(self, symbol: str, snapshots: List[SnapshotDict] = []):
         """TODO: Document method"""
         self.symbol = symbol.upper()
         self.snapshots = snapshots
@@ -19,6 +21,10 @@ class CryptoData:
         """TODO: Document method"""
         symbol = series["symbol"]
         price = float(series["price"])
-        snapshots = [{"timestamp": Timestamp(current_timestamp, 0), "price": price}]
+        snapshot_dict: SnapshotDict = {
+            "timestamp": Timestamp(current_timestamp, 0),
+            "price": price,
+        }
+        snapshots = []
+        snapshots.append(snapshot_dict)
         return cls(symbol, snapshots)
-
