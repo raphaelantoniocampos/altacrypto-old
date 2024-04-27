@@ -43,7 +43,7 @@ def generate_users(quantity):
     for i in range(quantity):
         login = generate_symbol()
         name = f"{login}nome"
-        tiers = ["normal" for i in range(9)]
+        tiers = ["silver" for i in range(9)]
         tiers.append("gold")
         tier = random.choice(tiers)
         api_key = generate_symbol(20)
@@ -67,6 +67,9 @@ def generate_users(quantity):
 
 
 database_manager = DatabaseManager()
-users = generate_users(10)
+users = generate_users(0)
 for user in users:
     database_manager.add_user(user)
+users = database_manager.get_all_users({"tier": "silver"})
+for user in users:
+    print(user)

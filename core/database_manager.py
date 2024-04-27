@@ -159,11 +159,11 @@ class DatabaseManager:
         except pymongo.errors.PyMongoError as e:
             self.logger.info(f"Error adding user {user.login} to database: {e}")
 
-    def get_all_users(self) -> List[User]:
+    def get_all_users(self, query: dict = {}) -> List[User]:
         """TODO: Document method"""
         try:
             collection = self.get_collection("user_data")
-            cursor = collection.find()
+            cursor = collection.find(query)
             users = []
             for document in cursor:
                 user = User(
