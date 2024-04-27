@@ -28,23 +28,21 @@ class CryptoTrader:
         self.database_manager.feed_database(crypto_data_list)
 
         gold_users = self.database_manager.get_all_users({"tier": "gold"})
-
+        silver_users = self.database_manager.get_all_users({"tier": "silver"})
         user_settings_by_id = {}
         for user in gold_users:
             user_settings_by_id[user.id] = user.user_settings
         user_settings_by_id["silver"] = GlobalSettings.STANDARD_USER_SETTINGS
-
         users = self.database_manager.get_all_users()
-        for user in users:
-            self._evaluate_assets(user)
+
+        intervals_dataframe = self._get_intervals_dataframes()
+        for id, user_setting in user_settings_by_id.items():
+            purchase_recommendations = self._identify_purchase_recommendations(
+                intervals_dataframe, user_setting
+            )
 
     def _evaluate_assets(self, user: User) -> None:
         """TODO: Document method"""
-        intervals_dataframe = self._get_intervals_dataframes()
-        print(intervals_dataframe)
-        print(len(intervals_dataframe))
-        sys.exit()
-        purchase_recommendations = self._identify_purchase_recommendations()
         assets_dataframe = self.database_manager.get_assets_dataframe()
 
         if not assets_dataframe.empty:
@@ -91,7 +89,9 @@ class CryptoTrader:
             return True
         return False
 
-    def _identify_purchase_recommendations(self) -> pd.DataFrame:
+    def _identify_purchase_recommendations(
+        self, intervals_dataframes: List[pd.DataFrame], user_settings: UserSettings
+    ) -> pd.DataFrame:
         """
         Identify purchase recommendations based on price variations.
 
@@ -99,11 +99,7 @@ class CryptoTrader:
             DataFrame: DataFrame containing purchase recommendations.
         """
         purchase_recommendations = pd.DataFrame()
-        for interval in GlobalSettings.INTERVALS:
-            interval_index = int(
-                interval / GlobalSettings.EXECUTION_FREQUENCY_MINUTES)
-            interval_dataframe = self._generate_price_change_data(
-                interval_index)
+        for interval_dataframe in intervals_dataframes:
             if not interval_dataframe.empty:
                 interval_recommendations = self._process_interval_data(
                     interval_dataframe, user_settings
@@ -121,16 +117,6 @@ class CryptoTrader:
             if not interval_dataframe.empty:
                 intervals_dataframe.append(interval_dataframe)
         return intervals_dataframe
-        """
-            if not interval_dataframe.empty:
-                interval_recommendations = self._process_interval_data(
-                    interval_dataframe, user_settings
-                )
-                purchase_recommendations = pd.concat(
-                    [purchase_recommendations, interval_recommendations]
-                )
-        return purchase_recommendations
-        """
 
     def _execute_purchase_recommendations(
         self, purchase_recommendations: pd.DataFrame, assets_dataframe: pd.DataFrame

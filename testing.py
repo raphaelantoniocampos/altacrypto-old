@@ -67,9 +67,6 @@ def generate_users(quantity):
 
 
 database_manager = DatabaseManager()
-users = generate_users(0)
+users = generate_users(5)
 for user in users:
     database_manager.add_user(user)
-users = database_manager.get_all_users({"tier": "gold"})
-for user in users:
-    print(user)
