@@ -29,7 +29,7 @@ class User:
         self.tier = tier
         self.api_key = api_key
         self.secret_key = secret_key
-        self.user_settings = UserSettings()
+        self.user_settings = user_settings
         self.assets = assets
         self.created_at = created_at
         if hashed_password:

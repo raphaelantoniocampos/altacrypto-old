@@ -1,5 +1,7 @@
 import asyncio
+import sys
 from datetime import datetime
+from typing import List
 
 import pandas as pd
 
@@ -9,6 +11,7 @@ from models.user import User
 from utils.global_settings import GlobalSettings
 from core.database_manager import DatabaseManager
 from core.binance_manager import BinanceManager
+from models.user_settings import UserSettings
 
 
 class CryptoTrader:
@@ -24,12 +27,23 @@ class CryptoTrader:
         crypto_data_list = binance_manager.fetch_usdt_pairs()
         self.database_manager.feed_database(crypto_data_list)
 
+        gold_users = self.database_manager.get_all_users({"tier": "gold"})
+
+        user_settings_by_id = {}
+        for user in gold_users:
+            user_settings_by_id[user.id] = user.user_settings
+        user_settings_by_id["silver"] = GlobalSettings.STANDARD_USER_SETTINGS
+
         users = self.database_manager.get_all_users()
         for user in users:
             self._evaluate_assets(user)
 
     def _evaluate_assets(self, user: User) -> None:
         """TODO: Document method"""
+        intervals_dataframe = self._get_intervals_dataframes()
+        print(intervals_dataframe)
+        print(len(intervals_dataframe))
+        sys.exit()
         purchase_recommendations = self._identify_purchase_recommendations()
         assets_dataframe = self.database_manager.get_assets_dataframe()
 
@@ -77,7 +91,7 @@ class CryptoTrader:
             return True
         return False
 
-    def _identify_purchase_recommendations(self: pd.DataFrame) -> pd.DataFrame:
+    def _identify_purchase_recommendations(self) -> pd.DataFrame:
         """
         Identify purchase recommendations based on price variations.
 
@@ -92,12 +106,31 @@ class CryptoTrader:
                 interval_index)
             if not interval_dataframe.empty:
                 interval_recommendations = self._process_interval_data(
-                    interval_dataframe
+                    interval_dataframe, user_settings
                 )
                 purchase_recommendations = pd.concat(
                     [purchase_recommendations, interval_recommendations]
                 )
         return purchase_recommendations
+
+    def _get_intervals_dataframes(self) -> List[pd.DataFrame]:
+        intervals_dataframe = []
+        for interval in GlobalSettings.INTERVALS:
+            interval_index = int(interval / GlobalSettings.EXECUTION_FREQUENCY_MINUTES)
+            interval_dataframe = self._generate_price_change_data(interval_index)
+            if not interval_dataframe.empty:
+                intervals_dataframe.append(interval_dataframe)
+        return intervals_dataframe
+        """
+            if not interval_dataframe.empty:
+                interval_recommendations = self._process_interval_data(
+                    interval_dataframe, user_settings
+                )
+                purchase_recommendations = pd.concat(
+                    [purchase_recommendations, interval_recommendations]
+                )
+        return purchase_recommendations
+        """
 
     def _execute_purchase_recommendations(
         self, purchase_recommendations: pd.DataFrame, assets_dataframe: pd.DataFrame
@@ -129,7 +162,9 @@ class CryptoTrader:
                         current_datetime, has_balance[1], self.user_settings
                     )
 
-    def _process_interval_data(self, interval_dataframe: pd.DataFrame) -> pd.DataFrame:
+    def _process_interval_data(
+        self, interval_dataframe: pd.DataFrame, user_settings: UserSettings
+    ) -> pd.DataFrame:
         """
         Process interval data and generate purchase recommendations.
 
@@ -142,7 +177,7 @@ class CryptoTrader:
         mean_variation = interval_dataframe["variation"].mean()
         interval_recommendations = interval_dataframe[
             interval_dataframe["variation"]
-            >= mean_variation + self.user_settings.percentage_threshold
+            >= mean_variation + user_settings.percentage_threshold
         ]
         return interval_recommendations
 
@@ -161,15 +196,16 @@ class CryptoTrader:
         current_datetime = datetime.now()
         for df in self.database_manager.get_all_crypto_data():
             if len(df) > interval_index:
-                last_entry = df.iloc[0]
-                past_entry = df.iloc[interval_index]
+                last_entry = df.iloc[-1]
+                past_entry = df.iloc[-1 - interval_index]
                 current_price = last_entry["snapshots"].get("price")
                 past_price = past_entry["snapshots"].get("price")
+
+                last_timestamp = (last_entry["snapshots"].get("timestamp")).time
+                past_timestamp = (past_entry["snapshots"].get("timestamp")).time
+
                 interval_time = pd.to_datetime(
-                    (
-                        last_entry["snapshots"].get("timestamp")
-                        - past_entry["snapshots"].get("timestamp")
-                    ),
+                    (last_timestamp - past_timestamp),
                     unit="s",
                 ).strftime("%H:%M:%S")
                 variation_percent = (

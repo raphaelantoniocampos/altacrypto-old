@@ -9,11 +9,10 @@ from utils.global_settings import GlobalSettings
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    global_settings = GlobalSettings()
     database_manager = DatabaseManager()
 
     crypto_trader = CryptoTrader(database_manager)
-    schedule.every(global_settings.EXECUTION_FREQUENCY_MINUTES).minutes.at(":00").do(
+    schedule.every(GlobalSettings.EXECUTION_FREQUENCY_MINUTES).minutes.at(":00").do(
         crypto_trader.start
     )
 

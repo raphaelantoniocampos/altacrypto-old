@@ -4,9 +4,9 @@ import time
 from core.database_manager import DatabaseManager
 from models.crypto_data import CryptoData
 from models.snapshot_dict import SnapshotDict
+from models.user_settings import UserSettings
 from typing import List
 from models.user import User
-from models.user_settings import UserSettings
 from datetime import datetime, timedelta
 from bson.timestamp import Timestamp
 
@@ -70,6 +70,6 @@ database_manager = DatabaseManager()
 users = generate_users(0)
 for user in users:
     database_manager.add_user(user)
-users = database_manager.get_all_users({"tier": "silver"})
+users = database_manager.get_all_users({"tier": "gold"})
 for user in users:
     print(user)
