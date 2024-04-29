@@ -25,7 +25,7 @@ def main():
     elapsed_time = end_time - start_time  # Calcular o tempo decorrido
     print("Tempo decorrido:", elapsed_time, "segundos")
 
-    while False:
+    while True:
         schedule.run_pending()
         time.sleep(1)
 

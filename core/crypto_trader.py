@@ -24,8 +24,10 @@ class CryptoTrader:
         """TODO: Document method"""
         binance_manager = BinanceManager()
 
-        crypto_data_list = binance_manager.fetch_usdt_pairs()
-        # self.database_manager.feed_database(crypto_data_list)
+        crypto_snapshots = binance_manager.fetch_usdt_pairs()
+        self.database_manager.feed_database(crypto_snapshots)
+
+        return
 
         users = self.database_manager.get_all_users()
 
@@ -175,7 +177,7 @@ class CryptoTrader:
         variation_data = []
         interval_time = None
         current_datetime = datetime.now()
-        for df in self.database_manager.get_all_crypto_data():
+        for df in self.database_manager.get_all_crypto_snapshots():
             if len(df) > interval_index:
                 last_entry = df.iloc[-1]
                 past_entry = df.iloc[-1 - interval_index]

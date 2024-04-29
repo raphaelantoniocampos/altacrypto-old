@@ -4,7 +4,7 @@ import logging
 import time
 from typing import List
 
-from models.crypto_data import CryptoData
+from models.crypto_snapshot import CryptoSnapshot
 
 
 class BinanceManager:
@@ -35,30 +35,30 @@ class BinanceManager:
                 f"Error connecting to binance API: {e}")
             return False
 
-    def fetch_usdt_pairs(self) -> List[CryptoData]:
+    def fetch_usdt_pairs(self) -> List[CryptoSnapshot]:
         """
         Fetches USDT pairs from Binance.
 
         Returns:
-            List[CryptoData]: cointaing USDT pairs.
+            List[CryptoSnapshot]: cointaing USDT pairs.
         """
         try:
             endpoint = "/api/v3/ticker/price"
             response = self._make_request(endpoint)
             tickers = response.json()
             coin_prices = pd.DataFrame(tickers)
-            crypto_data_list = []
+            crypto_snapshots = []
             current_timestamp = int(time.time())
             for _, row in coin_prices.iterrows():
                 if str(row["symbol"]).endswith("USDT"):
-                    crypto_data = CryptoData.from_series(
+                    crypto_snapshot = CryptoSnapshot.from_series(
                         row, current_timestamp)
-                    crypto_data_list.append(crypto_data)
-            return crypto_data_list
+                    crypto_snapshots.append(crypto_snapshot)
+            return crypto_snapshots
 
         except Exception as e:
             self.logger.info(f"Error fetching USDT pairs from Binance: {e}")
-            return crypto_data
+            return crypto_snapshots
 
     def _make_request(self, endpoint: str, params: dict | None = None) -> requests.Response:
         """

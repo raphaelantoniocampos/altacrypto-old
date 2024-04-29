@@ -2,8 +2,6 @@ import random
 import string
 import time
 from core.database_manager import DatabaseManager
-from models.crypto_data import CryptoData
-from models.snapshot_dict import SnapshotDict
 from models.user_settings import UserSettings
 from typing import List
 from models.user import User
@@ -18,7 +16,15 @@ def generate_symbol(le=6) -> str:
     return random_symbol
 
 
-def generate_crypto_data(quantity: int):
+def create_ttl_index():
+    """Create TTL index on timestamp field."""
+    database_manager = DatabaseManager()
+    collection = database_manager.get_collection("crypto_snapshots")
+    # Create TTL index on timestamp field, set expiration to 24 hours
+    collection.create_index("timestamp", expireAfterSeconds=6)
+
+
+def generate_crypto_snapshots(quantity: int):
     database_manager = DatabaseManager()
     for i in range(quantity):
         symbol = generate_symbol()
@@ -29,13 +35,13 @@ def generate_crypto_data(quantity: int):
             timestamps.append(timestamp)
         timestamps.sort()
         for timestamp in timestamps:
-            crypto_data_list = []
+            crypto_snapshots = []
             price = (random.random()) * (random.randint(1, 1000))
             snapshots: List[SnapshotDict] = [
                 {"timestamp": timestamp, "price": price}]
-            crypto_data = CryptoData(symbol, snapshots)
-            crypto_data_list.append(crypto_data)
-            database_manager.feed_database(crypto_data_list)
+            crypto_snapshot = CryptoSnapshot(symbol, snapshots)
+            crypto_snapshots.append(crypto_snapshot)
+            database_manager.feed_database(crypto_snapshots)
 
 
 def generate_users(quantity):

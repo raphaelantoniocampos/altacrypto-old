@@ -6,7 +6,7 @@ import logging
 from bson.timestamp import Timestamp
 from typing import List
 
-from models.crypto_data import CryptoData
+from models.crypto_snapshot import CryptoSnapshot
 from models.user import User
 from models.user_settings import UserSettings
 from datetime import datetime, timedelta
@@ -33,59 +33,42 @@ class DatabaseManager:
         """TODO: Document method"""
         return self.dbname[f"{collection_name}"]
 
-    # CryptoData
-    def feed_database(self, crypto_data_list: List[CryptoData]) -> None:
+    # CryptoSnapshots
+    def feed_database(self, crypto_snapshots: List[CryptoSnapshot]) -> None:
         """
-        Updates the database with crypto data.
+        Updates the database with crypto snapshots.
 
         Args:
-        crypto_data_list (List['CryptoData']): containing asset pairs and their prices.
+        crypto_snapshots (List['CryptoSnapshot']): containing asset pairs and their prices.
         """
         try:
-            collection = self.get_collection("crypto_data")
-            collection.create_index(
-                [("symbol", pymongo.ASCENDING)], name="symbol_index"
-            )
+            collection = self.get_collection("crypto_snapshots")
 
             bulk_operations = []
-            for crypto_data in crypto_data_list:
-                operation = self.create_add_crypto_data_operation(crypto_data)
+            for crypto_snapshot in crypto_snapshots:
+                operation = self._create_add_crypto_snapshot_operation(crypto_snapshot)
                 bulk_operations.append(operation)
 
             if bulk_operations:
                 collection.bulk_write(bulk_operations)
 
             current_datetime = datetime.now()
-            self.logger.info(f"Crypto Data updated at {current_datetime}")
+            self.logger.info(f"Crypto Snapshots updated at {current_datetime}")
 
         except pymongo.errors.PyMongoError as e:
             self.logger.info(f"Error adding feeding database: {e}")
 
-    def create_add_crypto_data_operation(
-        self, crypto_data: CryptoData
+    def _create_add_crypto_snapshot_operation(
+        self, crypto_snapshot: CryptoSnapshot
     ) -> pymongo.operations.UpdateOne | pymongo.operations.InsertOne:
         """TODO: Document method"""
-        collection = self.get_collection("crypto_data")
-        document = collection.find_one({"symbol": crypto_data.symbol})
-        if document:
-            operation = pymongo.UpdateOne(
-                {"symbol": document.get("symbol")},
-                {
-                    "$push": {
-                        "snapshots": {
-                            "timestamp": crypto_data.snapshots[0]["timestamp"],
-                            "price": crypto_data.snapshots[0]["price"],
-                        }
-                    }
-                },
-            )
-        else:
-            operation = pymongo.InsertOne(
-                {
-                    "symbol": crypto_data.symbol,
-                    "snapshots": crypto_data.snapshots,
-                },
-            )
+        operation = pymongo.InsertOne(
+            {
+                "symbol": crypto_snapshot.symbol,
+                "timestamp": crypto_snapshot.timestamp,
+                "price": crypto_snapshot.price,
+            },
+        )
 
         return operation
 
@@ -98,7 +81,7 @@ class DatabaseManager:
             deletion_timestamp = Timestamp(
                 int((datetime.now() - timedelta(days=1)).timestamp()), 0
             )
-            collection = self.get_collection("crypto_data")
+            collection = self.get_collection("crypto_snapshots")
             collection.update_one(
                 {"symbol": symbol},
                 {"$pull": {"snapshots": {"timestamp": {"$lt": deletion_timestamp}}}},
@@ -106,21 +89,7 @@ class DatabaseManager:
         except pymongo.errors.PyMongoError as e:
             self.logger.info(f"Error deleting snapshot from {symbol}: {e}")
 
-    def get_crypto_data(self, symbol: str) -> pd.DataFrame:
-        """
-        Retrieves price data for a USD symbol as a DataFrame.
-
-        Args:
-            symbol (str): Symbol of the document to fetch data from.
-
-        Returns:
-            pd.DataFrame: DataFrame containing price data.
-        """
-        collection = self.get_collection("crypto_data")
-        document = collection.find_one({"symbol": symbol})
-        return pd.DataFrame(document)
-
-    def get_all_crypto_data(self) -> List[pd.DataFrame]:
+    def get_all_crypto_snapshots(self) -> List[pd.DataFrame]:
         """
         Retrieves price data for all USD symbols as a list of DataFrames.
 
@@ -128,7 +97,7 @@ class DatabaseManager:
             list: List of DataFrames containing crypto data for each symbol.
         """
         try:
-            collection = self.get_collection("crypto_data")
+            collection = self.get_collection("crypto_snapshots")
             cursor = collection.find()
             dataframe_list = []
             for document in cursor:
@@ -136,7 +105,7 @@ class DatabaseManager:
                 dataframe_list.append(snap)
             return dataframe_list
         except pymongo.errors.PyMongoError as e:
-            self.logger.info(f"Error getting crypto data: {e}")
+            self.logger.info(f"Error getting crypto snapshot: {e}")
 
     # Users
     def add_user(self, user: User) -> None:
