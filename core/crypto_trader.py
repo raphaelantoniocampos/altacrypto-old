@@ -25,21 +25,16 @@ class CryptoTrader:
         binance_manager = BinanceManager()
 
         crypto_data_list = binance_manager.fetch_usdt_pairs()
-        self.database_manager.feed_database(crypto_data_list)
+        # self.database_manager.feed_database(crypto_data_list)
 
-        gold_users = self.database_manager.get_all_users({"tier": "gold"})
-        silver_users = self.database_manager.get_all_users({"tier": "silver"})
-        user_settings_by_id = {}
-        for user in gold_users:
-            user_settings_by_id[user.id] = user.user_settings
-        user_settings_by_id["silver"] = GlobalSettings.STANDARD_USER_SETTINGS
         users = self.database_manager.get_all_users()
 
         intervals_dataframe = self._get_intervals_dataframes()
-        for id, user_setting in user_settings_by_id.items():
-            purchase_recommendations = self._identify_purchase_recommendations(
-                intervals_dataframe, user_setting
-            )
+        purchase_recommendations = self._identify_purchase_recommendations(
+            intervals_dataframe, GlobalSettings.STANDARD_USER_SETTINGS
+        )
+        print(purchase_recommendations)
+        sys.exit()
 
     def _evaluate_assets(self, user: User) -> None:
         """TODO: Document method"""
@@ -194,8 +189,7 @@ class CryptoTrader:
                     (last_timestamp - past_timestamp),
                     unit="s",
                 ).strftime("%H:%M:%S")
-                variation_percent = (
-                    (current_price - past_price) / current_price) * 100
+                variation_percent = ((current_price - past_price) / current_price) * 100
                 variation_data.append(
                     {
                         "symbol": last_entry["symbol"],
