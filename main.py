@@ -16,13 +16,10 @@ def main():
         crypto_trader.start
     )
 
-    start_time = time.time()  # Registrar o tempo de inicio
+    start_time = time.time()
     crypto_trader.start()
-    # import testing
-
-    end_time = time.time()  # Registrar o tempo de termino
-
-    elapsed_time = end_time - start_time  # Calcular o tempo decorrido
+    end_time = time.time()
+    elapsed_time = end_time - start_time
     print("Tempo decorrido:", elapsed_time, "segundos")
 
     while True:

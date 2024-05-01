@@ -27,8 +27,6 @@ class CryptoTrader:
         crypto_snapshots = binance_manager.fetch_usdt_pairs()
         self.database_manager.feed_database(crypto_snapshots)
 
-        return
-
         users = self.database_manager.get_all_users()
 
         intervals_dataframe = self._get_intervals_dataframes()
@@ -177,6 +175,10 @@ class CryptoTrader:
         variation_data = []
         interval_time = None
         current_datetime = datetime.now()
+        todos = self.database_manager.get_all_crypto_snapshots()
+        for df in todos:
+            print(df)
+        sys.exit()
         for df in self.database_manager.get_all_crypto_snapshots():
             if len(df) > interval_index:
                 last_entry = df.iloc[-1]

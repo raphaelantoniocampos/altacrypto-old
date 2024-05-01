@@ -1,7 +1,7 @@
 import pandas as pd
 import requests
 import logging
-import time
+from datetime import datetime
 from typing import List
 
 from models.crypto_snapshot import CryptoSnapshot
@@ -48,11 +48,11 @@ class BinanceManager:
             tickers = response.json()
             coin_prices = pd.DataFrame(tickers)
             crypto_snapshots = []
-            current_timestamp = int(time.time())
+            current_datetime = datetime.now()
             for _, row in coin_prices.iterrows():
                 if str(row["symbol"]).endswith("USDT"):
                     crypto_snapshot = CryptoSnapshot.from_series(
-                        row, current_timestamp)
+                        row, current_datetime)
                     crypto_snapshots.append(crypto_snapshot)
             return crypto_snapshots
 

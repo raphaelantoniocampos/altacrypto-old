@@ -3,7 +3,6 @@ import os
 from dotenv import load_dotenv
 import pymongo
 import logging
-from bson.timestamp import Timestamp
 from typing import List
 
 from models.crypto_snapshot import CryptoSnapshot
@@ -43,7 +42,12 @@ class DatabaseManager:
         """
         try:
             collection = self.get_collection("crypto_snapshots")
-
+            self.create_ttl_index(
+                collection_name="crypto_snapshots",
+                index_name="datetime",
+                ascending=False,
+                expire_after_seconds=86400,
+            )
             bulk_operations = []
             for crypto_snapshot in crypto_snapshots:
                 operation = self._create_add_crypto_snapshot_operation(crypto_snapshot)
@@ -65,29 +69,12 @@ class DatabaseManager:
         operation = pymongo.InsertOne(
             {
                 "symbol": crypto_snapshot.symbol,
-                "timestamp": crypto_snapshot.timestamp,
+                "datetime": crypto_snapshot.datetime,
                 "price": crypto_snapshot.price,
             },
         )
 
         return operation
-
-    def delete_crypto_snapshots(
-        self,
-        symbol: str,
-    ) -> None:
-        """TODO: Document method"""
-        try:
-            deletion_timestamp = Timestamp(
-                int((datetime.now() - timedelta(days=1)).timestamp()), 0
-            )
-            collection = self.get_collection("crypto_snapshots")
-            collection.update_one(
-                {"symbol": symbol},
-                {"$pull": {"snapshots": {"timestamp": {"$lt": deletion_timestamp}}}},
-            )
-        except pymongo.errors.PyMongoError as e:
-            self.logger.info(f"Error deleting snapshot from {symbol}: {e}")
 
     def get_all_crypto_snapshots(self) -> List[pd.DataFrame]:
         """
@@ -99,13 +86,46 @@ class DatabaseManager:
         try:
             collection = self.get_collection("crypto_snapshots")
             cursor = collection.find()
-            dataframe_list = []
+            crypto_snapshots = []
             for document in cursor:
-                snap = pd.DataFrame(document)
-                dataframe_list.append(snap)
-            return dataframe_list
+                crypto_snapshots.append(CryptoSnapshot.from_dict(document))
+            return crypto_snapshots
         except pymongo.errors.PyMongoError as e:
             self.logger.info(f"Error getting crypto snapshot: {e}")
+
+    def verify_ttl_index(self, collection_name: str, index_name: str):
+        try:
+            collection = self.get_collection(collection_name)
+            index_info = collection.index_information()
+            for i_name, i_spec in index_info.items():
+                if (
+                    i_spec.get("expireAfterSeconds") is not None
+                    and index_name in i_name
+                ):
+                    return True
+            return False
+
+        except pymongo.errors.PyMongoError as e:
+            self.logger.info(f"Error verifying TTL index: {e}")
+            return False
+
+    def create_ttl_index(
+        self,
+        collection_name: str,
+        index_name: str,
+        ascending: bool,
+        expire_after_seconds: int,
+    ):
+        try:
+            collection = self.get_collection(collection_name)
+            if not self.verify_ttl_index(collection_name, index_name):
+                direction = pymongo.ASCENDING if ascending else pymongo.DESCENDING
+                collection.create_index(
+                    [(index_name, direction)],
+                    expireAfterSeconds=expire_after_seconds,
+                )
+        except pymongo.errors.PyMongoError as e:
+            self.logger.info(f"Error creating TTL index: {e}")
 
     # Users
     def add_user(self, user: User) -> None:

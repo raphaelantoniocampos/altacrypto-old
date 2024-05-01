@@ -5,8 +5,12 @@ from core.database_manager import DatabaseManager
 from models.user_settings import UserSettings
 from typing import List
 from models.user import User
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from bson.timestamp import Timestamp
+
+
+datas = timezone(-timedelta(hours=3))
+print(datas)
 
 
 def generate_symbol(le=6) -> str:

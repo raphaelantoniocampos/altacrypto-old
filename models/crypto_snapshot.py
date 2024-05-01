@@ -1,26 +1,32 @@
 import pandas as pd
-from bson.timestamp import Timestamp
+from datetime import datetime
 
 
 class CryptoSnapshot:
     """TODO: Document class"""
 
-    def __init__(self, symbol: str, timestamp: Timestamp, price: float):
+    def __init__(self, symbol: str, datetime: datetime, price: float):
         """TODO: Document method"""
         self.symbol = symbol.upper()
-        self.timestamp = timestamp
+        self.datetime = datetime
         self.price = price
 
     def __str__(self) -> str:
         """Returns a string representation of the Crypto Snapshot."""
-        return (
-            f"Symbol: {self.symbol}\nTimestamp: {self.timestamp}\nPrice: {self.price}"
-        )
+        return f"Symbol: {self.symbol}\nDatetime: {self.datetime}\nPrice: {self.price}"
 
     @classmethod
-    def from_series(cls, series: pd.Series, current_timestamp: int) -> "CryptoSnapshot":
+    def from_series(cls, series: pd.Series, datetime: datetime) -> "CryptoSnapshot":
         """TODO: Document method"""
         symbol = series["symbol"]
-        timestamp = Timestamp(current_timestamp, 0)
+        datetime = datetime
         price = float(series["price"])
-        return cls(symbol, timestamp, price)
+        return cls(symbol, datetime, price)
+
+    @classmethod
+    def from_dict(cls, crypto_dict: dict) -> "CryptoSnapshot":
+        """TODO: Document method"""
+        symbol = crypto_dict["symbol"]
+        datetime = crypto_dict["datetime"]
+        price = crypto_dict["price"]
+        return cls(symbol, datetime, price)
