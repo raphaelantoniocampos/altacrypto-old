@@ -1,6 +1,9 @@
+import logging
+from pprint import pprint
+from models.crypto_snapshot import CryptoSnapshot
 import asyncio
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 
 import pandas as pd
@@ -19,6 +22,7 @@ class CryptoTrader:
 
     def __init__(self, database_manager: DatabaseManager):
         self.database_manager = database_manager
+        self.logger = logging.getLogger(__name__)
 
     def start(self) -> None:
         """TODO: Document method"""
@@ -33,8 +37,104 @@ class CryptoTrader:
         purchase_recommendations = self._identify_purchase_recommendations(
             intervals_dataframe, GlobalSettings.STANDARD_USER_SETTINGS
         )
-        print(purchase_recommendations)
+        pprint(purchase_recommendations)
         sys.exit()
+
+    def _get_intervals_dataframes(self) -> List[pd.DataFrame]:
+        """TODO: Document method"""
+        intervals_dataframe = []
+        all_crypto_snapshots = self.database_manager.get_all_crypto_snapshots()
+        crypto_snapshots_by_symbol = self._separate_crypto_snapshots_by_symbol(
+            all_crypto_snapshots
+        )
+        current_datetime = datetime.now()
+        for interval_in_minutes in GlobalSettings.INTERVALS_IN_MINUTES:
+            variation_data = []
+            for df in crypto_snapshots_by_symbol:
+                try:
+                    last_snapshot = df.iloc[-1]
+                    symbol = last_snapshot["symbol"]
+                    past_snapshot = df.loc[
+                        (
+                            df["datetime"]
+                            < (
+                                last_snapshot["datetime"]
+                                - pd.Timedelta(minutes=(interval_in_minutes - 1))
+                            )
+                        )
+                        & (
+                            df["datetime"]
+                            > (
+                                last_snapshot["datetime"]
+                                - pd.Timedelta(minutes=(interval_in_minutes + 1))
+                            )
+                        )
+                    ]
+                    if isinstance(past_snapshot, pd.DataFrame):
+                        past_snapshot = past_snapshot.iloc[-1]
+                    current_price = last_snapshot["price"]
+                    past_price = past_snapshot["price"]
+
+                    last_datetime = last_snapshot["datetime"]
+                    past_datetime = past_snapshot["datetime"]
+
+                    interval_time = last_datetime - past_datetime
+                    variation_percent = (
+                        (current_price - past_price) / current_price
+                    ) * 100
+                    variation_data.append(
+                        {
+                            "symbol": symbol,
+                            "interval": interval_time,
+                            "current_datetime": current_datetime,
+                            "current_price": current_price,
+                            "past_price": past_price,
+                            "variation": variation_percent,
+                        }
+                    )
+                except IndexError as e:
+                    # self.logger.info(f"Error getting interval dataframe: {e}")
+                    variation_data.append({})
+            interval_dataframe = pd.DataFrame(variation_data)
+            df = interval_dataframe
+            if not interval_dataframe.empty:
+                intervals_dataframe.append(interval_dataframe)
+        return intervals_dataframe
+
+    def _separate_crypto_snapshots_by_symbol(
+        self, crypto_snapshots: List[CryptoSnapshot]
+    ) -> List[pd.DataFrame]:
+        """TODO: Document method"""
+        data = []
+        for crypto_snapshot in crypto_snapshots:
+            data.append(
+                {
+                    "symbol": crypto_snapshot.symbol,
+                    "datetime": crypto_snapshot.datetime,
+                    "price": crypto_snapshot.price,
+                }
+            )
+        df = pd.DataFrame(data)
+        return [group for _, group in df.groupby("symbol")]
+
+    def _identify_purchase_recommendations(
+        self, intervals_dataframes: List[pd.DataFrame], user_settings: UserSettings
+    ) -> pd.DataFrame:
+        """TODO: Document method"""
+        purchase_recommendations = pd.DataFrame()
+        for interval_dataframe in intervals_dataframes:
+            if not interval_dataframe.empty:
+                mean_variation = interval_dataframe["variation"].mean()
+                interval_recommendations = interval_dataframe[
+                    interval_dataframe["variation"]
+                    >= mean_variation + user_settings.percentage_threshold
+                ]
+                if not interval_recommendations.empty:
+                    interval_recommendations["mean_variation"] = mean_variation
+                    purchase_recommendations = pd.concat(
+                        [purchase_recommendations, interval_recommendations]
+                    )
+        return purchase_recommendations
 
     def _evaluate_assets(self, user: User) -> None:
         """TODO: Document method"""
@@ -84,35 +184,6 @@ class CryptoTrader:
             return True
         return False
 
-    def _identify_purchase_recommendations(
-        self, intervals_dataframes: List[pd.DataFrame], user_settings: UserSettings
-    ) -> pd.DataFrame:
-        """
-        Identify purchase recommendations based on price variations.
-
-        Returns:
-            DataFrame: DataFrame containing purchase recommendations.
-        """
-        purchase_recommendations = pd.DataFrame()
-        for interval_dataframe in intervals_dataframes:
-            if not interval_dataframe.empty:
-                interval_recommendations = self._process_interval_data(
-                    interval_dataframe, user_settings
-                )
-                purchase_recommendations = pd.concat(
-                    [purchase_recommendations, interval_recommendations]
-                )
-        return purchase_recommendations
-
-    def _get_intervals_dataframes(self) -> List[pd.DataFrame]:
-        intervals_dataframe = []
-        for interval in GlobalSettings.INTERVALS:
-            interval_index = int(interval / GlobalSettings.EXECUTION_FREQUENCY_MINUTES)
-            interval_dataframe = self._generate_price_change_data(interval_index)
-            if not interval_dataframe.empty:
-                intervals_dataframe.append(interval_dataframe)
-        return intervals_dataframe
-
     def _execute_purchase_recommendations(
         self, purchase_recommendations: pd.DataFrame, assets_dataframe: pd.DataFrame
     ) -> None:
@@ -143,65 +214,4 @@ class CryptoTrader:
                         current_datetime, has_balance[1], self.user_settings
                     )
 
-    def _process_interval_data(
-        self, interval_dataframe: pd.DataFrame, user_settings: UserSettings
-    ) -> pd.DataFrame:
-        """
-        Process interval data and generate purchase recommendations.
 
-        Args:
-            interval_dataframe (DataFrame): DataFrame containing price variations within an interval.
-
-        Returns:
-            DataFrame: DataFrame containing purchase recommendations.
-        """
-        mean_variation = interval_dataframe["variation"].mean()
-        interval_recommendations = interval_dataframe[
-            interval_dataframe["variation"]
-            >= mean_variation + user_settings.percentage_threshold
-        ]
-        return interval_recommendations
-
-    def _generate_price_change_data(self, interval_index: int) -> pd.DataFrame:
-        """
-        Generates a DataFrame containing price variations for a given interval.
-
-        Args:
-            interval_index (int): Index of the interval.
-
-        Returns:
-            DataFrame: DataFrame containing price variations.
-        """
-        variation_data = []
-        interval_time = None
-        current_datetime = datetime.now()
-        todos = self.database_manager.get_all_crypto_snapshots()
-        for df in todos:
-            print(df)
-        sys.exit()
-        for df in self.database_manager.get_all_crypto_snapshots():
-            if len(df) > interval_index:
-                last_entry = df.iloc[-1]
-                past_entry = df.iloc[-1 - interval_index]
-                current_price = last_entry["snapshots"].get("price")
-                past_price = past_entry["snapshots"].get("price")
-
-                last_timestamp = (last_entry["snapshots"].get("timestamp")).time
-                past_timestamp = (past_entry["snapshots"].get("timestamp")).time
-
-                interval_time = pd.to_datetime(
-                    (last_timestamp - past_timestamp),
-                    unit="s",
-                ).strftime("%H:%M:%S")
-                variation_percent = ((current_price - past_price) / current_price) * 100
-                variation_data.append(
-                    {
-                        "symbol": last_entry["symbol"],
-                        "interval": interval_time,
-                        "current_datetime": current_datetime,
-                        "current_price": current_price,
-                        "past_price": past_price,
-                        "variation": variation_percent,
-                    }
-                )
-        return pd.DataFrame(variation_data)

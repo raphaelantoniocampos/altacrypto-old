@@ -170,5 +170,6 @@ class DatabaseManager:
                 users.append(user)
             return users
         except pymongo.errors.PyMongoError as e:
-            self.logger.info(f"Erro ao obter dados dos usuários: {e}")
+            self.logger.info(f"Erro ao obter dados dos usuarios: {e}")
             return []
+

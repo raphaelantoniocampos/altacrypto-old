@@ -4,7 +4,7 @@ class UserSettings:
     def __init__(
         self,
         testing: bool = False,
-        percentage_threshold: int = 10,
+        percentage_threshold: int = 2,  # 10
         under_purchase_percentage: float = 3.0,
         under_highest_percentage: float = 3.0,
         above_purchase_percentage: float = 200.0,
@@ -37,3 +37,4 @@ class UserSettings:
 
     def __str__(self) -> str:
         return f"Testing: {self.testing}\nPercentage Threshold: {self.percentage_threshold}\nUnder Purchase Percentage: {self.under_purchase_percentage}\nUnder Highest Percentage: {self.under_highest_percentage}\nAbove Purchase Percentage: {self.above_purchase_percentage}\nOperation Value Percentage: {self.operation_value_percentage}\nMaximum Operation Value: {self.maximum_operation_value}"
+
