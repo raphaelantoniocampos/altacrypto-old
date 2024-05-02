@@ -1,5 +1,5 @@
-import logging
 from pprint import pprint
+import logging
 from models.crypto_snapshot import CryptoSnapshot
 import asyncio
 import sys
@@ -34,11 +34,12 @@ class CryptoTrader:
         users = self.database_manager.get_all_users()
 
         intervals_dataframe = self._get_intervals_dataframes()
-        purchase_recommendations = self._identify_purchase_recommendations(
+        purchase_recommendations = self._get_purchase_recommendations(
             intervals_dataframe, GlobalSettings.STANDARD_USER_SETTINGS
         )
-        pprint(purchase_recommendations)
-        sys.exit()
+        pprint(intervals_dataframe)
+        if not purchase_recommendations.empty:
+            pprint(purchase_recommendations)
 
     def _get_intervals_dataframes(self) -> List[pd.DataFrame]:
         """TODO: Document method"""
@@ -71,7 +72,7 @@ class CryptoTrader:
                         )
                     ]
                     if isinstance(past_snapshot, pd.DataFrame):
-                        past_snapshot = past_snapshot.iloc[-1]
+                        past_snapshot = past_snapshot.iloc[0]
                     current_price = last_snapshot["price"]
                     past_price = past_snapshot["price"]
 
@@ -93,10 +94,12 @@ class CryptoTrader:
                         }
                     )
                 except IndexError as e:
-                    # self.logger.info(f"Error getting interval dataframe: {e}")
-                    variation_data.append({})
-            interval_dataframe = pd.DataFrame(variation_data)
-            df = interval_dataframe
+                    self.logger.info(f"Error getting interval dataframe: {e}")
+                    variation_data.append({"variation": 0})
+
+            df = pd.DataFrame(variation_data)
+            interval_dataframe = df[df["variation"] != 0.0]
+            interval_dataframe.reset_index(drop=True, inplace=True)
             if not interval_dataframe.empty:
                 intervals_dataframe.append(interval_dataframe)
         return intervals_dataframe
@@ -117,7 +120,7 @@ class CryptoTrader:
         df = pd.DataFrame(data)
         return [group for _, group in df.groupby("symbol")]
 
-    def _identify_purchase_recommendations(
+    def _get_purchase_recommendations(
         self, intervals_dataframes: List[pd.DataFrame], user_settings: UserSettings
     ) -> pd.DataFrame:
         """TODO: Document method"""
@@ -213,5 +216,3 @@ class CryptoTrader:
                     TransactionManager.attempt_purchase(
                         current_datetime, has_balance[1], self.user_settings
                     )
-
-

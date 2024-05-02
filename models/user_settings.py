@@ -37,4 +37,3 @@ class UserSettings:
 
     def __str__(self) -> str:
         return f"Testing: {self.testing}\nPercentage Threshold: {self.percentage_threshold}\nUnder Purchase Percentage: {self.under_purchase_percentage}\nUnder Highest Percentage: {self.under_highest_percentage}\nAbove Purchase Percentage: {self.above_purchase_percentage}\nOperation Value Percentage: {self.operation_value_percentage}\nMaximum Operation Value: {self.maximum_operation_value}"
-
