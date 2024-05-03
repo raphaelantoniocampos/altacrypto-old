@@ -1,9 +1,7 @@
-from pprint import pprint
 import logging
 from models.crypto_snapshot import CryptoSnapshot
 import asyncio
-import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List
 
 import pandas as pd
@@ -21,10 +19,11 @@ class CryptoTrader:
     """TODO: Document class."""
 
     def __init__(self, database_manager: DatabaseManager):
+        """TODO: Document method."""
         self.database_manager = database_manager
         self.logger = logging.getLogger(__name__)
 
-    def start(self) -> None:
+    async def start(self) -> None:
         """TODO: Document method"""
         binance_manager = BinanceManager()
 
@@ -37,9 +36,8 @@ class CryptoTrader:
         purchase_recommendations = self._get_purchase_recommendations(
             intervals_dataframe, GlobalSettings.STANDARD_USER_SETTINGS
         )
-        pprint(intervals_dataframe)
-        if not purchase_recommendations.empty:
-            pprint(purchase_recommendations)
+        tasks = [self._evaluate_assets(user, crypto_snapshots) for user in users]
+        await asyncio.gather(*tasks)
 
     def _get_intervals_dataframes(self) -> List[pd.DataFrame]:
         """TODO: Document method"""
@@ -50,27 +48,53 @@ class CryptoTrader:
         )
         current_datetime = datetime.now()
         for interval_in_minutes in GlobalSettings.INTERVALS_IN_MINUTES:
-            variation_data = []
-            for df in crypto_snapshots_by_symbol:
-                try:
-                    last_snapshot = df.iloc[-1]
-                    symbol = last_snapshot["symbol"]
-                    past_snapshot = df.loc[
-                        (
-                            df["datetime"]
-                            < (
-                                last_snapshot["datetime"]
-                                - pd.Timedelta(minutes=(interval_in_minutes - 1))
-                            )
+            interval_dataframe = self._get_interval_dataframe(
+                interval_in_minutes, crypto_snapshots_by_symbol, current_datetime
+            )
+            if not interval_dataframe.empty:
+                intervals_dataframe.append(interval_dataframe)
+        return intervals_dataframe
+
+    def _get_interval_dataframe(
+        self,
+        interval_in_minutes: int,
+        crypto_snapshots_by_symbol: List[pd.DataFrame],
+        current_datetime: datetime,
+    ) -> pd.DataFrame:
+        """TODO: Document method"""
+        variation_data = []
+        for df in crypto_snapshots_by_symbol:
+            try:
+                last_snapshot = df.iloc[-1]
+                symbol = last_snapshot["symbol"]
+                past_snapshot = df.loc[
+                    (
+                        df["datetime"]
+                        < (
+                            last_snapshot["datetime"]
+                            - pd.Timedelta(minutes=(interval_in_minutes - 1))
                         )
-                        & (
-                            df["datetime"]
-                            > (
-                                last_snapshot["datetime"]
-                                - pd.Timedelta(minutes=(interval_in_minutes + 1))
-                            )
+                    )
+                    & (
+                        df["datetime"]
+                        > (
+                            last_snapshot["datetime"]
+                            - pd.Timedelta(minutes=(interval_in_minutes + 1))
                         )
-                    ]
+                    )
+                ]
+                if past_snapshot.empty:
+                    variation_data.append(
+                        {
+                            "symbol": symbol,
+                            "interval": None,
+                            "current_datetime": current_datetime,
+                            "current_price": None,
+                            "past_price": None,
+                            "variation": 0,
+                        }
+                    )
+                else:
                     if isinstance(past_snapshot, pd.DataFrame):
                         past_snapshot = past_snapshot.iloc[0]
                     current_price = last_snapshot["price"]
@@ -93,16 +117,23 @@ class CryptoTrader:
                             "variation": variation_percent,
                         }
                     )
-                except IndexError as e:
-                    self.logger.info(f"Error getting interval dataframe: {e}")
-                    variation_data.append({"variation": 0})
+            except IndexError as e:
+                self.logger.info(f"Error getting interval dataframe: {e}")
+                variation_data.append(
+                    {
+                        "symbol": symbol,
+                        "interval": None,
+                        "current_datetime": current_datetime,
+                        "current_price": None,
+                        "past_price": None,
+                        "variation": 0,
+                    }
+                )
 
-            df = pd.DataFrame(variation_data)
-            interval_dataframe = df[df["variation"] != 0.0]
-            interval_dataframe.reset_index(drop=True, inplace=True)
-            if not interval_dataframe.empty:
-                intervals_dataframe.append(interval_dataframe)
-        return intervals_dataframe
+        interval_dataframe = pd.DataFrame(variation_data)
+        interval_dataframe = interval_dataframe[interval_dataframe["variation"] != 0.0]
+        interval_dataframe.reset_index(drop=True, inplace=True)
+        return interval_dataframe
 
     def _separate_crypto_snapshots_by_symbol(
         self, crypto_snapshots: List[CryptoSnapshot]
@@ -131,7 +162,7 @@ class CryptoTrader:
                 interval_recommendations = interval_dataframe[
                     interval_dataframe["variation"]
                     >= mean_variation + user_settings.percentage_threshold
-                ]
+                ].copy()
                 if not interval_recommendations.empty:
                     interval_recommendations["mean_variation"] = mean_variation
                     purchase_recommendations = pd.concat(
@@ -139,64 +170,10 @@ class CryptoTrader:
                     )
         return purchase_recommendations
 
-    def _evaluate_assets(self, user: User) -> None:
-        """TODO: Document method"""
-        assets_dataframe = self.database_manager.get_assets_dataframe()
-
-        if not assets_dataframe.empty:
-            for _, row in assets_dataframe.iterrows():
-                asset = Asset.from_series(row)
-                if asset.symbol != "USDT":
-                    asset.update_asset(
-                        float(
-                            asset_pairs.loc[
-                                asset_pairs["symbol"] == asset.symbol, "price"
-                            ].iloc[0]
-                        )
-                    )
-                    self.data_manager.update_asset(asset)
-                    if self._should_asset_be_sold(asset):
-                        TransactionManager.sell_asset(
-                            asset,
-                            self.data_manager,
-                            self.user_settings,
-                        )
-
-        self._execute_purchase_recommendations(
-            purchase_recommendations, assets_dataframe
-        )
-
-    def _should_asset_be_sold(self, asset: Asset) -> bool:
-        """
-        Determine if an asset should be sold based on purchase recommendations and predefined rules.
-
-        Args:
-            asset (Asset): The asset to be evaluated.
-            purchase_recommendations (DataFrame): DataFrame containing purchase recommendations.
-
-        Returns:
-            bool: True if the asset should be sold, False otherwise.
-        """
-        if asset.variation <= (-self.user_settings.under_purchase_percentage):
-            return True
-        if asset.current_price <= asset.highest_price * (
-            1 - self.user_settings.under_highest_percentage / 100
-        ):
-            return True
-        if asset.variation >= self.user_settings.above_purchase_percentage:
-            return True
-        return False
-
     def _execute_purchase_recommendations(
-        self, purchase_recommendations: pd.DataFrame, assets_dataframe: pd.DataFrame
+        self, purchase_recommendations: pd.DataFrame, users: List[User]
     ) -> None:
-        """
-        Execute purchase recommendations by buying assets if conditions are met.
-
-        Args:
-            purchase_recommendations (DataFrame): DataFrame containing purchase recommendations.
-            assets_dataframe (DataFrame): DataFrame containing asset data.
-        """
+        """TODO: Document method"""
         assets_symbols = set(assets_dataframe["symbol"])
         operation_value = self.balance_manager.get_operation_value()
         for _, row in purchase_recommendations.iterrows():
@@ -216,3 +193,29 @@ class CryptoTrader:
                     TransactionManager.attempt_purchase(
                         current_datetime, has_balance[1], self.user_settings
                     )
+
+    async def _evaluate_assets(
+        self, user: User, crypto_snapshots: List[CryptoSnapshot]
+    ) -> None:
+        """TODO: Document method"""
+        assets = [Asset.from_dict(asset) for asset in user.assets]
+
+        crypto_snapshots_dict = {
+            crypto_snapshot.symbol: crypto_snapshot
+            for crypto_snapshot in crypto_snapshots
+        }
+        if assets:
+            for asset in assets:
+                if asset.symbol in crypto_snapshots_dict:
+                    asset.update_asset(crypto_snapshots_dict[asset.symbol].price)
+                    self.database_manager.update_asset_from_user(asset, user)
+                    if asset.should_be_sold:
+                        print(
+                            f"Selling Asset from user: {user.login}\n{asset}"
+                        )  # SELL ASSET
+        """
+
+        self._execute_purchase_recommendations(
+            purchase_recommendations, assets_dataframe
+        )
+        """

@@ -1,5 +1,6 @@
 import datetime
 import pandas as pd
+from utils.global_settings import GlobalSettings
 
 
 class Asset:
@@ -13,6 +14,7 @@ class Asset:
         purchase_datetime: datetime.datetime,
         highest_price: float,
         current_price: float,
+        should_be_sold: bool = False,
         obs: str | None = None,
     ):
         """
@@ -35,6 +37,7 @@ class Asset:
         self.variation = self.calculate_variation()
         self.purchase_datetime = purchase_datetime
         self.highest_price = highest_price
+        self.should_be_sold = should_be_sold
         self.obs = obs
 
     def calculate_current_value(self) -> float:
@@ -54,58 +57,65 @@ class Asset:
         if self.current_price > self.highest_price:
             self.highest_price = self.current_price
         self.current_value = self.calculate_current_value()
+        self.should_be_sold = self.update_should_asset_be_sold()
+
+    def update_should_asset_be_sold(self) -> bool:
+        if self.variation <= (
+            -GlobalSettings.STANDARD_USER_SETTINGS.under_purchase_percentage
+        ):
+            return True
+        if self.current_price <= self.highest_price * (
+            1 - GlobalSettings.STANDARD_USER_SETTINGS.under_highest_percentage / 100
+        ):
+            return True
+        if (
+            self.variation
+            >= GlobalSettings.STANDARD_USER_SETTINGS.above_purchase_percentage
+        ):
+            return True
+        return False
 
     def calculate_profit_loss(self) -> float:
         """Calculates the profit or loss of the asset."""
         total_purchase_value = self.purchase_price * self.quantity
         return self.current_value - total_purchase_value
 
-'''
-    def add_asset(
-        self, database_manager: DatabaseManager, asset: "Asset", wallet_id: int
-    ) -> None:
+    @classmethod
+    def from_dict(cls, asset_dict: dict) -> "Asset":
         """TODO: Document method"""
-        table_name = "Assets"
-        if not database_manager.table_exists(table_name):
-            self.create_assets_table()
-        sql = f"INSERT INTO {table_name} (wallet_id, symbol, quantity, purchase_price, current_price, current_value, variation, purchase_datetime,, highhest_price, obs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        params = (
-            wallet_id,
-            self.database_manager.format_symbol(asset.symbol),
-            asset.quantity,
-            asset.purchase_price,
-            asset.current_price,
-            asset.current_value,
-            asset.variation,
-            asset.purchase_datetime.strftime("%Y-%m-%d %H:%M:%S"),
-            asset.highest_price,
-            asset.obs,
-        )
-        self.database_manager.execute_sql(
-            sql,
-            f"Error inserting purchase for {table_name} wallet_id: {wallet_id}",
-            params,
+        symbol = asset_dict["symbol"]
+        quantity = asset_dict["quantity"]
+        purchase_price = asset_dict["purchase_price"]
+        purchase_datetime = asset_dict["purchase_datetime"]
+        highest_price = asset_dict["highest_price"]
+        current_price = asset_dict["current_price"]
+        should_be_sold = asset_dict["should_be_sold"]
+        obs = asset_dict["obs"]
+        return cls(
+            symbol,
+            quantity,
+            purchase_price,
+            purchase_datetime,
+            highest_price,
+            current_price,
+            should_be_sold,
+            obs,
         )
 
-    def _create_assets_table(self) -> None:
-        """
-        Creates a table for storing assets.
-        """
-        table_name = "Assets"
-        sql = f"""
-        CREATE TABLE IF NOT EXISTS Assets (
-            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-            wallet_id INTEGER NOT NULL,
-            quantity REAL NOT NULL,
-            purchase_price REAL NOT NULL,
-            current_value REAL NOT NULL,
-            purchase_datetime TEXT NOT NULL,
-            highest_price REAL NOT NULL,
-            current_price REAL NOT NULL,
-            obs TEXT,
-            FOREIGN KEY (wallet_id) REFERENCES Wallets(id));
-        """
-        database_manager.execute_sql(sql, f"Error creating {table_name} table")
+    def __str__(self) -> str:
+        """Returns a string representation of the asset."""
+        return (
+            f"Symbol: {self.symbol}, Quantity: {self.quantity}\n"
+            f"Purchase Price: {self.purchase_price:.2f}\n"
+            f"Purchase Datetime: {self.purchase_datetime}\n"
+            f"Highest Price: {self.highest_price:.2f}\n"
+            f"Current Price: {self.current_price:.2f}\n"
+            f"Variation: {self.variation:.2f}%\n"
+            f"Should be Sold: {self.should_be_sold}\n"
+        )
+
+
+'''
 
     @classmethod
     def from_series(cls, series: pd.Series) -> "Asset":
@@ -130,15 +140,6 @@ class Asset:
             obs,
         )
 
-    def __str__(self) -> str:
-        """Returns a string representation of the asset."""
-        return (
-            f"Symbol: {self.symbol}, Quantity: {self.quantity}, \n"
-            f"Purchase Price: {self.purchase_price:.2f}, \n"
-            f"Current Price: {self.current_price:.2f}, \n"
-            f"Variation: {self.variation:.2f}%, \n"
-            f"Highest Price: {self.highest_price:.2f}"
-        )
 
     @classmethod
     def _create_wallet_table(cls) -> None:
@@ -456,3 +457,4 @@ class Asset:
 
 
 '''
+

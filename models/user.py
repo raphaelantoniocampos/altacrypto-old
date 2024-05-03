@@ -13,11 +13,11 @@ class User:
         self,
         login: str,
         name: str,
-        tier: str,
         api_key: str,
         secret_key: str,
         user_settings: UserSettings,
         assets: List[Asset],
+        usd_balance: float,
         created_at: datetime = datetime.now(),
         id="",
         hashed_password: bytes = b"",
@@ -26,11 +26,11 @@ class User:
         self.id = id
         self.login = login
         self.name = name
-        self.tier = tier
         self.api_key = api_key
         self.secret_key = secret_key
         self.user_settings = user_settings
         self.assets = assets
+        self.usd_balance = usd_balance
         self.created_at = created_at
         if hashed_password:
             self.hashed_password = hashed_password
@@ -56,4 +56,7 @@ class User:
 
     def __str__(self) -> str:
         """Returns a string representation of the user."""
-        return f"User: {self.login} - Name: {self.name} - Tier: {self.tier}"
+        return (
+            f"User: {self.login} - Name: {self.name}\nUSD Balance: {self.usd_balance}"
+        )
+

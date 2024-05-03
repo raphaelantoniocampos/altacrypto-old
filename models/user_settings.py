@@ -4,10 +4,10 @@ class UserSettings:
     def __init__(
         self,
         testing: bool = False,
-        percentage_threshold: int = 2,  # 10
+        percentage_threshold: int = 10,  # 10
         under_purchase_percentage: float = 3.0,
         under_highest_percentage: float = 3.0,
-        above_purchase_percentage: float = 200.0,
+        above_purchase_percentage: float = 5.0,  # 200.0
         operation_value_percentage: float = 5.0,
         maximum_operation_value: float = 100.0,
     ):

@@ -7,6 +7,7 @@ from typing import List
 
 from models.crypto_snapshot import CryptoSnapshot
 from models.user import User
+from models.asset import Asset
 from models.user_settings import UserSettings
 from datetime import datetime, timedelta
 
@@ -132,16 +133,17 @@ class DatabaseManager:
         """TODO: Document method"""
         try:
             collection = self.get_collection("user_data")
+            assets = [asset.__dict__ for asset in user.assets]
             collection.insert_one(
                 {
                     "login": user.login,
                     "hashed_password": user.hashed_password,
                     "name": user.name,
-                    "tier": user.tier,
                     "api_key": user.api_key,
                     "secret_key": user.secret_key,
                     "user_settings": user.user_settings.__dict__,
-                    "assets": user.assets,
+                    "assets": assets,
+                    "usd_balance": user.usd_balance,
                     "created_at": user.created_at,
                 }
             )
@@ -160,11 +162,11 @@ class DatabaseManager:
                     login=document["login"],
                     hashed_password=document["hashed_password"],
                     name=document["name"],
-                    tier=document["tier"],
                     api_key=document["api_key"],
                     secret_key=document["secret_key"],
                     user_settings=UserSettings(**document["user_settings"]),
                     assets=document["assets"],
+                    usd_balance=document["usd_balance"],
                     created_at=document["created_at"],
                 )
                 users.append(user)
@@ -173,3 +175,29 @@ class DatabaseManager:
             self.logger.info(f"Erro ao obter dados dos usuarios: {e}")
             return []
 
+    # Assets
+    def add_asset_to_user(self, asset: Asset, user: User):
+        """TODO: Document method"""
+        try:
+            collection = self.get_collection("user_data")
+            asset_data = asset.__dict__
+
+            collection.update_one({"_id": user.id}, {"$push": {"assets": asset_data}})
+        except pymongo.errors.PyMongoError as e:
+            self.logger.info(
+                f"Error adding asset {asset.symbol} to {user.login} into database: {e}"
+            )
+
+    def update_asset_from_user(self, asset: Asset, user: User):
+        """TODO: Document method"""
+        try:
+            collection = self.get_collection("user_data")
+            updated_asset = asset.__dict__
+            collection.update_one(
+                {"login": user.login, "assets.symbol": asset.symbol},
+                {"$set": {"assets.$": updated_asset}},
+            )
+        except pymongo.errors.PyMongoError as e:
+            self.logger.info(
+                f"Error updating asset {asset.symbol} for user {user.login}: {e}"
+            )
