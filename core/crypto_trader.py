@@ -1,18 +1,19 @@
+import sys
+
 import logging
-from models.crypto_snapshot import CryptoSnapshot
 import asyncio
 from datetime import datetime
 from typing import List
 
 import pandas as pd
 
+from models.crypto_snapshot import CryptoSnapshot
 from models.asset import Asset
-
 from models.user import User
+from models.order import Order
 from utils.global_settings import GlobalSettings
 from core.database_manager import DatabaseManager
 from core.binance_manager import BinanceManager
-from models.user_settings import UserSettings
 
 
 class CryptoTrader:
@@ -30,14 +31,24 @@ class CryptoTrader:
         crypto_snapshots = binance_manager.fetch_usdt_pairs()
         self.database_manager.feed_database(crypto_snapshots)
 
+        intervals_dataframe = self._get_intervals_dataframes()
+
         users = self.database_manager.get_all_users()
 
-        intervals_dataframe = self._get_intervals_dataframes()
-        purchase_recommendations = self._get_purchase_recommendations(
-            intervals_dataframe, GlobalSettings.STANDARD_USER_SETTINGS
-        )
-        tasks = [self._evaluate_assets(user, crypto_snapshots) for user in users]
-        await asyncio.gather(*tasks)
+        tasks = [self._get_sell_orders(user, crypto_snapshots) for user in users]
+        sell_orders = [
+            order
+            for order in filter(None, await asyncio.gather(*tasks))
+            for order in order
+        ]
+        buy_orders = self._get_buy_orders(intervals_dataframe)
+        if buy_orders:
+            orders = sell_orders + buy_orders
+        else:
+            orders = sell_orders
+
+        for order in orders:
+            print(order)
 
     def _get_intervals_dataframes(self) -> List[pd.DataFrame]:
         """TODO: Document method"""
@@ -151,30 +162,52 @@ class CryptoTrader:
         df = pd.DataFrame(data)
         return [group for _, group in df.groupby("symbol")]
 
-    def _get_purchase_recommendations(
-        self, intervals_dataframes: List[pd.DataFrame], user_settings: UserSettings
-    ) -> pd.DataFrame:
+    def _get_buy_orders(self, intervals_dataframes: List[pd.DataFrame]) -> List[Order]:
         """TODO: Document method"""
-        purchase_recommendations = pd.DataFrame()
+        orders = []
         for interval_dataframe in intervals_dataframes:
             if not interval_dataframe.empty:
                 mean_variation = interval_dataframe["variation"].mean()
                 interval_recommendations = interval_dataframe[
                     interval_dataframe["variation"]
-                    >= mean_variation + user_settings.percentage_threshold
+                    >= mean_variation
+                    + GlobalSettings.STANDARD_USER_SETTINGS.percentage_threshold
                 ].copy()
                 if not interval_recommendations.empty:
-                    interval_recommendations["mean_variation"] = mean_variation
-                    purchase_recommendations = pd.concat(
-                        [purchase_recommendations, interval_recommendations]
-                    )
-        return purchase_recommendations
+                    for _, row in interval_recommendations.iterrows():
+                        order = Order("global", "buy", row["symbol"])
+                        orders.append(order)
+            if orders:
+                return orders
+            return
 
-    def _execute_purchase_recommendations(
-        self, purchase_recommendations: pd.DataFrame, users: List[User]
+    async def _get_sell_orders(
+        self, user: User, crypto_snapshots: List[CryptoSnapshot]
+    ) -> List[Order]:
+        """TODO: Document method"""
+        orders = []
+        assets = [Asset.from_dict(asset) for asset in user.assets]
+        crypto_snapshots_dict = {
+            crypto_snapshot.symbol: crypto_snapshot
+            for crypto_snapshot in crypto_snapshots
+        }
+        if assets:
+            for asset in assets:
+                if asset.symbol in crypto_snapshots_dict:
+                    asset.update_asset(crypto_snapshots_dict[asset.symbol].price)
+                    self.database_manager.update_asset_from_user(asset, user)
+                    if asset.should_be_sold:
+                        order = Order(user.id, "sell", asset.symbol)
+                        orders.append(order)
+        if orders:
+            return orders
+        return
+
+    def _execute_orders(
+        self, purchase_recommendations: pd.DataFrame, assets: List[Asset], user: User
     ) -> None:
         """TODO: Document method"""
-        assets_symbols = set(assets_dataframe["symbol"])
+        assets_symbols = set(assets.symbol)
         operation_value = self.balance_manager.get_operation_value()
         for _, row in purchase_recommendations.iterrows():
             symbol = row["symbol"]
@@ -193,29 +226,3 @@ class CryptoTrader:
                     TransactionManager.attempt_purchase(
                         current_datetime, has_balance[1], self.user_settings
                     )
-
-    async def _evaluate_assets(
-        self, user: User, crypto_snapshots: List[CryptoSnapshot]
-    ) -> None:
-        """TODO: Document method"""
-        assets = [Asset.from_dict(asset) for asset in user.assets]
-
-        crypto_snapshots_dict = {
-            crypto_snapshot.symbol: crypto_snapshot
-            for crypto_snapshot in crypto_snapshots
-        }
-        if assets:
-            for asset in assets:
-                if asset.symbol in crypto_snapshots_dict:
-                    asset.update_asset(crypto_snapshots_dict[asset.symbol].price)
-                    self.database_manager.update_asset_from_user(asset, user)
-                    if asset.should_be_sold:
-                        print(
-                            f"Selling Asset from user: {user.login}\n{asset}"
-                        )  # SELL ASSET
-        """
-
-        self._execute_purchase_recommendations(
-            purchase_recommendations, assets_dataframe
-        )
-        """

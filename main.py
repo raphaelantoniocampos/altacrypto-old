@@ -1,5 +1,4 @@
 import time
-from datetime import datetime
 import logging
 import asyncio
 
@@ -15,15 +14,13 @@ async def main():
     crypto_trader = CryptoTrader(database_manager)
     while True:
         start_time = time.time()
-        print(start_time)
         await crypto_trader.start()
         end_time = time.time()
         remaining = (GlobalSettings.EXECUTION_FREQUENCY_MINUTES * 60) - (
             end_time - start_time
         )
-        print(remaining)
+        print(f"Tempo decorrido: {end_time - start_time}")
         await asyncio.sleep(remaining)
 
 if __name__ == "__main__":
     asyncio.run(main())
-

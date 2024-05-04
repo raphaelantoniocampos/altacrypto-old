@@ -10,6 +10,7 @@ from models.asset import Asset
 from datetime import datetime, timedelta, timezone
 from bson.timestamp import Timestamp
 
+
 def generate_symbol(le=6) -> str:
     random_symbol = "".join(
         random.choices(string.ascii_uppercase + string.digits, k=le)
@@ -103,15 +104,16 @@ def generate_assets(quantity):
     return assets
 
 
-def add_assets():
+def add_assets(maximum: int = 10):
     database_manager = DatabaseManager()
     users = database_manager.get_all_users()
     for user in users:
-        quantity = random.randint(0, 10)
+        quantity = random.randint(0, maximum)
         assets = generate_assets(quantity)
         for asset in assets:
             database_manager.add_asset_to_user(asset, user)
 
 
-# add_users(random.randint(0, 10))
-# add_assets()
+database_manager = DatabaseManager()
+# add_users(random.randint(0, 100))
+# add_assets(30)
