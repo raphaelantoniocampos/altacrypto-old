@@ -1,5 +1,4 @@
 import bson
-from models.asset import Asset
 
 
 class Order:
@@ -8,13 +7,15 @@ class Order:
     def __init__(
         self,
         user_id: bson.objectid.ObjectId | str,
-        order_type: str,
+        side: str,
         symbol: str,
+        order_info: dict,
     ):
         """TODO: Document method"""
         self.user_id = user_id
-        self.order_type = order_type.lower()
+        self.side = side.upper()
         self.symbol = symbol
+        self.order_info = order_info
 
     def __str__(self) -> str:
-        return f"{self.user_id} - {self.order_type} - {self.symbol}"
+        return f"{self.user_id} - {self.order_type} - {self.symbol}\nVariation: {self.order_info['variation']} - Interval Time: {self.order_info['interval']}"

@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import List
 
 from models.crypto_snapshot import CryptoSnapshot
+from models.order import Order
 
 
 class BinanceManager:
@@ -82,4 +83,3 @@ class BinanceManager:
                 f"Request failed with status code {response.status_code}: {response.text}")
 
         return response
-

@@ -7,6 +7,7 @@ from models.user_settings import UserSettings
 from typing import List
 from models.user import User
 from models.asset import Asset
+from models.order import Order
 from datetime import datetime, timedelta, timezone
 from bson.timestamp import Timestamp
 
@@ -116,4 +117,19 @@ def add_assets(maximum: int = 10):
 
 database_manager = DatabaseManager()
 # add_users(random.randint(0, 100))
+current_timestamp = int(datetime.now().timestamp())
+"""
+print(times)
+print(type(times))
+print(datetime.fromtimestamp(times))
+print(type(datetime.fromtimestamp(times)))
+"""
 # add_assets(30)
+
+binance_manager = BinanceManager()
+order = Order(user_id="1", side="buy", symbol="BTCUSDT", order_info={})
+
+resposta = binance_manager.create_signed_request(
+    order=order, quantity=0.001, current_timestamp=current_timestamp
+)
+print(resposta)
