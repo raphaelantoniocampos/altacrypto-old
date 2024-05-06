@@ -196,10 +196,15 @@ class CryptoTrader:
         """TODO: Document method"""
         orders_by_user = self._separate_orders_by_user(sell_orders)
         for user_id, orders in orders_by_user.items():
+            orders.extend(buy_orders)
             user = self.database_manager.get_users({"_id": user_id})
+            user_assets = self.database_manager.get_assets({"user_id": user_id})
             operation_value = user.get_operation_value()
             print(user)
-            print(f"Operation Value: {user.get_operation_value()}")
+            # print(user_assets)
+            for order in orders:
+                print(order)
+            print("\n")
         return
         for _, row in purchase_recommendations.iterrows():
             symbol = row["symbol"]
@@ -219,7 +224,7 @@ class CryptoTrader:
                         current_datetime, has_balance[1], self.user_settings
                     )
 
-    def _separate_orders_by_user(self, orders: List["Order"]) -> dict:
+    def _separate_orders_by_user(self, orders: List[Order]) -> dict:
         """Separates orders by user_id"""
         orders_by_user = {}
         for order in orders:
@@ -227,3 +232,4 @@ class CryptoTrader:
                 orders_by_user[order.user_id] = []
             orders_by_user[order.user_id].append(order)
         return orders_by_user
+

@@ -115,6 +115,9 @@ class Asset:
             f"Should be Sold: {self.should_be_sold}\n"
         )
 
+    def __in__(self):
+        return True
+
 
 '''
 
