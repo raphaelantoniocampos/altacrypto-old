@@ -3,6 +3,7 @@ import sys
 import logging
 import asyncio
 from datetime import datetime
+import bson
 from typing import List
 
 import pandas as pd
@@ -30,29 +31,16 @@ class CryptoTrader:
 
         crypto_snapshots = binance_manager.fetch_usdt_pairs()
         self.database_manager.feed_database(crypto_snapshots)
-
+        assets = self.database_manager.update_assets(crypto_snapshots)
         intervals_dataframe = self._get_intervals_dataframes()
 
-        users = self.database_manager.get_all_users()
+        # users = self.database_manager.get_all_users()
 
         current_datetime = datetime.now()
-        tasks = [
-            self._get_sell_orders(user, crypto_snapshots, current_datetime)
-            for user in users
-        ]
-        sell_orders = [
-            order
-            for order in filter(None, await asyncio.gather(*tasks))
-            for order in order
-        ]
+        sell_orders = self._get_sell_orders(assets, crypto_snapshots, current_datetime)
         buy_orders = self._get_buy_orders(intervals_dataframe)
-        if buy_orders:
-            orders = sell_orders + buy_orders
-        else:
-            orders = sell_orders
 
-        tasks = [self._execute_orders(order) for order in orders]
-        await asyncio.gather(*tasks)
+        self._execute_orders(sell_orders, buy_orders)
 
     def _get_intervals_dataframes(self) -> List[pd.DataFrame]:
         """TODO: Document method"""
@@ -174,52 +162,45 @@ class CryptoTrader:
                 mean_variation = interval_dataframe["variation"].mean()
                 interval_recommendations = interval_dataframe[
                     interval_dataframe["variation"]
-                    >= mean_variation
-                    + GlobalSettings.STANDARD_USER_SETTINGS.percentage_threshold
+                    >= mean_variation + GlobalSettings.BUYING_PERCENTAGE_THRESHOLD
                 ].copy()
                 if not interval_recommendations.empty:
                     for _, row in interval_recommendations.iterrows():
                         order_info = {
-                            "varition": row["variation"],
+                            "variation": row["variation"],
                             "interval": row["interval"],
                         }
                         order = Order("global", "buy", row["symbol"], order_info)
                         orders.append(order)
         return orders
 
-    async def _get_sell_orders(
+    def _get_sell_orders(
         self,
-        user: User,
+        assets: List[Asset],
         crypto_snapshots: List[CryptoSnapshot],
         current_datetime: datetime,
     ) -> List[Order]:
         """TODO: Document method"""
         orders = []
-        assets = [Asset.from_dict(asset) for asset in user.assets]
-        if not assets:
-            return
-        crypto_snapshots_dict = {
-            crypto_snapshot.symbol: crypto_snapshot
-            for crypto_snapshot in crypto_snapshots
-        }
         for asset in assets:
-            if asset.symbol in crypto_snapshots_dict:
-                asset.update_asset(crypto_snapshots_dict[asset.symbol].price)
-                self.database_manager.update_asset_from_user(asset, user)
-                if asset.should_be_sold:
-                    order_info = {
-                        "variation": asset.variation,
-                        "interval": (current_datetime - asset.purchase_datetime),
-                    }
-                    order = Order(user.id, "sell", asset.symbol, order_info)
-                    orders.append(order)
+            if asset.should_be_sold:
+                order_info = {
+                    "variation": asset.variation,
+                    "interval": (current_datetime - asset.purchase_datetime),
+                }
+                order = Order(asset.user_id, "sell", asset.symbol, order_info)
+                orders.append(order)
         return orders
 
-    async def _execute_orders(self, order) -> None:
+    def _execute_orders(self, sell_orders: List[Order], buy_orders: List[Order]) -> None:
         """TODO: Document method"""
-        print(order)
+        orders_by_user = self._separate_orders_by_user(sell_orders)
+        for user_id, orders in orders_by_user.items():
+            user = self.database_manager.get_users({"_id": user_id})
+            operation_value = user.get_operation_value()
+            print(user)
+            print(f"Operation Value: {user.get_operation_value()}")
         return
-        operation_value = self.balance_manager.get_operation_value()
         for _, row in purchase_recommendations.iterrows():
             symbol = row["symbol"]
             if symbol not in assets_symbols:
@@ -237,3 +218,12 @@ class CryptoTrader:
                     TransactionManager.attempt_purchase(
                         current_datetime, has_balance[1], self.user_settings
                     )
+
+    def _separate_orders_by_user(self, orders: List["Order"]) -> dict:
+        """Separates orders by user_id"""
+        orders_by_user = {}
+        for order in orders:
+            if order.user_id not in orders_by_user:
+                orders_by_user[order.user_id] = []
+            orders_by_user[order.user_id].append(order)
+        return orders_by_user

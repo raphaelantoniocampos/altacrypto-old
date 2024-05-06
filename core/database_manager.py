@@ -3,13 +3,14 @@ import os
 from dotenv import load_dotenv
 import pymongo
 import logging
+import bson
 from typing import List
 
+from datetime import datetime
 from models.crypto_snapshot import CryptoSnapshot
 from models.user import User
 from models.asset import Asset
 from models.user_settings import UserSettings
-from datetime import datetime, timedelta
 
 
 class DatabaseManager:
@@ -133,7 +134,6 @@ class DatabaseManager:
         """TODO: Document method"""
         try:
             collection = self.get_collection("user_data")
-            assets = [asset.__dict__ for asset in user.assets]
             collection.insert_one(
                 {
                     "login": user.login,
@@ -142,7 +142,6 @@ class DatabaseManager:
                     "api_key": user.api_key,
                     "secret_key": user.secret_key,
                     "user_settings": user.user_settings.__dict__,
-                    "assets": assets,
                     "usd_balance": user.usd_balance,
                     "created_at": user.created_at,
                 }
@@ -150,7 +149,7 @@ class DatabaseManager:
         except pymongo.errors.PyMongoError as e:
             self.logger.info(f"Error adding user {user.login} to database: {e}")
 
-    def get_all_users(self, query: dict = {}) -> List[User]:
+    def get_users(self, query: dict = {}) -> List[User]:
         """TODO: Document method"""
         try:
             collection = self.get_collection("user_data")
@@ -165,39 +164,96 @@ class DatabaseManager:
                     api_key=document["api_key"],
                     secret_key=document["secret_key"],
                     user_settings=UserSettings(**document["user_settings"]),
-                    assets=document["assets"],
                     usd_balance=document["usd_balance"],
                     created_at=document["created_at"],
                 )
                 users.append(user)
-            return users
+            return users if len(users) > 1 else users[0] if users else None
         except pymongo.errors.PyMongoError as e:
-            self.logger.info(f"Erro ao obter dados dos usuarios: {e}")
-            return []
+            self.logger.info(f"Error getting users data: {e}")
+            return None
 
     # Assets
-    def add_asset_to_user(self, asset: Asset, user: User):
+    def add_asset(self, asset: Asset):
         """TODO: Document method"""
         try:
-            collection = self.get_collection("user_data")
-            asset_data = asset.__dict__
-
-            collection.update_one({"_id": user.id}, {"$push": {"assets": asset_data}})
+            collection = self.get_collection("assets")
+            collection.insert_one(
+                {
+                    "user_id": asset.user_id,
+                    "symbol": asset.symbol,
+                    "quantity": asset.quantity,
+                    "purchase_price": asset.purchase_price,
+                    "purchase_datetime": asset.purchase_datetime,
+                    "highest_price": asset.highest_price,
+                    "current_price": asset.current_price,
+                    "variation": asset.variation,
+                    "should_be_sold": asset.should_be_sold,
+                    "obs": asset.obs,
+                }
+            )
         except pymongo.errors.PyMongoError as e:
             self.logger.info(
-                f"Error adding asset {asset.symbol} to {user.login} into database: {e}"
+                f"Error adding asset {asset.symbol} to {user_id} into database: {e}"
             )
 
-    def update_asset_from_user(self, asset: Asset, user: User):
+    def get_assets(self, query: dict = {}) -> List[Asset]:
         """TODO: Document method"""
         try:
-            collection = self.get_collection("user_data")
+            collection = self.get_collection("assets")
+            cursor = collection.find(query)
+            assets = []
+            for document in cursor:
+                asset = Asset(
+                    user_id=document["user_id"],
+                    symbol=document["symbol"],
+                    quantity=document["quantity"],
+                    purchase_price=document["purchase_price"],
+                    purchase_datetime=document["purchase_datetime"],
+                    highest_price=document["highest_price"],
+                    current_price=document["current_price"],
+                    should_be_sold=document["should_be_sold"],
+                    obs=document["obs"])
+                assets.append(asset)
+            return assets
+        except pymongo.errors.PyMongoError as e:
+            self.logger.info(f"Error getting assets data: {e}")
+            return []
+
+    def _update_asset(self, asset: Asset):
+        """TODO: Document method"""
+        try:
+            collection = self.get_collection("assets")
             updated_asset = asset.__dict__
             collection.update_one(
-                {"login": user.login, "assets.symbol": asset.symbol},
-                {"$set": {"assets.$": updated_asset}},
+                {"user_id": asset.user_id, "symbol": asset.symbol},
+                {"$set": updated_asset},
             )
         except pymongo.errors.PyMongoError as e:
             self.logger.info(
-                f"Error updating asset {asset.symbol} for user {user.login}: {e}"
+                f"Error updating asset {asset.symbol} for user {asset.user_id}: {e}"
             )
+
+    def update_assets(self, crypto_snapshots: List[CryptoSnapshot]) -> List[Asset]:
+        assets = self.get_assets()
+        crypto_snapshots_dict = {
+            crypto_snapshot.symbol: crypto_snapshot
+            for crypto_snapshot in crypto_snapshots
+        }
+        updated_assets = []
+        for asset in assets:
+            if asset.symbol in crypto_snapshots_dict:
+                updated_asset = asset.update_asset(crypto_snapshots_dict[asset.symbol].price)
+                self._update_asset(updated_asset)
+                updated_assets.append(updated_asset)
+        return updated_assets
+
+
+
+
+
+
+
+
+
+

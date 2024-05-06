@@ -1,5 +1,5 @@
 import datetime
-import pandas as pd
+import bson
 from utils.global_settings import GlobalSettings
 
 
@@ -8,6 +8,7 @@ class Asset:
 
     def __init__(
         self,
+        user_id: bson.objectid.ObjectId | str,
         symbol: str,
         quantity: float,
         purchase_price: float,
@@ -29,6 +30,7 @@ class Asset:
             current_price: Numeric current market price per unit.
             obs: Optional string for any additional notes or observations.
         """
+        self.user_id = user_id
         self.symbol = symbol
         self.quantity = quantity
         self.purchase_price = purchase_price
@@ -50,7 +52,7 @@ class Asset:
             (((self.current_price - self.purchase_price) / self.current_price) * 100), 2
         )
 
-    def update_asset(self, new_price: float) -> None:
+    def update_asset(self, new_price: float) -> "Asset":
         """Updates the current price, the highest price if the new price is higher and recalculates variation."""
         self.current_price = new_price
         self.variation = self.calculate_variation()
@@ -58,20 +60,16 @@ class Asset:
             self.highest_price = self.current_price
         self.current_value = self.calculate_current_value()
         self.should_be_sold = self.update_should_asset_be_sold()
+        return self
 
     def update_should_asset_be_sold(self) -> bool:
-        if self.variation <= (
-            -GlobalSettings.STANDARD_USER_SETTINGS.under_purchase_percentage
-        ):
+        if self.variation <= (-GlobalSettings.SELLING_UNDER_PURCHASE_PERCENTAGE):
             return True
         if self.current_price <= self.highest_price * (
-            1 - GlobalSettings.STANDARD_USER_SETTINGS.under_highest_percentage / 100
+            1 - GlobalSettings.SELLING_UNDER_HIGHEST_PERCENTAGE / 100
         ):
             return True
-        if (
-            self.variation
-            >= GlobalSettings.STANDARD_USER_SETTINGS.above_purchase_percentage
-        ):
+        if self.variation >= GlobalSettings.SELLING_ABOVE_PURCHASE_PERCENTAGE:
             return True
         return False
 
@@ -83,6 +81,7 @@ class Asset:
     @classmethod
     def from_dict(cls, asset_dict: dict) -> "Asset":
         """TODO: Document method"""
+        user_id = asset_dict["user_id"]
         symbol = asset_dict["symbol"]
         quantity = asset_dict["quantity"]
         purchase_price = asset_dict["purchase_price"]
@@ -92,6 +91,7 @@ class Asset:
         should_be_sold = asset_dict["should_be_sold"]
         obs = asset_dict["obs"]
         return cls(
+            user_id,
             symbol,
             quantity,
             purchase_price,
@@ -105,6 +105,7 @@ class Asset:
     def __str__(self) -> str:
         """Returns a string representation of the asset."""
         return (
+            f"User ID: {self.user_id}\n"
             f"Symbol: {self.symbol}, Quantity: {self.quantity}\n"
             f"Purchase Price: {self.purchase_price:.2f}\n"
             f"Purchase Datetime: {self.purchase_datetime}\n"

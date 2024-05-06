@@ -55,7 +55,6 @@ def generate_users(quantity):
         api_key = generate_symbol(20)
         secret_key = generate_symbol(20)
         user_settings = UserSettings()
-        assets = []
         str_password = generate_symbol()
 
         user = User(
@@ -64,7 +63,6 @@ def generate_users(quantity):
             api_key=api_key,
             secret_key=secret_key,
             user_settings=user_settings,
-            assets=assets,
             usd_balance=random.randint(0, 1000),
             str_password=str_password,
         )
@@ -79,9 +77,7 @@ def add_users(quantity):
         database_manager.add_user(user)
 
 
-def generate_assets(quantity):
-    binance_manager = BinanceManager()
-    crypto_snapshots = binance_manager.fetch_usdt_pairs()
+def generate_assets(crypto_snapshots, users, quantity):
     assets = []
     for i in range(quantity):
         snap = crypto_snapshots[random.randint(0, len(crypto_snapshots))]
@@ -93,7 +89,9 @@ def generate_assets(quantity):
         purchase_datetime = snap.datetime
         highest_price = snap.price
         current_price = snap.price
+        user_id = users[random.randint(0, (len(users) - 1))].id
         asset = Asset(
+            user_id,
             symbol,
             quantity,
             purchase_price,
@@ -107,29 +105,14 @@ def generate_assets(quantity):
 
 def add_assets(maximum: int = 10):
     database_manager = DatabaseManager()
+    binance_manager = BinanceManager()
+    crypto_snapshots = binance_manager.fetch_usdt_pairs()
     users = database_manager.get_all_users()
-    for user in users:
-        quantity = random.randint(0, maximum)
-        assets = generate_assets(quantity)
-        for asset in assets:
-            database_manager.add_asset_to_user(asset, user)
+    quantity = random.randint(0, maximum)
+    assets = generate_assets(crypto_snapshots, users, quantity)
+    for asset in assets:
+        database_manager.add_asset(asset)
 
 
-database_manager = DatabaseManager()
 # add_users(random.randint(0, 100))
-current_timestamp = int(datetime.now().timestamp())
-"""
-print(times)
-print(type(times))
-print(datetime.fromtimestamp(times))
-print(type(datetime.fromtimestamp(times)))
-"""
-# add_assets(30)
-
-binance_manager = BinanceManager()
-order = Order(user_id="1", side="buy", symbol="BTCUSDT", order_info={})
-
-resposta = binance_manager.create_signed_request(
-    order=order, quantity=0.001, current_timestamp=current_timestamp
-)
-print(resposta)
+# add_assets(100)

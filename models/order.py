@@ -18,4 +18,4 @@ class Order:
         self.order_info = order_info
 
     def __str__(self) -> str:
-        return f"{self.user_id} - {self.order_type} - {self.symbol}\nVariation: {self.order_info['variation']} - Interval Time: {self.order_info['interval']}"
+        return f"{self.user_id} - {self.side} - {self.symbol}\nVariation: {self.order_info['variation']:.2f}% - Interval Time: {self.order_info['interval']}"
