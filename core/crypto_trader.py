@@ -1,4 +1,4 @@
-import sys
+import asyncio
 import time
 
 import logging
@@ -9,6 +9,7 @@ import pandas as pd
 
 from models.crypto_snapshot import CryptoSnapshot
 from models.asset import Asset
+from models.user import User
 from models.order import Order, SellOrder, BuyOrder
 from utils.global_settings import GlobalSettings
 from core.database_manager import DatabaseManager
@@ -38,7 +39,8 @@ class CryptoTrader:
         sell_orders = self._get_sell_orders(assets, crypto_snapshots, current_datetime)
         buy_orders = self._get_buy_orders(intervals_dataframe)
 
-        self._execute_orders(sell_orders, buy_orders, assets)
+        if sell_orders or buy_orders:
+            self._execute_orders(sell_orders, buy_orders)
 
     def _get_intervals_dataframes(self) -> List[pd.DataFrame]:
         """TODO: Document method"""
@@ -155,6 +157,7 @@ class CryptoTrader:
     def _get_buy_orders(self, intervals_dataframes: List[pd.DataFrame]) -> List[Order]:
         """TODO: Document method"""
         orders = []
+        symbols_set = set()
         for interval_dataframe in intervals_dataframes:
             if not interval_dataframe.empty:
                 mean_variation = interval_dataframe["variation"].mean()
@@ -164,14 +167,20 @@ class CryptoTrader:
                 ].copy()
                 if not interval_recommendations.empty:
                     for _, row in interval_recommendations.iterrows():
-                        order = BuyOrder(
-                            "buy",
-                            row["interval"],
-                            row["symbol"],
-                            row["variation"],
-                            row["current_price"],
-                        )
-                        orders.append(order)
+                        symbol = row['symbol']
+                        if symbol not in symbols_set:
+                            order = BuyOrder(
+                                "buy",
+                                row["interval"],
+                                symbol,
+                                row["variation"],
+                                row["current_price"],
+                            )
+                            symbols_set.add(symbol)
+                            orders.append(order)
+        if symbols_set:
+            for symbol in symbols_set:
+                self.database_manager.delete_crypto_snapshots_by_symbol(symbol)
         return orders
 
     def _get_sell_orders(
@@ -190,55 +199,28 @@ class CryptoTrader:
         return orders
 
     def _execute_orders(
-        self, sell_orders: List[Order], buy_orders: List[Order], assets: List[Asset]
+        self, sell_orders: List[Order], buy_orders: List[Order]
     ) -> None:
         """TODO: Change to binance account"""
-        orders_by_user = self._separate_orders_by_user(sell_orders)
         current_datetime = datetime.now()
-        print(orders_by_user)
-        print(type(orders_by_user))
-        for user_id, orders in orders_by_user.items():
-            orders.extend(buy_orders)
-            user = self.database_manager.get_users({"_id": user_id})
-            user_assets = self.database_manager.get_assets({"user_id": user_id})
-            user_assets_dict = {asset.id: asset for asset in user_assets}
+        users = {user._id: user for user in self.database_manager.get_users()}
+        sell_orders_by_user = self._separate_orders_by_user(sell_orders)
+        tasks = []
+        for user_id, user in users.items():
             operation_value = user.get_operation_value()
-            for order in orders:
-                if "SELL" in order.side:
-                    print(order)
-                    print(type(order))
-                    asset = user_assets_dict[order.asset.id]
-                    value = asset.current_value
-                    # Simulates binance transaction
-                    time.sleep(1)
-                    self.database_manager.delete_asset(asset.id)
-                    user.usd_balance += value
-                    self.database_manager.update_user(user)
-
-                    if user.name == "Logger":
-                        print(f"{order.side} - {asset.symbol}")
-
-                if "BUY" in order.side:
-                    print(order)
-                    print(type(order))
-                    quantity = operation_value / order.current_price
-                    asset = Asset(
-                        user_id=order.user_id,
-                        symbol=order.symbol,
-                        quantity=quantity,
-                        purchase_price=order.price,
-                        purchase_datetime=current_datetime,
-                        highest_price=order.price,
-                        current_price=order.price,
-                    )
-                    # Simulates binance transaction
-                    time.sleep(1)
-                    self.database_manager.add_asset(asset)
-                    user.usd_balance -= operation_value
-                    self.database_manager.update_user(user)
-
-                    if user.name == "Logger":
-                        print(f"{order.side} - {asset.symbol}")
+            user_assets = {
+                asset.symbol: asset
+                for asset in self.database_manager.get_assets({"user_id": user_id})
+            }
+            tasks.append(
+                self._execute_buy_orders(
+                    user, buy_orders, current_datetime, operation_value, user_assets
+                )
+            )
+            if user_id in sell_orders_by_user:
+                orders = sell_orders_by_user[user_id]
+                tasks.append(self._execute_sell_orders(user, orders, user_assets))
+        asyncio.gather(*tasks)
 
     def _separate_orders_by_user(self, orders: List[Order]) -> dict:
         """Separates orders by user_id"""
@@ -249,3 +231,45 @@ class CryptoTrader:
             orders_by_user[order.user_id].append(order)
         return orders_by_user
 
+    async def _execute_buy_orders(
+        self,
+        user: User,
+        buy_orders: List[Order],
+        current_datetime: datetime,
+        operation_value: float,
+        user_assets: dict,
+    ):
+        for order in buy_orders:
+            if user.name == "Logger":
+                self.logger.info(f"{order}{datetime.now()}")
+            if order.symbol not in user_assets:
+                if user.usd_balance >= operation_value:
+                    quantity = operation_value / order.current_price
+                    asset = Asset(
+                        user_id=user._id,
+                        symbol=order.symbol,
+                        quantity=quantity,
+                        purchase_price=order.current_price,
+                        purchase_datetime=current_datetime,
+                        highest_price=order.current_price,
+                        current_price=order.current_price,
+                    )
+                    # Simulates binance transaction
+                    time.sleep(0.05)
+                    self.database_manager.add_asset(asset)
+                    user.usd_balance -= operation_value
+                    self.database_manager.update_user(user)
+
+    async def _execute_sell_orders(
+        self, user: User, sell_orders: List[Order], user_assets
+    ):
+        for order in sell_orders:
+            if user.name == "Logger":
+                self.logger.info(f"{order}{datetime.now()}")
+            asset = user_assets[order.asset.symbol]
+            value = asset.current_value
+            # Simulates binance transaction
+            time.sleep(0.05)
+            self.database_manager.delete_asset(asset._id)
+            user.usd_balance += value
+            self.database_manager.update_user(user)

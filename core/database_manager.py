@@ -78,6 +78,13 @@ class DatabaseManager:
 
         return operation
 
+    def delete_crypto_snapshots_by_symbol(self, symbol: str):
+        try:
+            collection = self.get_collection('crypto_snapshots')
+            collection.delete_many({"symbol": symbol})
+        except pymongo.errors.PyMongoError as e:
+            self.logger.info(f"Error deleting crypto_snapshots: {e}")
+
     def get_all_crypto_snapshots(self) -> List[pd.DataFrame]:
         """
         Retrieves price data for all USD symbols as a list of DataFrames.
@@ -157,7 +164,7 @@ class DatabaseManager:
             users = []
             for document in cursor:
                 user = User(
-                    id=document["_id"],
+                    _id=document["_id"],
                     login=document["login"],
                     hashed_password=document["hashed_password"],
                     name=document["name"],
@@ -177,10 +184,9 @@ class DatabaseManager:
         """TODO: Document method"""
         try:
             collection = self.get_collection("user_data")
-            updated_user = user.__dict__
             collection.update_one(
-                {"_id": user.id},
-                {"$set": updated_user},
+                {"_id": user._id},
+                {"$set": {"usd_balance": user.usd_balance}},
             )
         except pymongo.errors.PyMongoError as e:
             self.logger.info(f"Error updating user {user.id}: {e}")
@@ -217,7 +223,7 @@ class DatabaseManager:
             assets = []
             for document in cursor:
                 asset = Asset(
-                    id=document["_id"],
+                    _id=document["_id"],
                     user_id=document["user_id"],
                     symbol=document["symbol"],
                     quantity=document["quantity"],
@@ -239,7 +245,7 @@ class DatabaseManager:
             collection = self.get_collection("assets")
             updated_asset = asset.__dict__
             collection.update_one(
-                {"id": asset.id},
+                {"_id": asset._id},
                 {"$set": updated_asset},
             )
         except pymongo.errors.PyMongoError as e:
@@ -265,6 +271,6 @@ class DatabaseManager:
         """TODO: Document method"""
         try:
             collection = self.get_collection("assets")
-            collection.delete_one({"id": asset_id})
+            collection.delete_one({"_id": asset_id})
         except pymongo.errors.PyMongoError as e:
             self.logger.info(f"Error deleting asset {asset_id}: {e}")

@@ -1,14 +1,11 @@
 import random
 import string
-import time
 from core.database_manager import DatabaseManager
 from core.binance_manager import BinanceManager
 from models.user_settings import UserSettings
-from typing import List
 from models.user import User
 from models.asset import Asset
 from models.order import Order
-from datetime import datetime, timedelta, timezone
 from bson.timestamp import Timestamp
 
 
@@ -47,7 +44,7 @@ def generate_crypto_snapshots(quantity: int):
             database_manager.feed_database(crypto_snapshots)
 
 
-def generate_users(quantity, usd_balance):
+def generate_users(quantity, usd_balance, logger=False):
     users = []
     names = [
         "Alice",
@@ -103,23 +100,23 @@ def generate_users(quantity, usd_balance):
         "Bruno",
         "Carla",
         "Diego",
-        "Érica",
-        "Fábio",
+        "Erica",
+        "Fabio",
         "Gabriela",
         "Hugo",
         "Isadora",
-        "João",
-        "Kátia",
+        "Joao",
+        "Katia",
         "Lucas",
         "Mariana",
-        "Natália",
-        "Otávio",
+        "Natalia",
+        "Otavio",
         "Paula",
         "Rafael",
         "Sara",
         "Thiago",
-        "Úrsula",
-        "Vitória",
+        "Ursula",
+        "Vitoria",
         "Wagner",
         "Ximena",
         "Yasmin",
@@ -131,18 +128,18 @@ def generate_users(quantity, usd_balance):
         "Elaine",
         "Fernando",
         "Gisele",
-        "Hélio",
-        "Íris",
-        "Júlio",
+        "Helio",
+        "iris",
+        "Julio",
         "Karen",
         "Leandro",
-        "Márcia",
+        "Marcia",
         "Nathan",
-        "Olívia",
-        "Patrícia",
+        "Olivia",
+        "Patricia",
         "Rodrigo",
-        "Sílvia",
-        "Túlio",
+        "Selvia",
+        "Tulio",
         "Valentina",
         "William",
         "Xuxa",
@@ -150,6 +147,25 @@ def generate_users(quantity, usd_balance):
         "Zuleide",
     ]
     for i in range(quantity):
+        if i == 0 and logger:
+            login = "Logger"
+            name = "Logger"
+            api_key = generate_symbol(20)
+            secret_key = generate_symbol(20)
+            user_settings = UserSettings()
+            str_password = generate_symbol()
+            user = User(
+                login=login,
+                name=name,
+                api_key=api_key,
+                secret_key=secret_key,
+                user_settings=user_settings,
+                usd_balance=10000,
+                str_password=str_password,
+            )
+            users.append(user)
+            continue
+
         login = generate_symbol()
         name = random.choice(names)
         api_key = generate_symbol(20)
@@ -170,9 +186,9 @@ def generate_users(quantity, usd_balance):
     return users
 
 
-def add_users(quantity, usd_balance):
+def add_users(quantity, usd_balance, logger=False):
     database_manager = DatabaseManager()
-    users = generate_users(quantity, usd_balance)
+    users = generate_users(quantity, usd_balance, logger=logger)
     for user in users:
         database_manager.add_user(user)
 
@@ -180,7 +196,7 @@ def add_users(quantity, usd_balance):
 def generate_assets(crypto_snapshots, users, quantity):
     assets = []
     for i in range(quantity):
-        snap = crypto_snapshots[random.randint(0, len(crypto_snapshots))]
+        snap = crypto_snapshots[random.randint(0, len(crypto_snapshots) - 1)]
         symbol = snap.symbol
         quantity = round(random.uniform(0, 100), 2)
         if quantity < 0:
@@ -189,7 +205,7 @@ def generate_assets(crypto_snapshots, users, quantity):
         purchase_datetime = snap.datetime
         highest_price = snap.price
         current_price = snap.price
-        user_id = users[random.randint(0, (len(users) - 1))].id
+        user_id = users[random.randint(0, (len(users) - 1))]._id
         asset = Asset(
             user_id,
             symbol,
@@ -207,18 +223,17 @@ def add_assets(maximum: int = 10):
     database_manager = DatabaseManager()
     binance_manager = BinanceManager()
     crypto_snapshots = binance_manager.fetch_usdt_pairs()
-    users = database_manager.get_all_users()
+    users = database_manager.get_users()
     quantity = random.randint(0, maximum)
     assets = generate_assets(crypto_snapshots, users, quantity)
     for asset in assets:
         database_manager.add_asset(asset)
 
 
-# add_users(20, 100)
-# rn = random.randint(0, 20)
-# add_users(rn, 100)
-# print(f"({20 + rn}) users 100 criados")
-#
+# rn = random.randint(0, 5) + 5
+# add_users(rn, 100, logger=True)
+# print(f"({rn}) users 100 criados")
+
 # add_users(10, 500)
 # rn = random.randint(0, 10)
 # add_users(rn, 500)
@@ -228,4 +243,5 @@ def add_assets(maximum: int = 10):
 # rn = random.randint(0, 5)
 # add_users(rn, 1000)
 # print(f"({5 + rn}) users 1000 criados")
-# # add_assets(100)
+
+# add_assets(50)

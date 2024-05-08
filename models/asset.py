@@ -15,12 +15,12 @@ class Asset:
         purchase_datetime: datetime.datetime,
         highest_price: float,
         current_price: float,
-        id: bson.objectid.ObjectId | None = None,
+        _id: bson.objectid.ObjectId | None = None,
         should_be_sold: bool = False,
         obs: str | None = None,
     ):
         """TODO: Document method"""
-        self.id = id
+        self._id = _id
         self.user_id = user_id
         self.symbol = symbol
         self.quantity = quantity
@@ -105,3 +105,4 @@ class Asset:
             f"Variation: {self.variation:.2f}%\n"
             f"Should be Sold: {self.should_be_sold}\n"
         )
+

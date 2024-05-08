@@ -1,5 +1,6 @@
 from datetime import datetime
 from hashlib import sha256
+import bson
 
 from models.user_settings import UserSettings
 
@@ -16,12 +17,12 @@ class User:
         user_settings: UserSettings,
         usd_balance: float,
         created_at: datetime = datetime.now(),
-        id="",
+        _id: bson.objectid.ObjectId | None = None,
         hashed_password: bytes = b"",
         str_password: str = "",
     ):
         """TODO: Document method"""
-        self.id = id
+        self._id = _id
         self.login = login
         self.name = name
         self.api_key = api_key
@@ -60,3 +61,4 @@ class User:
         return (
             f"User: {self.login} - Name: {self.name}\nUSD Balance: {self.usd_balance}"
         )
+

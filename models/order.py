@@ -23,11 +23,11 @@ class SellOrder(Order):
 
     def __str__(self) -> str:
         return (
-            f"User ID: {self.asset.user_id}"
-            f"Side: {self.side}"
-            f"Symbol: {self.asset.symbol}"
-            f"Interval: {self.interval}"
-            f"Variation: {self.asset.variation}"
+            f"User ID: {self.asset.user_id}\n"
+            f"Side: {self.side}\n"
+            f"Symbol: {self.asset.symbol}\n"
+            f"Interval: {self.interval}\n"
+            f"Variation: {self.asset.variation}\n"
         )
 
 
@@ -45,9 +45,10 @@ class BuyOrder(Order):
 
     def __str__(self) -> str:
         return (
-            f"User ID: None"
-            f"Side: {self.side}"
-            f"Symbol: {self.symbol}"
-            f"Interval: {self.interval}"
-            f"Variation: {self.variation}"
+            f"User ID: None\n"
+            f"Side: {self.side}\n"
+            f"Symbol: {self.symbol}\n"
+            f"Interval: {self.interval}\n"
+            f"Variation: {self.variation}\n"
         )
+
