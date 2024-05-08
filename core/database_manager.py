@@ -173,6 +173,18 @@ class DatabaseManager:
             self.logger.info(f"Error getting users data: {e}")
             return None
 
+    def update_user(self, user: User):
+        """TODO: Document method"""
+        try:
+            collection = self.get_collection("user_data")
+            updated_user = user.__dict__
+            collection.update_one(
+                {"_id": user.id},
+                {"$set": updated_user},
+            )
+        except pymongo.errors.PyMongoError as e:
+            self.logger.info(f"Error updating user {user.id}: {e}")
+
     # Assets
     def add_asset(self, asset: Asset):
         """TODO: Document method"""
@@ -205,6 +217,7 @@ class DatabaseManager:
             assets = []
             for document in cursor:
                 asset = Asset(
+                    id=document["_id"],
                     user_id=document["user_id"],
                     symbol=document["symbol"],
                     quantity=document["quantity"],
@@ -226,7 +239,7 @@ class DatabaseManager:
             collection = self.get_collection("assets")
             updated_asset = asset.__dict__
             collection.update_one(
-                {"user_id": asset.user_id, "symbol": asset.symbol},
+                {"id": asset.id},
                 {"$set": updated_asset},
             )
         except pymongo.errors.PyMongoError as e:
@@ -248,12 +261,10 @@ class DatabaseManager:
                 updated_assets.append(updated_asset)
         return updated_assets
 
-
-
-
-
-
-
-
-
-
+    def delete_asset(self, asset_id: bson.objectid.ObjectId) -> None:
+        """TODO: Document method"""
+        try:
+            collection = self.get_collection("assets")
+            collection.delete_one({"id": asset_id})
+        except pymongo.errors.PyMongoError as e:
+            self.logger.info(f"Error deleting asset {asset_id}: {e}")

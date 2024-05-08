@@ -36,18 +36,6 @@ class User:
         else:
             raise ValueError("A password must be provided")
 
-        """
-        if self.user_settings.testing:
-            if not data_manager.get_database_usdt_balance():
-                current_datetime = DateTimeUtils.get_datetime()
-                data_manager.insert_usdt(
-                    user_settings.testing_initial_balance, current_datetime
-                )
-                logger.info("Initializing testing mode")
-                logger.info(
-                    f"Inserting USDT: {user_settings.testing_initial_balance}")
-        """
-
     def encode_password(self, str_password):
         return sha256(str_password.encode("utf-8")).digest()
 
@@ -58,7 +46,8 @@ class User:
             float: The operation value.
         """
         operation_value = round(
-            self.usd_balance / (100 / self.user_settings.operation_value_percentage), 2
+            self.usd_balance /
+            (100 / self.user_settings.operation_value_percentage), 2
         )
         if operation_value < 10:
             operation_value = 10
@@ -71,4 +60,3 @@ class User:
         return (
             f"User: {self.login} - Name: {self.name}\nUSD Balance: {self.usd_balance}"
         )
-

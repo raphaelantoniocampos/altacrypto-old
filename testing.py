@@ -47,11 +47,111 @@ def generate_crypto_snapshots(quantity: int):
             database_manager.feed_database(crypto_snapshots)
 
 
-def generate_users(quantity):
+def generate_users(quantity, usd_balance):
     users = []
+    names = [
+        "Alice",
+        "Bob",
+        "Charlie",
+        "David",
+        "Emma",
+        "Frank",
+        "Grace",
+        "Henry",
+        "Isabella",
+        "Jack",
+        "Kate",
+        "Liam",
+        "Mia",
+        "Noah",
+        "Olivia",
+        "Peter",
+        "Quinn",
+        "Rachel",
+        "Samuel",
+        "Tiffany",
+        "Uma",
+        "Victor",
+        "Wendy",
+        "Xavier",
+        "Yasmine",
+        "Zachary",
+        "Abigail",
+        "Benjamin",
+        "Chloe",
+        "Daniel",
+        "Emily",
+        "Fiona",
+        "George",
+        "Hannah",
+        "Ian",
+        "Jessica",
+        "Kevin",
+        "Lily",
+        "Matthew",
+        "Natalie",
+        "Oscar",
+        "Penelope",
+        "Quentin",
+        "Rebecca",
+        "Sarah",
+        "Thomas",
+        "Ursula",
+        "Vincent",
+        "Wendell",
+        "Amanda",
+        "Bruno",
+        "Carla",
+        "Diego",
+        "Érica",
+        "Fábio",
+        "Gabriela",
+        "Hugo",
+        "Isadora",
+        "João",
+        "Kátia",
+        "Lucas",
+        "Mariana",
+        "Natália",
+        "Otávio",
+        "Paula",
+        "Rafael",
+        "Sara",
+        "Thiago",
+        "Úrsula",
+        "Vitória",
+        "Wagner",
+        "Ximena",
+        "Yasmin",
+        "Zeca",
+        "Adriana",
+        "Bernardo",
+        "Camila",
+        "Davi",
+        "Elaine",
+        "Fernando",
+        "Gisele",
+        "Hélio",
+        "Íris",
+        "Júlio",
+        "Karen",
+        "Leandro",
+        "Márcia",
+        "Nathan",
+        "Olívia",
+        "Patrícia",
+        "Rodrigo",
+        "Sílvia",
+        "Túlio",
+        "Valentina",
+        "William",
+        "Xuxa",
+        "Yago",
+        "Zuleide",
+    ]
     for i in range(quantity):
         login = generate_symbol()
-        name = f"{login}nome"
+        name = random.choice(names)
         api_key = generate_symbol(20)
         secret_key = generate_symbol(20)
         user_settings = UserSettings()
@@ -63,16 +163,16 @@ def generate_users(quantity):
             api_key=api_key,
             secret_key=secret_key,
             user_settings=user_settings,
-            usd_balance=random.randint(0, 1000),
+            usd_balance=usd_balance,
             str_password=str_password,
         )
         users.append(user)
     return users
 
 
-def add_users(quantity):
+def add_users(quantity, usd_balance):
     database_manager = DatabaseManager()
-    users = generate_users(quantity)
+    users = generate_users(quantity, usd_balance)
     for user in users:
         database_manager.add_user(user)
 
@@ -114,5 +214,18 @@ def add_assets(maximum: int = 10):
         database_manager.add_asset(asset)
 
 
-# add_users(random.randint(0, 100))
-# add_assets(100)
+# add_users(20, 100)
+# rn = random.randint(0, 20)
+# add_users(rn, 100)
+# print(f"({20 + rn}) users 100 criados")
+#
+# add_users(10, 500)
+# rn = random.randint(0, 10)
+# add_users(rn, 500)
+# print(f"({10 + rn}) users 500 criados")
+#
+# add_users(5, 1000)
+# rn = random.randint(0, 5)
+# add_users(rn, 1000)
+# print(f"({5 + rn}) users 1000 criados")
+# # add_assets(100)

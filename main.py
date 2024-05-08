@@ -10,7 +10,6 @@ from utils.global_settings import GlobalSettings
 
 async def main():
     logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(__name__)
     database_manager = DatabaseManager()
 
     crypto_trader = CryptoTrader(database_manager)
