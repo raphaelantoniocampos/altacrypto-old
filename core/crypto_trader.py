@@ -2,16 +2,13 @@ import sys
 import time
 
 import logging
-import asyncio
 from datetime import datetime
-import bson
 from typing import List
 
 import pandas as pd
 
 from models.crypto_snapshot import CryptoSnapshot
 from models.asset import Asset
-from models.user import User
 from models.order import Order, SellOrder, BuyOrder
 from utils.global_settings import GlobalSettings
 from core.database_manager import DatabaseManager
@@ -172,7 +169,7 @@ class CryptoTrader:
                             row["interval"],
                             row["symbol"],
                             row["variation"],
-                            row["price"],
+                            row["current_price"],
                         )
                         orders.append(order)
         return orders
@@ -198,6 +195,8 @@ class CryptoTrader:
         """TODO: Change to binance account"""
         orders_by_user = self._separate_orders_by_user(sell_orders)
         current_datetime = datetime.now()
+        print(orders_by_user)
+        print(type(orders_by_user))
         for user_id, orders in orders_by_user.items():
             orders.extend(buy_orders)
             user = self.database_manager.get_users({"_id": user_id})
@@ -206,6 +205,8 @@ class CryptoTrader:
             operation_value = user.get_operation_value()
             for order in orders:
                 if "SELL" in order.side:
+                    print(order)
+                    print(type(order))
                     asset = user_assets_dict[order.asset.id]
                     value = asset.current_value
                     # Simulates binance transaction
@@ -218,7 +219,9 @@ class CryptoTrader:
                         print(f"{order.side} - {asset.symbol}")
 
                 if "BUY" in order.side:
-                    quantity = operation_value / order.price
+                    print(order)
+                    print(type(order))
+                    quantity = operation_value / order.current_price
                     asset = Asset(
                         user_id=order.user_id,
                         symbol=order.symbol,

@@ -35,13 +35,13 @@ class BuyOrder(Order):
     """TODO: Document class"""
 
     def __init__(
-        self, side: str, interval, symbol: str, variation: float, price: float
+        self, side: str, interval, symbol: str, variation: float, current_price: float
     ):
         """TODO: Document method"""
         super().__init__(None, side, interval)
         self.symbol = symbol
         self.variation = variation
-        self.price = price
+        self.current_price = current_price
 
     def __str__(self) -> str:
         return (
