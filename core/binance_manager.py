@@ -5,12 +5,22 @@ from datetime import datetime
 from typing import List
 
 from models.crypto_snapshot import CryptoSnapshot
-from models.order import Order
 
 
 class BinanceManager:
+    """
+    A class for interacting with the Binance API.
+
+    Attributes:
+        base_url (str): The base URL for the Binance API.
+        logger (logging.Logger): Logger object for logging messages.
+    """
 
     def __init__(self):
+        """
+        Initializes a new instance of the BinanceManager class.
+        Sets the base URL for the Binance API and initializes the logger.
+        """
         self.base_url = 'https://api.binance.com'
         self.logger = logging.getLogger(__name__)
 
@@ -32,8 +42,7 @@ class BinanceManager:
                 return False
 
         except requests.RequestException as e:
-            self.user_settings.logger.info(
-                f"Error connecting to binance API: {e}")
+            self.logger.info(f"Error connecting to binance API: {e}")
             return False
 
     def fetch_usdt_pairs(self) -> List[CryptoSnapshot]:
@@ -83,3 +92,4 @@ class BinanceManager:
                 f"Request failed with status code {response.status_code}: {response.text}")
 
         return response
+

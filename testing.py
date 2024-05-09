@@ -2,10 +2,8 @@ import random
 import string
 from core.database_manager import DatabaseManager
 from core.binance_manager import BinanceManager
-from models.user_settings import UserSettings
-from models.user import User
+from models.user import User, UserSettings
 from models.asset import Asset
-from models.order import Order
 from bson.timestamp import Timestamp
 
 
@@ -229,7 +227,6 @@ def add_assets(maximum: int = 10):
     for asset in assets:
         database_manager.add_asset(asset)
 
-
 # rn = random.randint(0, 5) + 5
 # add_users(rn, 100, logger=True)
 # print(f"({rn}) users 100 criados")
@@ -245,3 +242,4 @@ def add_assets(maximum: int = 10):
 # print(f"({5 + rn}) users 1000 criados")
 
 # add_assets(50)
+

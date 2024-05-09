@@ -2,11 +2,31 @@ from datetime import datetime
 from hashlib import sha256
 import bson
 
-from models.user_settings import UserSettings
+
+class UserSettings:
+    """Represents user settings."""
+
+    def __init__(
+        self,
+        testing: bool = False,
+        operation_value_percentage: float = 5.0,
+        maximum_operation_value: float = 100.0,
+    ):
+        """
+        Initializes a UserSettings object.
+
+        Args:
+            testing (bool, optional): Indicates if the user is in testing mode. Defaults to False.
+            operation_value_percentage (float, optional): The percentage of the USDT balance to be used for operations. Defaults to 5.0.
+            maximum_operation_value (float, optional): The maximum value allowed for an operation. Defaults to 100.0.
+        """
+        self.testing = testing
+        self.operation_value_percentage = operation_value_percentage
+        self.maximum_operation_value = maximum_operation_value
 
 
 class User:
-    """TODO: Document Class"""
+    """Represents an user."""
 
     def __init__(
         self,
@@ -21,7 +41,24 @@ class User:
         hashed_password: bytes = b"",
         str_password: str = "",
     ):
-        """TODO: Document method"""
+        """
+        Initializes a User object.
+
+        Args:
+            login (str): The login name of the user.
+            name (str): The name of the user.
+            api_key (str): The API key of the user.
+            secret_key (str): The secret key of the user.
+            user_settings (UserSettings): The settings of the user.
+            usd_balance (float): The USD balance of the user.
+            created_at (datetime, optional): The creation datetime of the user. Defaults to datetime.now().
+            _id (bson.objectid.ObjectId | None, optional): The ID of the user. Defaults to None.
+            hashed_password (bytes, optional): The hashed password of the user. Defaults to b"".
+            str_password (str, optional): The string password of the user. Defaults to "".
+
+        Raises:
+            ValueError: If neither hashed_password nor str_password is provided.
+        """
         self._id = _id
         self.login = login
         self.name = name
@@ -38,11 +75,13 @@ class User:
             raise ValueError("A password must be provided")
 
     def encode_password(self, str_password):
+        """Encodes the provided string password."""
         return sha256(str_password.encode("utf-8")).digest()
 
     def get_operation_value(self) -> float:
         """
         Calculates the operation value based on the current USDT balance.
+
         Returns:
             float: The operation value.
         """
@@ -61,4 +100,5 @@ class User:
         return (
             f"User: {self.login} - Name: {self.name}\nUSD Balance: {self.usd_balance}"
         )
+
 

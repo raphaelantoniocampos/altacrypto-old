@@ -4,5 +4,6 @@ python-binance
 python-dateutil
 python-dotenv
 requests
+type-requests
 pymongo[srv]
 mypy

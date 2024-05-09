@@ -8,101 +8,66 @@ from typing import List
 
 from datetime import datetime
 from models.crypto_snapshot import CryptoSnapshot
-from models.user import User
+from models.user import User, UserSettings
 from models.asset import Asset
-from models.user_settings import UserSettings
+from global_settings import GlobalSettings
 
 
 class DatabaseManager:
-    """TODO: Document class"""
+    """
+    Manages interactions with the database.
+
+    Attributes:
+        dbname (pymongo.database.Database): The database instance.
+        logger (logging.Logger): Logger object for logging messages.
+    """
 
     def __init__(self):
-        """TODO: Document method"""
+        """
+        Initializes the DatabaseManager.
+
+        Retrieves database credentials from environment variables and establishes connection.
+        """
         self.dbname = self.get_database()
         self.logger = logging.getLogger(__name__)
 
-    def get_database(self) -> pymongo.MongoClient:
-        """TODO: Document method"""
+    def get_database(self) -> pymongo.database.Database:
+        """
+        Establishes connection to the MongoDB database.
+
+        Returns:
+            pymongo.database.Database: The MongoDB database instance.
+        """
         load_dotenv()
         mongo_user = os.getenv("MONGO_USER")
         mongo_password = os.getenv("MONGO_PASSWORD")
         connection_string = f"mongodb+srv://{mongo_user}:{mongo_password}@cluster0.wovexfa.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-        client = pymongo.MongoClient(connection_string)
+        client: pymongo.MongoClient = pymongo.MongoClient(connection_string)
         return client["altadata"]
 
     def get_collection(self, collection_name: str) -> pymongo.collection.Collection:
-        """TODO: Document method"""
-        return self.dbname[f"{collection_name}"]
-
-    # CryptoSnapshots
-    def feed_database(self, crypto_snapshots: List[CryptoSnapshot]) -> None:
         """
-        Updates the database with crypto snapshots.
+        Retrieves a specific collection from the database.
 
         Args:
-        crypto_snapshots (List['CryptoSnapshot']): containing asset pairs and their prices.
-        """
-        try:
-            collection = self.get_collection("crypto_snapshots")
-            self.create_ttl_index(
-                collection_name="crypto_snapshots",
-                index_name="datetime",
-                ascending=False,
-                expire_after_seconds=86400,
-            )
-            bulk_operations = []
-            for crypto_snapshot in crypto_snapshots:
-                operation = self._create_add_crypto_snapshot_operation(crypto_snapshot)
-                bulk_operations.append(operation)
-
-            if bulk_operations:
-                collection.bulk_write(bulk_operations)
-
-            current_datetime = datetime.now()
-            self.logger.info(f"Crypto Snapshots updated at {current_datetime}")
-
-        except pymongo.errors.PyMongoError as e:
-            self.logger.info(f"Error adding feeding database: {e}")
-
-    def _create_add_crypto_snapshot_operation(
-        self, crypto_snapshot: CryptoSnapshot
-    ) -> pymongo.operations.UpdateOne | pymongo.operations.InsertOne:
-        """TODO: Document method"""
-        operation = pymongo.InsertOne(
-            {
-                "symbol": crypto_snapshot.symbol,
-                "datetime": crypto_snapshot.datetime,
-                "price": crypto_snapshot.price,
-            },
-        )
-
-        return operation
-
-    def delete_crypto_snapshots_by_symbol(self, symbol: str):
-        try:
-            collection = self.get_collection('crypto_snapshots')
-            collection.delete_many({"symbol": symbol})
-        except pymongo.errors.PyMongoError as e:
-            self.logger.info(f"Error deleting crypto_snapshots: {e}")
-
-    def get_all_crypto_snapshots(self) -> List[pd.DataFrame]:
-        """
-        Retrieves price data for all USD symbols as a list of DataFrames.
+            collection_name (str): The name of the collection.
 
         Returns:
-            list: List of DataFrames containing crypto data for each symbol.
+            pymongo.collection.Collection: The collection instance.
         """
-        try:
-            collection = self.get_collection("crypto_snapshots")
-            cursor = collection.find()
-            crypto_snapshots = []
-            for document in cursor:
-                crypto_snapshots.append(CryptoSnapshot.from_dict(document))
-            return crypto_snapshots
-        except pymongo.errors.PyMongoError as e:
-            self.logger.info(f"Error getting crypto snapshot: {e}")
+        return self.dbname[f"{collection_name}"]
 
     def verify_ttl_index(self, collection_name: str, index_name: str):
+        """
+        Verifies the existence of a TTL index on a collection.
+
+        Args:
+            collection_name (str): The name of the collection.
+            index_name (str): The name of the TTL index.
+
+        Returns:
+            bool: True if the TTL index exists, False otherwise.
+        """
         try:
             collection = self.get_collection(collection_name)
             index_info = collection.index_information()
@@ -124,21 +89,106 @@ class DatabaseManager:
         index_name: str,
         ascending: bool,
         expire_after_seconds: int,
-    ):
+    ) -> None:
+        """
+        Creates a TTL index on a collection.
+
+        Args:
+            collection_name (str): The name of the collection.
+            index_name (str): The name of the TTL index.
+            ascending (bool): True if index should be ascending, False for descending.
+            expire_after_seconds (int): Number of seconds before documents expire.
+        """
         try:
             collection = self.get_collection(collection_name)
-            if not self.verify_ttl_index(collection_name, index_name):
-                direction = pymongo.ASCENDING if ascending else pymongo.DESCENDING
-                collection.create_index(
-                    [(index_name, direction)],
-                    expireAfterSeconds=expire_after_seconds,
-                )
+            direction = pymongo.ASCENDING if ascending else pymongo.DESCENDING
+            collection.create_index(
+                [(index_name, direction)],
+                expireAfterSeconds=expire_after_seconds,
+            )
         except pymongo.errors.PyMongoError as e:
             self.logger.info(f"Error creating TTL index: {e}")
 
+    # CryptoSnapshots
+    def feed_database(self, crypto_snapshots: List[CryptoSnapshot]) -> None:
+        """
+        Updates the database with crypto snapshots.
+
+        Args:
+        crypto_snapshots (List['CryptoSnapshot']): containing asset pairs and their prices.
+        """
+        try:
+            collection = self.get_collection("crypto_snapshots")
+            if not self.verify_ttl_index("crypto_snapshots", "datetime"):
+                self.create_ttl_index(
+                    collection_name="crypto_snapshots",
+                    index_name="datetime",
+                    ascending=False,
+                    expire_after_seconds=86400,
+                )
+            bulk_operations = []
+            for crypto_snapshot in crypto_snapshots:
+                operation = self._create_add_crypto_snapshot_operation(crypto_snapshot)
+                bulk_operations.append(operation)
+
+            if bulk_operations:
+                collection.bulk_write(bulk_operations)
+
+            current_datetime = datetime.now()
+            self.logger.info(f"Crypto Snapshots updated at {current_datetime}")
+
+        except pymongo.errors.PyMongoError as e:
+            self.logger.info(f"Error adding feeding database: {e}")
+
+    def _create_add_crypto_snapshot_operation(
+
+        self, crypto_snapshot: CryptoSnapshot
+    ) -> pymongo.operations.UpdateOne | pymongo.operations.InsertOne:
+        """
+        Creates an operation to add a crypto snapshot to the database.
+
+        Args:
+            crypto_snapshot (CryptoSnapshot): The crypto snapshot to be added.
+
+        Returns:
+            pymongo.operations.UpdateOne | pymongo.operations.InsertOne: The operation to add the snapshot.
+        """
+        operation = pymongo.InsertOne(
+            {
+                "symbol": crypto_snapshot.symbol,
+                "datetime": crypto_snapshot.datetime,
+                "price": crypto_snapshot.price,
+            },
+        )
+
+        return operation
+
+    def get_all_crypto_snapshots(self) -> List[pd.DataFrame]:
+        """
+        Retrieves price data for all USD symbols as a list of DataFrames.
+
+        Returns:
+            list: List of DataFrames containing crypto data for each symbol.
+        """
+        try:
+            collection = self.get_collection("crypto_snapshots")
+            cursor = collection.find()
+            crypto_snapshots = []
+            for document in cursor:
+                crypto_snapshots.append(CryptoSnapshot.from_dict(document))
+            return crypto_snapshots
+        except pymongo.errors.PyMongoError as e:
+            self.logger.info(f"Error getting crypto snapshot: {e}")
+            return []
+
     # Users
     def add_user(self, user: User) -> None:
-        """TODO: Document method"""
+        """
+        Adds a user to the database.
+
+        Args:
+            user (User): The user object to be added.
+        """
         try:
             collection = self.get_collection("user_data")
             collection.insert_one(
@@ -156,8 +206,16 @@ class DatabaseManager:
         except pymongo.errors.PyMongoError as e:
             self.logger.info(f"Error adding user {user.login} to database: {e}")
 
-    def get_users(self, query: dict = {}) -> List[User]:
-        """TODO: Document method"""
+    def get_users(self, query: dict = {}) -> List[User] | None:
+        """
+        Retrieves user data from the database based on a query.
+
+        Args:
+            query (dict): The query to filter users.
+
+        Returns:
+            List[User] | None: A list of User objects matching the query, or None if no users found.
+        """
         try:
             collection = self.get_collection("user_data")
             cursor = collection.find(query)
@@ -175,13 +233,18 @@ class DatabaseManager:
                     created_at=document["created_at"],
                 )
                 users.append(user)
-            return users if len(users) > 1 else users[0] if users else None
+            return users if users else None
         except pymongo.errors.PyMongoError as e:
             self.logger.info(f"Error getting users data: {e}")
             return None
 
-    def update_user(self, user: User):
-        """TODO: Document method"""
+    def update_user(self, user: User) -> None:
+        """
+        Updates the USD balance of a user in the database.
+
+        Args:
+            user (User): The user object containing updated USD balance.
+        """
         try:
             collection = self.get_collection("user_data")
             collection.update_one(
@@ -189,13 +252,25 @@ class DatabaseManager:
                 {"$set": {"usd_balance": user.usd_balance}},
             )
         except pymongo.errors.PyMongoError as e:
-            self.logger.info(f"Error updating user {user.id}: {e}")
+            self.logger.info(f"Error updating user {user._id}: {e}")
 
     # Assets
-    def add_asset(self, asset: Asset):
-        """TODO: Document method"""
+    def add_asset(self, asset: Asset) -> None:
+        """
+        Adds an asset to the database.
+
+        Args:
+            asset (Asset): The asset object to be added.
+        """
         try:
             collection = self.get_collection("assets")
+            if not self.verify_ttl_index("assets", "sold"):
+                self.create_ttl_index(
+                    collection_name="assets",
+                    index_name="sold",
+                    ascending=False,
+                    expire_after_seconds=(GlobalSettings.INTERVALS_IN_MINUTES[-1] * 60)
+                )
             collection.insert_one(
                 {
                     "user_id": asset.user_id,
@@ -207,16 +282,24 @@ class DatabaseManager:
                     "current_price": asset.current_price,
                     "variation": asset.variation,
                     "should_be_sold": asset.should_be_sold,
-                    "obs": asset.obs,
+                    "sold": asset.sold,
                 }
             )
         except pymongo.errors.PyMongoError as e:
             self.logger.info(
-                f"Error adding asset {asset.symbol} to {user_id} into database: {e}"
+                f"Error adding asset {asset.symbol} to {asset.user_id} into database: {e}"
             )
 
     def get_assets(self, query: dict = {}) -> List[Asset]:
-        """TODO: Document method"""
+        """
+        Retrieves asset data from the database based on a query.
+
+        Args:
+            query (dict): The query to filter assets.
+
+        Returns:
+            List[Asset]: A list of Asset objects matching the query.
+        """
         try:
             collection = self.get_collection("assets")
             cursor = collection.find(query)
@@ -232,15 +315,20 @@ class DatabaseManager:
                     highest_price=document["highest_price"],
                     current_price=document["current_price"],
                     should_be_sold=document["should_be_sold"],
-                    obs=document["obs"])
+                    sold=document["sold"])
                 assets.append(asset)
             return assets
         except pymongo.errors.PyMongoError as e:
             self.logger.info(f"Error getting assets data: {e}")
             return []
 
-    def _update_asset(self, asset: Asset):
-        """TODO: Document method"""
+    def _update_asset(self, asset: Asset) -> None:
+        """
+        Updates an asset in the database.
+
+        Args:
+            asset (Asset): The asset object to be updated.
+        """
         try:
             collection = self.get_collection("assets")
             updated_asset = asset.__dict__
@@ -254,23 +342,45 @@ class DatabaseManager:
             )
 
     def update_assets(self, crypto_snapshots: List[CryptoSnapshot]) -> List[Asset]:
-        assets = self.get_assets()
-        crypto_snapshots_dict = {
-            crypto_snapshot.symbol: crypto_snapshot
-            for crypto_snapshot in crypto_snapshots
-        }
-        updated_assets = []
-        for asset in assets:
-            if asset.symbol in crypto_snapshots_dict:
-                updated_asset = asset.update_asset(crypto_snapshots_dict[asset.symbol].price)
-                self._update_asset(updated_asset)
-                updated_assets.append(updated_asset)
-        return updated_assets
+        """
+        Updates asset information in the database based on crypto snapshots.
 
-    def delete_asset(self, asset_id: bson.objectid.ObjectId) -> None:
-        """TODO: Document method"""
+        Args:
+            crypto_snapshots (List[CryptoSnapshot]): A list of CryptoSnapshot objects.
+
+        Returns:
+            List[Asset]: A list of updated Asset objects.
+        """
+        try:
+            assets = self.get_assets({"sold": None})
+            crypto_snapshots_dict = {
+                crypto_snapshot.symbol: crypto_snapshot
+                for crypto_snapshot in crypto_snapshots
+            }
+            updated_assets = []
+            for asset in assets:
+                if asset.symbol in crypto_snapshots_dict:
+                    updated_asset = asset.update_asset(crypto_snapshots_dict[asset.symbol].price)
+                    self._update_asset(updated_asset)
+                    updated_assets.append(updated_asset)
+            return updated_assets
+        except pymongo.errors.PyMongoError as e:
+            self.logger.info(
+                    f"Error updating assets: {e}"
+            )
+            return []
+
+    def update_sold_asset(self, asset_id: bson.objectid.ObjectId, current_datetime: datetime) -> None:
+        """
+        Updates the sold datetime of an asset in the database.
+
+        Args:
+            asset_id (bson.objectid.ObjectId): The ID of the asset to be updated.
+            current_datetime (datetime): The datetime indicating when the asset was sold.
+        """
         try:
             collection = self.get_collection("assets")
-            collection.delete_one({"_id": asset_id})
+            collection.update_one({"_id": asset_id}, {"$set": {"sold": current_datetime}})
         except pymongo.errors.PyMongoError as e:
-            self.logger.info(f"Error deleting asset {asset_id}: {e}")
+            self.logger.info(f"Error updating sold asset {asset_id}: {e}")
+

@@ -1,14 +1,14 @@
 import datetime
 import bson
-from utils.global_settings import GlobalSettings
+from global_settings import GlobalSettings
 
 
 class Asset:
-    """Represents an investment asset with details like symbol, quantity, prices, and performance."""
+    """Represents an investment asset with details like symbol, quantity, prices, and variation."""
 
     def __init__(
         self,
-        user_id: bson.objectid.ObjectId | str,
+        user_id: bson.objectid.ObjectId | None,
         symbol: str,
         quantity: float,
         purchase_price: float,
@@ -17,9 +17,23 @@ class Asset:
         current_price: float,
         _id: bson.objectid.ObjectId | None = None,
         should_be_sold: bool = False,
-        obs: str | None = None,
+        sold: datetime.datetime | None = None,
     ):
-        """TODO: Document method"""
+        """
+        Initializes an Asset object.
+
+        Args:
+            user_id (bson.objectid.ObjectId | None): The ID of the user who owns the asset.
+            symbol (str): The symbol of the asset.
+            quantity (float): The quantity of the asset.
+            purchase_price (float): The purchase price of the asset.
+            purchase_datetime (datetime.datetime): The datetime of the asset purchase.
+            highest_price (float): The highest price of the asset.
+            current_price (float): The current price of the asset.
+            _id (bson.objectid.ObjectId | None, optional): The ID of the asset. Defaults to None.
+            should_be_sold (bool, optional): Indicates if the asset should be sold. Defaults to False.
+            sold (datetime.datetime | None, optional): The datetime when the asset was sold. Defaults to None.
+        """
         self._id = _id
         self.user_id = user_id
         self.symbol = symbol
@@ -31,7 +45,7 @@ class Asset:
         self.purchase_datetime = purchase_datetime
         self.highest_price = highest_price
         self.should_be_sold = should_be_sold
-        self.obs = obs
+        self.sold = sold
 
     def calculate_current_value(self) -> float:
         """Calculates the current total value of the asset."""
@@ -44,7 +58,15 @@ class Asset:
         )
 
     def update_asset(self, new_price: float) -> "Asset":
-        """Updates the current price, the highest price if the new price is higher and recalculates variation."""
+        """
+        Updates the asset with a new price.
+
+        Args:
+            new_price (float): The new price of the asset.
+
+        Returns:
+            Asset: The updated asset object.
+        """
         self.current_price = new_price
         self.variation = self.calculate_variation()
         if self.current_price > self.highest_price:
@@ -54,6 +76,7 @@ class Asset:
         return self
 
     def update_should_asset_be_sold(self) -> bool:
+        """Determines if the asset should be sold based on predefined criteria."""
         if self.variation <= (-GlobalSettings.SELLING_UNDER_PURCHASE_PERCENTAGE):
             return True
         if self.current_price <= self.highest_price * (
@@ -71,7 +94,15 @@ class Asset:
 
     @classmethod
     def from_dict(cls, asset_dict: dict) -> "Asset":
-        """TODO: Document method"""
+        """
+        Creates an Asset object from a dictionary.
+
+        Args:
+            asset_dict (dict): The dictionary containing asset data.
+
+        Returns:
+            Asset: The Asset object created from the dictionary.
+        """
         user_id = asset_dict["user_id"]
         symbol = asset_dict["symbol"]
         quantity = asset_dict["quantity"]
@@ -80,7 +111,7 @@ class Asset:
         highest_price = asset_dict["highest_price"]
         current_price = asset_dict["current_price"]
         should_be_sold = asset_dict["should_be_sold"]
-        obs = asset_dict["obs"]
+        sold = asset_dict["sold"]
         return cls(
             user_id,
             symbol,
@@ -90,7 +121,7 @@ class Asset:
             highest_price,
             current_price,
             should_be_sold,
-            obs,
+            sold,
         )
 
     def __str__(self) -> str:
