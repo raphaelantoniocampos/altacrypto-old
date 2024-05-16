@@ -134,8 +134,8 @@ class DatabaseManager:
             if bulk_operations:
                 collection.bulk_write(bulk_operations)
 
-            # current_datetime = datetime.now()
-            # self.logger.info(f"Crypto Snapshots updated at {current_datetime}")
+            current_datetime = datetime.now()
+            self.logger.info(f"Crypto Snapshots updated at {current_datetime}")
 
         except pymongo.errors.PyMongoError as e:
             self.logger.info(f"Error adding feeding database: {e}")
