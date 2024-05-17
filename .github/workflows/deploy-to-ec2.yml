@@ -44,4 +44,4 @@ jobs:
           docker load -i /home/${{ secrets.EC2_USER }}/altacrypto.tar
           docker stop altacrypto || true
           docker rm altacrypto || true
-          docker run -d --name altacrypto -p 80:80 altacrypto:latest
+          docker run -d --name altacrypto -p 5000:5000 altacrypto:latest

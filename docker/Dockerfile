@@ -16,6 +16,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app /app
 
+EXPOSE 5000
+
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
 CMD ["python3", "-m", "main"]

@@ -12,8 +12,13 @@ from global_settings import GlobalSettings
 app = Flask(__name__)
 
 
+@app.route("/")
+def working():
+    return "Hello, World. Bot Online!"
+
+
 def start_flask():
-    app.run(host="172.31.16.0/20", port=80, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
 
 
 async def main():
