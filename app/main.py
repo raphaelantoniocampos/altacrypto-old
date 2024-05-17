@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 
 def start_flask():
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="172.31.16.0/20", port=5000, debug=True)
 
 
 async def main():
