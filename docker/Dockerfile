@@ -2,7 +2,7 @@ FROM python:3
 
 WORKDIR /app
 
-COPY app/requirements.txt ./
+COPY requirements.txt ./
 
 COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
 
