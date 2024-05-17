@@ -18,7 +18,7 @@ def working():
 
 
 def start_flask():
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)
 
 
 async def main():
@@ -39,7 +39,7 @@ async def main():
         await asyncio.sleep(remaining)
 
 if __name__ == "__main__":
-    flask_thread = threading.Thread(target=start_flask())
+    flask_thread = threading.Thread(target=start_flask)
     flask_thread.daemon = True
     flask_thread.start()
 
@@ -47,4 +47,7 @@ if __name__ == "__main__":
         asyncio.run(main())
     except KeyboardInterrupt:
         print("Exiting due to KeyboardInterrupt")
+        func = request.environ.get('werkzeug.server.shutdown')
+        if func is not None:
+            func()
         sys.exit()

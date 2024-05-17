@@ -92,8 +92,7 @@ class BinanceManager:
 
             if response.status_code != 200:
                 self.logger.info(
-                    f"Request failed with status code {
-                        response.status_code}: {response.text}"
+                    f"Request failed with status code {response.status_code}: {response.text}"
                 )
                 return None
             return response
