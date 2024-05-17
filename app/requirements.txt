@@ -7,3 +7,4 @@ requests
 types-requests
 pymongo[srv]
 mypy
+flask

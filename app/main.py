@@ -2,10 +2,18 @@ import sys
 import time
 import logging
 import asyncio
+import threading
 
+from flask import Flask
 from core.database_manager import DatabaseManager
 from core.crypto_trader import CryptoTrader
 from global_settings import GlobalSettings
+
+app = Flask(__name__)
+
+
+def start_flask():
+    app.run(host="0.0.0.0", port=5000, debug=True)
 
 
 async def main():
@@ -26,6 +34,10 @@ async def main():
         await asyncio.sleep(remaining)
 
 if __name__ == "__main__":
+    flask_thread = threading.Thread(target=start_flask())
+    flask_thread.daemon = True
+    flask_thread.start()
+
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
