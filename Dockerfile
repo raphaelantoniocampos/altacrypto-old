@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY requirements.txt ./
 
-COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
+COPY docker-entrypoint.sh /docker-entrypoint.sh
 
 RUN python3 -m venv .venv
 
