@@ -41,7 +41,8 @@ class DatabaseManager:
         load_dotenv()
         mongo_user = os.getenv("MONGO_USER")
         mongo_password = os.getenv("MONGO_PASSWORD")
-        connection_string = f"mongodb+srv://{mongo_user}:{mongo_password}@cluster0.wovexfa.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+        connection_string = f"mongodb+srv://{mongo_user}:{
+            mongo_password}@cluster0.wovexfa.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
         client: pymongo.MongoClient = pymongo.MongoClient(connection_string)
         return client["altadata"]
 
@@ -117,6 +118,8 @@ class DatabaseManager:
         Args:
         crypto_snapshots (List['CryptoSnapshot']): containing asset pairs and their prices.
         """
+        if not crypto_snapshots:
+            return
         try:
             collection = self.get_collection("crypto_snapshots")
             if not self.verify_ttl_index("crypto_snapshots", "datetime"):
@@ -128,7 +131,8 @@ class DatabaseManager:
                 )
             bulk_operations = []
             for crypto_snapshot in crypto_snapshots:
-                operation = self._create_add_crypto_snapshot_operation(crypto_snapshot)
+                operation = self._create_add_crypto_snapshot_operation(
+                    crypto_snapshot)
                 bulk_operations.append(operation)
 
             if bulk_operations:
@@ -204,7 +208,8 @@ class DatabaseManager:
                 }
             )
         except pymongo.errors.PyMongoError as e:
-            self.logger.info(f"Error adding user {user.login} to database: {e}")
+            self.logger.info(f"Error adding user {
+                             user.login} to database: {e}")
 
     def get_users(self, query: dict = {}) -> List[User] | None:
         """
@@ -269,7 +274,8 @@ class DatabaseManager:
                     collection_name="assets",
                     index_name="sold",
                     ascending=False,
-                    expire_after_seconds=(GlobalSettings.INTERVALS_IN_MINUTES[-1] * 60)
+                    expire_after_seconds=(
+                        GlobalSettings.INTERVALS_IN_MINUTES[-1] * 60)
                 )
             collection.insert_one(
                 {
@@ -287,7 +293,8 @@ class DatabaseManager:
             )
         except pymongo.errors.PyMongoError as e:
             self.logger.info(
-                f"Error adding asset {asset.symbol} to {asset.user_id} into database: {e}"
+                f"Error adding asset {asset.symbol} to {
+                    asset.user_id} into database: {e}"
             )
 
     def get_assets(self, query: dict = {}) -> List[Asset]:
@@ -338,7 +345,8 @@ class DatabaseManager:
             )
         except pymongo.errors.PyMongoError as e:
             self.logger.info(
-                f"Error updating asset {asset.symbol} for user {asset.user_id}: {e}"
+                f"Error updating asset {
+                    asset.symbol} for user {asset.user_id}: {e}"
             )
 
     def update_assets(self, crypto_snapshots: List[CryptoSnapshot]) -> List[Asset]:
@@ -360,13 +368,14 @@ class DatabaseManager:
             updated_assets = []
             for asset in assets:
                 if asset.symbol in crypto_snapshots_dict:
-                    updated_asset = asset.update_asset(crypto_snapshots_dict[asset.symbol].price)
+                    updated_asset = asset.update_asset(
+                        crypto_snapshots_dict[asset.symbol].price)
                     self._update_asset(updated_asset)
                     updated_assets.append(updated_asset)
             return updated_assets
         except pymongo.errors.PyMongoError as e:
             self.logger.info(
-                    f"Error updating assets: {e}"
+                f"Error updating assets: {e}"
             )
             return []
 
@@ -380,7 +389,7 @@ class DatabaseManager:
         """
         try:
             collection = self.get_collection("assets")
-            collection.update_one({"_id": asset_id}, {"$set": {"sold": current_datetime}})
+            collection.update_one({"_id": asset_id}, {
+                                  "$set": {"sold": current_datetime}})
         except pymongo.errors.PyMongoError as e:
             self.logger.info(f"Error updating sold asset {asset_id}: {e}")
-

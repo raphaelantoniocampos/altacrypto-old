@@ -2,9 +2,8 @@
 
 set -e
 
-# activate our virtual environment here
+# Ativando o ambiente virtual
 . .venv/bin/activate
 
-
-# Evaluating passed command:
+# Avaliando o comando passado:
 exec "$@"

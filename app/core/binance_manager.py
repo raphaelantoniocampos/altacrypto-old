@@ -66,6 +66,8 @@ class BinanceManager:
                     crypto_snapshots.append(crypto_snapshot)
             return crypto_snapshots
 
+        except AttributeError:
+            return []
         except Exception as e:
             self.logger.info(f"Error fetching USDT pairs from Binance: {e}")
             return crypto_snapshots
@@ -85,11 +87,19 @@ class BinanceManager:
             Exception: If the request fails with a non-200 status code.
         """
         url = f"{self.base_url}{endpoint}"
-        response = requests.get(url, params=params)
+        try:
+            response = requests.get(url, params=params)
 
-        if response.status_code != 200:
-            raise Exception(
-                f"Request failed with status code {response.status_code}: {response.text}")
-
-        return response
-
+            if response.status_code != 200:
+                self.logger.info(
+                    f"Request failed with status code {
+                        response.status_code}: {response.text}"
+                )
+                return None
+            return response
+        except requests.exceptions.Timeout:
+            self.logger.info("The request timed out")
+            return None
+        except requests.exceptions.RequestException as e:
+            self.logger.info(f"An error occurred: {e}")
+            return None
