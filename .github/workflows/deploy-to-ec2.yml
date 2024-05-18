@@ -24,13 +24,15 @@ jobs:
         docker save altacrypto:latest -o altacrypto.tar
 
     - name: Copy Docker image to EC2
-      uses: appleboy/scp-action@v0.1.0
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        source: "altacrypto.tar"
-        target: "${{ secrets.EC2_TARGET }}/altacrypto.tar"
+      run: |
+          scp -i ${{ secrets.EC2_SSH_KEY }} ./altacrpto.tar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:${{ secrets.EC2_TARGET }}
+      # uses: appleboy/scp-action@v0.1.0
+      # with:
+      #   host: ${{ secrets.EC2_HOST }}
+      #   username: ${{ secrets.EC2_USER }}
+      #   key: ${{ secrets.EC2_SSH_KEY }}
+      #   source: "altacrypto.tar"
+      #   target: "${{ secrets.EC2_TARGET }}/altacrypto.tar"
 
     - name: SSH and load Docker image on EC2
       uses: appleboy/ssh-action@master
