@@ -45,7 +45,7 @@ jobs:
     #
     - name: SSH and load Docker image on EC2
       run: |
-          ssh -t -i ./alta_aws_keypair.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << "EOF"
+          ssh -t -i ./alta_aws_keypair.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
           if ! systemctl is-active --quiet docker; then
             sudo systemctl start docker
           else
@@ -55,4 +55,4 @@ jobs:
           docker stop altacrypto || true
           docker rm altacrypto || true
           docker run -d -e MONGO_USER=${{ secrets.MONGO_USER }} -e MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }} --name altacrypto -p 5000:5000 altacrypto:latest
-
+          EOF
