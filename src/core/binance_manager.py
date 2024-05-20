@@ -37,6 +37,8 @@ class BinanceManager:
         try:
             endpoint = "/sapi/v1/system/status"
             response = self._make_request(endpoint)
+            if not response:
+                return False
             status = response.json()
 
             if status['status'] == 0:
