@@ -21,7 +21,8 @@ jobs:
 
     - name: Save Docker image to a tar file
       run: |
-        docker save altacrypto:latest -o altacrypto.tar
+          touch altacrypto.tar
+      # docker save altacrypto:latest -o altacrypto.tar
 
     - name: Create SSH Key
       run: |
