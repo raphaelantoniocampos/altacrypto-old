@@ -25,16 +25,16 @@ jobs:
     #
     - name: Create SSH Key
       run: |
-          echo "${{ secrets.EC2_SSH_KEY }}" > ./alta_aws_pair_key.pem
+          echo "${{ secrets.EC2_SSH_KEY }}" > ./alta_aws_keypair.pem
           chmod 0400 ./alta_aws_pair_key.pem
     #
     # - name: Copy Docker image to EC2
     #   run: |
-    #       scp -i .alta_aws_pair_key.pem ./altacrypto.tar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/altacrypto
+    #       scp -i ./alta_aws_keypair.pem ./altacrypto.tar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/altacrypto
     #
     # - name: SSH and load Docker image on EC2
     #   run: |
-    #       ssh -i .alta_aws_pair_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}
+    #       ssh -i ./alta_aws_keypair.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}
     #       docker load -i /home/${{ secrets.EC2_USER }}/altacrypto.tar
     #       docker stop altacrypto || true
     #       docker rm altacrypto || true
@@ -43,4 +43,6 @@ jobs:
     - name: Clean SSH Key
       run: |
           pwd
-    #     rm ./alta_aws_pair_key.pem
+          ls
+          cat ./alta_aws_keypair.pem
+    #     rm ./alta_aws_keypair.pem
