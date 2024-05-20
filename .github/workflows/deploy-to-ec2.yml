@@ -31,6 +31,7 @@ jobs:
 
     - name: Add EC2 Host to Known Hosts
       run: |
+        mkdir -p ~/.ssh
         ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
     - name: Copy Docker image to EC2
