@@ -34,7 +34,7 @@ jobs:
     - name: Create .ssh directory
       run: |
         mkdir -p ~/.ssh
-        ls -la
+        ls -la ~/
 
     - name: Add EC2 Host to Known Hosts
       run: |
