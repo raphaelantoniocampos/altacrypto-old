@@ -34,6 +34,7 @@ jobs:
     - name: Create .ssh directory
       run: |
           mkdir -p ~/.ssh
+          chmod 755 ~/.ssh
 
     - name: Add EC2 Host to Known Hosts
       run: |
