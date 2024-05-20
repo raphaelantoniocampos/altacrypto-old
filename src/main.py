@@ -3,9 +3,9 @@ import time
 import logging
 import asyncio
 import threading
-import request
+import requests
 
-from flask import Flask
+from flask import Flask, request
 from core.database_manager import DatabaseManager
 from core.crypto_trader import CryptoTrader
 from global_settings import GlobalSettings
@@ -16,6 +16,15 @@ app = Flask(__name__)
 @app.route("/")
 def working():
     return "Hello, World. Bot Online!"
+
+
+@app.route("/shutdown", methods=["POST"])
+def shutdown():
+    func = request.environ.get("werkzeug.server.shutdown")
+    if func is None:
+        raise RuntimeError("Not running with the Werkzeug Server")
+    func()
+    return "Server shutting down..."
 
 
 def start_flask():
@@ -31,9 +40,9 @@ async def main():
 
     crypto_trader = CryptoTrader(database_manager)
     while True:
-        start_time = time.time()
+        start_time = time.perf_counter()
         await crypto_trader.start()
-        end_time = time.time()
+        end_time = time.perf_counter()
         remaining = (GlobalSettings.EXECUTION_FREQUENCY_MINUTES * 60) - (
             end_time - start_time
         )
@@ -48,7 +57,8 @@ if __name__ == "__main__":
         asyncio.run(main())
     except KeyboardInterrupt:
         print("Exiting due to KeyboardInterrupt")
-        func = request.environ.get('werkzeug.server.shutdown')
-        if func is not None:
-            func()
+        try:
+            requests.post("http://localhost:5000/shutdown")
+        except requests.exceptions.RequestException as e:
+            print(f"Error shutting down server: {e}")
         sys.exit()
