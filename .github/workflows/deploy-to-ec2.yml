@@ -42,4 +42,5 @@ jobs:
 
     - name: Clean SSH Key
       run: |
-          rm ./alta_aws_pair_key.pem
+          pwd
+    #     rm ./alta_aws_pair_key.pem
