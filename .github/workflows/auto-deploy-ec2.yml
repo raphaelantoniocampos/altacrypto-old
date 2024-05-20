@@ -20,7 +20,7 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t altacrypto:latest .
+          docker build -t altacrypto:latest .
 
     - name: Save Docker image to a tar file
       run: |
@@ -33,7 +33,7 @@ jobs:
 
     - name: Create .ssh directory
       run: |
-          mkdir -p ~/.ssh
+          mkdir ~/.ssh
 
     - name: Add EC2 Host to Known Hosts
       run: |
