@@ -3,7 +3,7 @@ name: Deploy to EC2
 on:
   push:
     branches: [ "main" ]
-    
+
 #on:
   #workflow_dispatch:
 
@@ -43,7 +43,7 @@ jobs:
 
     - name: SSH and load Docker image on EC2
       run: |
-          ssh -t -i ./alta_aws_keypair.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -t -i ./alta_aws_keypair.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
           docker load -i /home/${{ secrets.EC2_USER }}/altacrypto.tar
           docker stop altacrypto || true
           docker rm altacrypto || true

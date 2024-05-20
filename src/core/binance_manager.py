@@ -22,10 +22,7 @@ class BinanceManager:
         Sets the base URL for the Binance API and initializes the logger.
         """
         self.logger = logging.getLogger(__name__)
-        urls = ["https://api.binance.com", "https://api.binance.us"]
-        self.base_url = urls[0]
-        if not self.query_binance_status():
-            self.base_url = urls[1]
+        self.base_url = "https://api.binance.com"
 
     def query_binance_status(self) -> bool:
         """
