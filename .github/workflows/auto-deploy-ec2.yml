@@ -1,12 +1,9 @@
-name: Manual Deploy to EC2
+name: Automatic Deploy to EC2
 
 on:
   push:
     branches:
       - main
-
-#on:
-  #workflow_dispatch:
 
 jobs:
   build-and-deploy:
