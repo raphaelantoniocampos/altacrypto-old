@@ -25,7 +25,7 @@ jobs:
 
     - name: Create SSH Key
       run: |
-          echo ${{secrets.EC2_SSH_KEY}} > ./alta_aws_pair_key.pem
+          echo "${{secrets.EC2_SSH_KEY}}" > ./alta_aws_pair_key.pem
           chmod 0400 ./alta_aws_pair_key.pem
 
     - name: Copy Docker image to EC2
