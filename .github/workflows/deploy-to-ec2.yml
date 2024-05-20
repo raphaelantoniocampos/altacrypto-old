@@ -23,14 +23,23 @@ jobs:
       run: |
         docker save altacrypto:latest -o altacrypto.tar
 
+    - name: Create SSH Key
+      run: |
+          echo ${{secrets.EC2_SSH_KEY}} > ./alta_aws_pair_key.pem
+          chmod 0400 ./alta_aws_pair_key.pem
+
     - name: Copy Docker image to EC2
       run: |
-          scp -i ${{ secrets.EC2_SSH_KEY }} ./altacrypto.tar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/altacrypto
+          scp -i .alta_aws_pair_key.pem ./altacrypto.tar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/altacrypto
 
     - name: SSH and load Docker image on EC2
       run: |
-          ssh -i ${{ secrets.EC2_SSH_KEY }} ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}
+          ssh -i .alta_aws_pair_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}
           docker load -i /home/${{ secrets.EC2_USER }}/altacrypto.tar
           docker stop altacrypto || true
           docker rm altacrypto || true
           docker run -d -e MONGO_USER=${{ secrets.MONGO_USER }} -e MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }} --name altacrypto -p 5000:5000 altacrypto:latest
+
+    - name: Clean SSH Key
+      run: |
+          rm .alta_aws_pair_key.pem
