@@ -28,6 +28,10 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEY }}" > ./alta_aws_keypair.pem
           chmod 0400 ./alta_aws_keypair.pem
 
+    - name: Add EC2 Host to Known Hosts
+      run: |
+        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
     - name: Copy Docker image to EC2
       run: |
           scp -i ./alta_aws_keypair.pem ./altacrypto.tar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/altacrypto
