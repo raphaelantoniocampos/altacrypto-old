@@ -48,6 +48,8 @@ jobs:
           ssh -t -i ./alta_aws_keypair.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
           if ! systemctl is-active --quiet docker; then
             systemctl start docker
+          else
+            echo 'docker running'
           fi
           docker load -i /home/${{ secrets.EC2_USER }}/altacrypto.tar
           docker stop altacrypto || true
