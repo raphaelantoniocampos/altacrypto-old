@@ -12,37 +12,34 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    # - name: Set up Docker Buildx
-    #   uses: docker/setup-buildx-action@v2
-    #
-    # - name: Build Docker image
-    #   run: |
-    #     docker build -t altacrypto:latest .
-    #
-    # - name: Save Docker image to a tar file
-    #   run: |
-    #     docker save altacrypto:latest -o altacrypto.tar
-    #
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Build Docker image
+      run: |
+        docker build -t altacrypto:latest .
+
+    - name: Save Docker image to a tar file
+      run: |
+        docker save altacrypto:latest -o altacrypto.tar
+
     - name: Create SSH Key
       run: |
           echo "${{ secrets.EC2_SSH_KEY }}" > ./alta_aws_keypair.pem
           chmod 0400 ./alta_aws_keypair.pem
-    #
-    # - name: Copy Docker image to EC2
-    #   run: |
-    #       scp -i ./alta_aws_keypair.pem ./altacrypto.tar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/altacrypto
-    #
-    # - name: SSH and load Docker image on EC2
-    #   run: |
-    #       ssh -i ./alta_aws_keypair.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}
-    #       docker load -i /home/${{ secrets.EC2_USER }}/altacrypto.tar
-    #       docker stop altacrypto || true
-    #       docker rm altacrypto || true
-    #       docker run -d -e MONGO_USER=${{ secrets.MONGO_USER }} -e MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }} --name altacrypto -p 5000:5000 altacrypto:latest
+
+    - name: Copy Docker image to EC2
+      run: |
+          scp -i ./alta_aws_keypair.pem ./altacrypto.tar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/altacrypto
+
+    - name: SSH and load Docker image on EC2
+      run: |
+          ssh -i ./alta_aws_keypair.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}
+          docker load -i /home/${{ secrets.EC2_USER }}/altacrypto.tar
+          docker stop altacrypto || true
+          docker rm altacrypto || true
+          docker run -d -e MONGO_USER=${{ secrets.MONGO_USER }} -e MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }} --name altacrypto -p 5000:5000 altacrypto:latest
 
     - name: Clean SSH Key
       run: |
-          pwd
-          ls
-          cat ./alta_aws_keypair.pem
-    #     rm ./alta_aws_keypair.pem
+          rm ./alta_aws_keypair.pem
