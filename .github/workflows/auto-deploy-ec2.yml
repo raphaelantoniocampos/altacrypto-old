@@ -30,14 +30,14 @@ jobs:
       run: |
           echo "${{ secrets.EC2_SSH_KEY }}" > ./alta_aws_keypair.pem
           chmod 0400 ./alta_aws_keypair.pem
-    #
-    # - name: Create .ssh directory
-    #   run: |
-    #       mkdir -p ~/.ssh
-    #
-    # - name: Add EC2 Host to Known Hosts
-    #   run: |
-    #       ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Create .ssh directory
+      run: |
+          mkdir -p ~/.ssh
+
+    - name: Add EC2 Host to Known Hosts
+      run: |
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
     #
     # - name: Copy Docker image to EC2
     #   run: |
