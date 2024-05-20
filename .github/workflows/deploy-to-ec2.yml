@@ -25,7 +25,7 @@ jobs:
 
     - name: Copy Docker image to EC2
       run: |
-          scp -i ${{ secrets.EC2_SSH_KEY }} ./altacrypto.tar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2@_USER }}/altacrypto
+          scp -i ${{ secrets.EC2_SSH_KEY }} ./altacrypto.tar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/altacrypto
 
     - name: SSH and load Docker image on EC2
       run: |
