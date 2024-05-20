@@ -21,8 +21,7 @@ jobs:
 
     - name: Save Docker image to a tar file
       run: |
-          touch altacrypto.tar
-      # docker save altacrypto:latest -o altacrypto.tar
+          docker save altacrypto:latest -o altacrypto.tar
 
     - name: Create SSH Key
       run: |
@@ -36,7 +35,7 @@ jobs:
 
     - name: Copy Docker image to EC2
       run: |
-          scp -i ./alta_aws_keypair.pem ./altacrypto.tar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/altacrypto
+          scp -i ./alta_aws_keypair.pem ./altacrypto.tar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/
 
     - name: SSH and load Docker image on EC2
       run: |
