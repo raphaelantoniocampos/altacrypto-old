@@ -41,7 +41,8 @@ class DatabaseManager:
         load_dotenv()
         mongo_user = os.getenv("MONGO_USER")
         mongo_password = os.getenv("MONGO_PASSWORD")
-        connection_string = f"mongodb+srv://{mongo_user}:{mongo_password}@cluster0.wovexfa.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+        connection_string = f"mongodb+srv://{mongo_user}:{
+            mongo_password}@cluster0.wovexfa.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
         client: pymongo.MongoClient = pymongo.MongoClient(connection_string)
         return client["altadata"]
 
@@ -137,8 +138,8 @@ class DatabaseManager:
             if bulk_operations:
                 collection.bulk_write(bulk_operations)
 
-            current_datetime = datetime.now()
-            self.logger.info(f"Crypto Snapshots updated at {current_datetime}")
+            # current_datetime = datetime.now()
+            # self.logger.info(f"Crypto Snapshots updated at {current_datetime}")
 
         except pymongo.errors.PyMongoError as e:
             self.logger.info(f"Error adding feeding database: {e}")
@@ -207,7 +208,10 @@ class DatabaseManager:
                 }
             )
         except pymongo.errors.PyMongoError as e:
-            self.logger.info(f"Error adding user {user.login} to database: {e}")
+            self.logger.info(
+                f"Error adding user {
+                    user.login} to database: {e}"
+            )
 
     def get_users(self, query: dict = {}) -> List[User] | None:
         """
@@ -291,7 +295,8 @@ class DatabaseManager:
             )
         except pymongo.errors.PyMongoError as e:
             self.logger.info(
-                f"Error adding asset {asset.symbol} to {asset.user_id} into database: {e}"
+                f"Error adding asset {asset.symbol} to {
+                    asset.user_id} into database: {e}"
             )
 
     def get_assets(self, query: dict = {}) -> List[Asset]:
@@ -342,7 +347,8 @@ class DatabaseManager:
             )
         except pymongo.errors.PyMongoError as e:
             self.logger.info(
-                f"Error updating asset {asset.symbol} for user {asset.user_id}: {e}"
+                f"Error updating asset {
+                    asset.symbol} for user {asset.user_id}: {e}"
             )
 
     def update_assets(self, crypto_snapshots: List[CryptoSnapshot]) -> List[Asset]:
