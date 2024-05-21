@@ -4,6 +4,7 @@ import logging
 import asyncio
 import threading
 import requests
+from datetime import datetime
 
 from flask import Flask, request
 from core.database_manager import DatabaseManager
@@ -36,9 +37,11 @@ async def main():
     The main entry point of the application.
     """
     logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
     database_manager = DatabaseManager()
 
     crypto_trader = CryptoTrader(database_manager)
+    logger.info(f"Bot started: {datetime.now()}")
     while True:
         start_time = time.perf_counter()
         await crypto_trader.start()
@@ -47,6 +50,7 @@ async def main():
             end_time - start_time
         )
         await asyncio.sleep(remaining)
+        logger.info(f"Bot running: {datetime.now()}")
 
 if __name__ == "__main__":
     flask_thread = threading.Thread(target=start_flask)
