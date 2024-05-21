@@ -15,7 +15,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def working():
-    return "Hello, World. Bot Online!"
+    return "Parece que deu certo hein. O Homem ta online!!!"
 
 
 @app.route("/shutdown", methods=["POST"])
