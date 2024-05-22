@@ -136,4 +136,3 @@ class Asset:
             f"Variation: {self.variation:.2f}%\n"
             f"Should be Sold: {self.should_be_sold}\n"
         )
-

@@ -42,8 +42,10 @@ class SellOrder(Order):
             f"User ID: {self.asset.user_id}\n"
             f"Side: {self.side}\n"
             f"Symbol: {self.asset.symbol}\n"
-            f"Interval: {self.interval}\n"
+            f"Highest Price: {self.asset.highest_price}\n"
+            f"Current Price: {self.asset.current_price}\n"
             f"Variation: {self.asset.variation}\n"
+            f"Purchase Datetime {self.asset.purchase_datetime}\n"
         )
 
 
@@ -77,4 +79,3 @@ class BuyOrder(Order):
             f"Interval: {self.interval}\n"
             f"Variation: {self.variation}\n"
         )
-

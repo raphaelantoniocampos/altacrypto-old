@@ -160,13 +160,15 @@ def add_users(quantity, usd_balance, logger=False):
         database_manager.add_user(user)
 
 
+current_datetime = datetime.datetime()
+
 # rn = random.randint(0, 5) + 5
-add_users(1, 1000, logger=True)
+# add_users(1, 1000, logger=True)
 # print(f"({rn}) users 100 criados")
 
 # add_users(10, 500)
 # rn = random.randint(0, 10)
-add_users(1, 100)
+# add_users(1, 100)
 # print(f"({10 + rn}) users 500 criados")
 #
 # add_users(5, 1000)

@@ -53,7 +53,8 @@ class CryptoTrader:
         # users = self.database_manager.get_all_users()
 
         current_datetime = datetime.now()
-        sell_orders = self._get_sell_orders(assets, crypto_snapshots, current_datetime)
+        sell_orders = self._get_sell_orders(
+            assets, crypto_snapshots, current_datetime)
         buy_orders = self._get_buy_orders(intervals_dataframe)
 
         if sell_orders or buy_orders:
@@ -283,7 +284,8 @@ class CryptoTrader:
             )
             if user_id in sell_orders_by_user:
                 orders = sell_orders_by_user[user_id]
-                tasks.append(self._execute_sell_orders(user, orders, user_assets, current_datetime))
+                tasks.append(self._execute_sell_orders(
+                    user, orders, user_assets, current_datetime))
         asyncio.gather(*tasks)
 
     def _separate_orders_by_user(self, orders: List[SellOrder]) -> dict[bson.objectid.ObjectId | None, List[SellOrder]]:
@@ -296,7 +298,8 @@ class CryptoTrader:
         Returns:
             dict[bson.objectid.ObjectId | None, List[SellOrder]]: Dictionary of sell orders grouped by user_id.
         """
-        orders_by_user: dict[bson.objectid.ObjectId | None, List[SellOrder]] = {}
+        orders_by_user: dict[bson.objectid.ObjectId |
+                             None, List[SellOrder]] = {}
         for order in orders:
             if order.user_id not in orders_by_user:
                 orders_by_user[order.user_id] = []
@@ -363,6 +366,7 @@ class CryptoTrader:
             value = asset.current_value
             # Simulates binance transaction
             time.sleep(0.05)
-            self.database_manager.update_sold_asset(asset._id, current_datetime)
+            self.database_manager.update_sold_asset(
+                asset._id, current_datetime)
             user.usd_balance += value
             self.database_manager.update_user(user)
