@@ -44,7 +44,7 @@ class SellOrder(Order):
             f"Symbol: {self.asset.symbol}\n"
             f"Highest Price: {self.asset.highest_price}\n"
             f"Current Price: {self.asset.current_price}\n"
-            f"Variation: {self.asset.variation}\n"
+            f"Variation: {self.asset.variation}%\n"
             f"Purchase Datetime {self.asset.purchase_datetime}\n"
         )
 
@@ -67,7 +67,7 @@ class BuyOrder(Order):
         """
         super().__init__(None, side, interval)
         self.symbol = symbol
-        self.variation = variation
+        self.variation = round(variation, 2)
         self.current_price = current_price
 
     def __str__(self) -> str:
@@ -77,5 +77,5 @@ class BuyOrder(Order):
             f"Side: {self.side}\n"
             f"Symbol: {self.symbol}\n"
             f"Interval: {self.interval}\n"
-            f"Variation: {self.variation}\n"
+            f"Variation: {self.variation}%\n"
         )
