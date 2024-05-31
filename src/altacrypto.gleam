@@ -1,3 +1,4 @@
+import app/bot
 import app/router
 import app/web.{Context}
 import dot_env
@@ -12,7 +13,7 @@ pub fn main() {
   dot_env.load()
   let assert Ok(secret_key_base) = env.get("SECRET_KEY_BASE")
 
-  let ctx = Context(static_directory: static_directory(), items: [])
+  let ctx = Context(static_directory: static_directory())
 
   let handler = router.handle_request(_, ctx)
 
@@ -22,10 +23,13 @@ pub fn main() {
     |> mist.port(8000)
     |> mist.start_http
 
+  let start_bot = bot.start
+  process.start(start_bot, True)
+
   process.sleep_forever()
 }
 
 fn static_directory() {
-  let assert Ok(priv_directory) = wisp.priv_directory("app")
+  let assert Ok(priv_directory) = wisp.priv_directory("altacrypto")
   priv_directory <> "/static"
 }

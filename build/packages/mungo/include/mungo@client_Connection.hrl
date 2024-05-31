@@ -1,0 +1,1 @@
+-record(connection, {socket :: mug:socket(), primary :: boolean()}).

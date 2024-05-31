@@ -5,17 +5,6 @@
                     gleam_otp,
                     gleam_stdlib]},
     {description, "An Elm-inspired framework for building HTML templates, single page applications, and server-rendered components in Gleam!"},
-    {modules, [lustre,
-               lustre@attribute,
-               lustre@effect,
-               lustre@element,
-               lustre@element@html,
-               lustre@element@svg,
-               lustre@event,
-               lustre@internals@constants,
-               lustre@internals@patch,
-               lustre@internals@runtime,
-               lustre@internals@vdom,
-               lustre@server_component]},
+    {modules, []},
     {registered, []}
 ]}.

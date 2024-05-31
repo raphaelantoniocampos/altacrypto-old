@@ -1,0 +1,1 @@
+-record(sub_kind, {code :: bitstring()}).

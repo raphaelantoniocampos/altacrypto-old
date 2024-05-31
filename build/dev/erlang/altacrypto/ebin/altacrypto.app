@@ -1,0 +1,21 @@
+{application, altacrypto, [
+    {vsn, "1.0.0"},
+    {applications, [birl,
+                    bison,
+                    dot_env,
+                    gleam_erlang,
+                    gleam_stdlib,
+                    gleeunit,
+                    lustre,
+                    mist,
+                    mungo,
+                    wisp]},
+    {description, ""},
+    {modules, [altacrypto,
+               app@bot,
+               app@database,
+               app@models@asset,
+               app@models@crypto_snapshot,
+               app@models@order]},
+    {registered, []}
+]}.

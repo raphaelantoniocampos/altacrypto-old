@@ -5,9 +5,6 @@
                     gleam_http,
                     gleam_stdlib]},
     {description, "A Gleam WebSocket Datagram Library"},
-    {modules, [gramps@debug,
-               gramps@http,
-               gramps@websocket,
-               gramps@websocket@compression]},
+    {modules, []},
     {registered, []}
 ]}.

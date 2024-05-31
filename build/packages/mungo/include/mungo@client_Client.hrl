@@ -1,0 +1,1 @@
+-record(client, {db :: binary(), connections :: list(mungo@client:connection())}).

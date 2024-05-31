@@ -3,9 +3,6 @@
     {applications, [gleam_stdlib,
                     ranger]},
     {description, "Date / Time handling for Gleam"},
-    {modules, [birl,
-               birl@duration,
-               birl@interval,
-               birl@zones]},
+    {modules, []},
     {registered, []}
 ]}.

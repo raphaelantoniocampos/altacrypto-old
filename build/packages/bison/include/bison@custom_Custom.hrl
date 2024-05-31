@@ -1,0 +1,1 @@
+-record(custom, {code :: bitstring(), value :: bitstring()}).
