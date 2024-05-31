@@ -50,7 +50,7 @@ async def main():
             end_time - start_time
         )
         await asyncio.sleep(remaining)
-        logger.info(f"Bot running: {datetime.now()}")
+        # logger.info(f"Bot running: {datetime.now()}")
 
 if __name__ == "__main__":
     flask_thread = threading.Thread(target=start_flask)
