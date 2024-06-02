@@ -7,13 +7,6 @@
                     gleam_stdlib,
                     mug]},
     {description, "A MongoDB driver for Gleam (formerly gleam_mongo)"},
-    {modules, [mungo,
-               mungo@aggregation,
-               mungo@client,
-               mungo@crud,
-               mungo@cursor,
-               mungo@error,
-               mungo@scram,
-               mungo@tcp]},
+    {modules, []},
     {registered, []}
 ]}.

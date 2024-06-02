@@ -77,4 +77,4 @@ merge_with_defaults(Options) ->
     _pipe@3 = maps:to_list(_pipe@2),
     _pipe@4 = gleam@list:map(_pipe@3, fun gleam@dynamic:from/1),
     _pipe@5 = gleam@list:map(_pipe@4, fun gleam@dynamic:unsafe_coerce/1),
-    lists:append(_pipe@5, [inet6]).
+    gleam@list:append(_pipe@5, [inet6]).

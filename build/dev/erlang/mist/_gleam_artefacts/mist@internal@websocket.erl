@@ -4,22 +4,22 @@
 -export([initialize_connection/6]).
 -export_type([valid_message/1, websocket_message/1, websocket_connection/0, handler_message/1, websocket_state/1]).
 
--type valid_message(UBK) :: {socket_message, bitstring()} |
+-type valid_message(NUM) :: {socket_message, bitstring()} |
     socket_closed_message |
-    {user_message, UBK}.
+    {user_message, NUM}.
 
--type websocket_message(UBL) :: {valid, valid_message(UBL)} | invalid.
+-type websocket_message(NUN) :: {valid, valid_message(NUN)} | invalid.
 
 -type websocket_connection() :: {websocket_connection,
         glisten@socket:socket(),
         glisten@transport:transport(),
         gleam@option:option(gramps@websocket@compression:context())}.
 
--type handler_message(UBM) :: {internal, gramps@websocket:frame()} | {user, UBM}.
+-type handler_message(NUO) :: {internal, gramps@websocket:frame()} | {user, NUO}.
 
--type websocket_state(UBN) :: {websocket_state,
+-type websocket_state(NUP) :: {websocket_state,
         bitstring(),
-        UBN,
+        NUP,
         gleam@option:option(gramps@websocket@compression:compression())}.
 
 -spec message_selector() -> gleam@erlang@process:selector(websocket_message(any())).
@@ -107,7 +107,7 @@ set_active(Transport, Socket) ->
     end,
     nil.
 
--spec map_user_selector(gleam@option:option(gleam@erlang@process:selector(UCV))) -> gleam@option:option(gleam@erlang@process:selector(websocket_message(UCV))).
+-spec map_user_selector(gleam@option:option(gleam@erlang@process:selector(NVX))) -> gleam@option:option(gleam@erlang@process:selector(websocket_message(NVX))).
 map_user_selector(Selector) ->
     gleam@option:map(
         Selector,
@@ -121,11 +121,11 @@ map_user_selector(Selector) ->
 
 -spec apply_frames(
     list(gramps@websocket:frame()),
-    fun((UCL, websocket_connection(), handler_message(UCM)) -> gleam@otp@actor:next(UCM, UCL)),
+    fun((NVN, websocket_connection(), handler_message(NVO)) -> gleam@otp@actor:next(NVO, NVN)),
     websocket_connection(),
-    gleam@otp@actor:next(websocket_message(UCM), UCL),
-    fun((UCL) -> nil)
-) -> gleam@otp@actor:next(websocket_message(UCM), UCL).
+    gleam@otp@actor:next(websocket_message(NVO), NVN),
+    fun((NVN) -> nil)
+) -> gleam@otp@actor:next(websocket_message(NVO), NVN).
 apply_frames(Frames, Handler, Connection, Next, On_close) ->
     case {Frames, Next} of
         {_, {stop, Reason}} ->
@@ -218,14 +218,14 @@ apply_frames(Frames, Handler, Connection, Next, On_close) ->
     end.
 
 -spec initialize_connection(
-    fun((websocket_connection()) -> {UBW,
-        gleam@option:option(gleam@erlang@process:selector(UBX))}),
-    fun((UBW) -> nil),
-    fun((UBW, websocket_connection(), handler_message(UBX)) -> gleam@otp@actor:next(UBX, UBW)),
+    fun((websocket_connection()) -> {NUY,
+        gleam@option:option(gleam@erlang@process:selector(NUZ))}),
+    fun((NUY) -> nil),
+    fun((NUY, websocket_connection(), handler_message(NUZ)) -> gleam@otp@actor:next(NUZ, NUY)),
     glisten@socket:socket(),
     glisten@transport:transport(),
     list(binary())
-) -> {ok, gleam@erlang@process:subject(websocket_message(UBX))} | {error, nil}.
+) -> {ok, gleam@erlang@process:subject(websocket_message(NUZ))} | {error, nil}.
 initialize_connection(On_init, On_close, Handler, Socket, Transport, Extensions) ->
     _pipe@11 = gleam@otp@actor:start_spec(
         {spec,

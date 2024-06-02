@@ -4,8 +4,8 @@
 -export([stream_identifier/1, get_stream_identifier/1, decode/1, encode/1, settings_ack/0]).
 -export_type([stream_identifier/1, header_priority/0, data/0, push_state/0, setting/0, frame/0, connection_error/0]).
 
--opaque stream_identifier(TBR) :: {stream_identifier, integer()} |
-    {gleam_phantom, TBR}.
+-opaque stream_identifier(MUT) :: {stream_identifier, integer()} |
+    {gleam_phantom, MUT}.
 
 -type header_priority() :: {header_priority,
         boolean(),

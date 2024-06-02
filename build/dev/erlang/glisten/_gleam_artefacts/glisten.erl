@@ -11,20 +11,20 @@
     {acceptor_crashed, gleam@dynamic:dynamic_()} |
     {system_error, glisten@socket:socket_reason()}.
 
--type message(LEX) :: {packet, bitstring()} | {user, LEX}.
+-type message(HUP) :: {packet, bitstring()} | {user, HUP}.
 
--type connection(LEY) :: {connection,
+-type connection(HUQ) :: {connection,
         {ok, {{integer(), integer(), integer(), integer()}, integer()}} |
             {error, nil},
         glisten@socket:socket(),
         glisten@transport:transport(),
-        gleam@erlang@process:subject(glisten@internal@handler:message(LEY))}.
+        gleam@erlang@process:subject(glisten@internal@handler:message(HUQ))}.
 
--opaque handler(LEZ, LFA) :: {handler,
-        fun((connection(LEZ)) -> {LFA,
-            gleam@option:option(gleam@erlang@process:selector(LEZ))}),
-        fun((message(LEZ), LFA, connection(LEZ)) -> gleam@otp@actor:next(message(LEZ), LFA)),
-        gleam@option:option(fun((LFA) -> nil)),
+-opaque handler(HUR, HUS) :: {handler,
+        fun((connection(HUR)) -> {HUS,
+            gleam@option:option(gleam@erlang@process:selector(HUR))}),
+        fun((message(HUR), HUS, connection(HUR)) -> gleam@otp@actor:next(message(HUR), HUS)),
+        gleam@option:option(fun((HUS) -> nil)),
         integer()}.
 
 -spec send(connection(any()), gleam@bytes_builder:bytes_builder()) -> {ok, nil} |
@@ -37,10 +37,10 @@ send(Conn, Msg) ->
     ).
 
 -spec convert_on_init(
-    fun((connection(LFX)) -> {LFZ,
-        gleam@option:option(gleam@erlang@process:selector(LFX))})
-) -> fun((glisten@internal@handler:connection(LFX)) -> {LFZ,
-    gleam@option:option(gleam@erlang@process:selector(LFX))}).
+    fun((connection(HVP)) -> {HVR,
+        gleam@option:option(gleam@erlang@process:selector(HVP))})
+) -> fun((glisten@internal@handler:connection(HVP)) -> {HVR,
+    gleam@option:option(gleam@erlang@process:selector(HVP))}).
 convert_on_init(On_init) ->
     fun(Conn) ->
         Connection = {connection,
@@ -52,14 +52,14 @@ convert_on_init(On_init) ->
     end.
 
 -spec handler(
-    fun((connection(LGF)) -> {LGH,
-        gleam@option:option(gleam@erlang@process:selector(LGF))}),
-    fun((message(LGF), LGH, connection(LGF)) -> gleam@otp@actor:next(message(LGF), LGH))
-) -> handler(LGF, LGH).
+    fun((connection(HVX)) -> {HVZ,
+        gleam@option:option(gleam@erlang@process:selector(HVX))}),
+    fun((message(HVX), HVZ, connection(HVX)) -> gleam@otp@actor:next(message(HVX), HVZ))
+) -> handler(HVX, HVZ).
 handler(On_init, Loop) ->
     {handler, On_init, Loop, none, 10}.
 
--spec map_user_selector(gleam@erlang@process:selector(message(LFM))) -> gleam@erlang@process:selector(glisten@internal@handler:loop_message(LFM)).
+-spec map_user_selector(gleam@erlang@process:selector(message(HVE))) -> gleam@erlang@process:selector(glisten@internal@handler:loop_message(HVE)).
 map_user_selector(Selector) ->
     gleam_erlang_ffi:map_selector(Selector, fun(Value) -> case Value of
                 {packet, Msg} ->
@@ -70,8 +70,8 @@ map_user_selector(Selector) ->
             end end).
 
 -spec convert_loop(
-    fun((message(LFR), LFS, connection(LFR)) -> gleam@otp@actor:next(message(LFR), LFS))
-) -> fun((glisten@internal@handler:loop_message(LFR), LFS, glisten@internal@handler:connection(LFR)) -> gleam@otp@actor:next(glisten@internal@handler:loop_message(LFR), LFS)).
+    fun((message(HVJ), HVK, connection(HVJ)) -> gleam@otp@actor:next(message(HVJ), HVK))
+) -> fun((glisten@internal@handler:loop_message(HVJ), HVK, glisten@internal@handler:connection(HVJ)) -> gleam@otp@actor:next(glisten@internal@handler:loop_message(HVJ), HVK)).
 convert_loop(Loop) ->
     fun(Msg, Data, Conn) ->
         Conn@1 = {connection,
@@ -107,11 +107,11 @@ convert_loop(Loop) ->
         end
     end.
 
--spec with_close(handler(LGO, LGP), fun((LGP) -> nil)) -> handler(LGO, LGP).
+-spec with_close(handler(HWG, HWH), fun((HWH) -> nil)) -> handler(HWG, HWH).
 with_close(Handler, On_close) ->
     erlang:setelement(4, Handler, {some, On_close}).
 
--spec with_pool_size(handler(LGU, LGV), integer()) -> handler(LGU, LGV).
+-spec with_pool_size(handler(HWM, HWN), integer()) -> handler(HWM, HWN).
 with_pool_size(Handler, Size) ->
     erlang:setelement(5, Handler, Size).
 

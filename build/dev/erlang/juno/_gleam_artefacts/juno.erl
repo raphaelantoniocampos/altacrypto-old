@@ -4,19 +4,19 @@
 -export([decode/2, decode_object/2]).
 -export_type([value/1]).
 
--type value(ACA) :: null |
+-type value(FLW) :: null |
     {int, integer()} |
-    {custom, ACA} |
+    {custom, FLW} |
     {bool, boolean()} |
     {float, float()} |
     {string, binary()} |
-    {array, list(value(ACA))} |
-    {object, gleam@dict:dict(binary(), value(ACA))}.
+    {array, list(value(FLW))} |
+    {object, gleam@dict:dict(binary(), value(FLW))}.
 
 -spec wrap(
-    fun((gleam@dynamic:dynamic_()) -> {ok, ADE} |
+    fun((gleam@dynamic:dynamic_()) -> {ok, FNA} |
         {error, list(gleam@dynamic:decode_error())})
-) -> fun((gleam@dynamic:dynamic_()) -> {ok, value(ADE)} |
+) -> fun((gleam@dynamic:dynamic_()) -> {ok, value(FNA)} |
     {error, list(gleam@dynamic:decode_error())}).
 wrap(Decoder) ->
     fun(_capture) ->
@@ -66,9 +66,9 @@ string() ->
     end.
 
 -spec object(
-    list(fun((gleam@dynamic:dynamic_()) -> {ok, value(AEV)} |
+    list(fun((gleam@dynamic:dynamic_()) -> {ok, value(FOR)} |
         {error, list(gleam@dynamic:decode_error())}))
-) -> fun((gleam@dynamic:dynamic_()) -> {ok, value(AEV)} |
+) -> fun((gleam@dynamic:dynamic_()) -> {ok, value(FOR)} |
     {error, list(gleam@dynamic:decode_error())}).
 object(Custom_decoders) ->
     fun(_capture) ->
@@ -83,11 +83,11 @@ object(Custom_decoders) ->
 
 -spec value(
     gleam@dynamic:dynamic_(),
-    list(fun((gleam@dynamic:dynamic_()) -> {ok, value(AEV)} |
+    list(fun((gleam@dynamic:dynamic_()) -> {ok, value(FOR)} |
         {error, list(gleam@dynamic:decode_error())}))
-) -> {ok, value(AEV)} | {error, list(gleam@dynamic:decode_error())}.
+) -> {ok, value(FOR)} | {error, list(gleam@dynamic:decode_error())}.
 value(Dyn, Custom_decoders) ->
-    Value_decoders = lists:append(
+    Value_decoders = gleam@list:append(
         Custom_decoders,
         [int(),
             bool(),
@@ -109,9 +109,9 @@ value(Dyn, Custom_decoders) ->
 
 -spec decode(
     binary(),
-    list(fun((gleam@dynamic:dynamic_()) -> {ok, ACB} |
+    list(fun((gleam@dynamic:dynamic_()) -> {ok, FLX} |
         {error, list(gleam@dynamic:decode_error())}))
-) -> {ok, value(ACB)} | {error, gleam@json:decode_error()}.
+) -> {ok, value(FLX)} | {error, gleam@json:decode_error()}.
 decode(Json, Custom_decoders) ->
     gleam@json:decode(
         Json,
@@ -122,16 +122,16 @@ decode(Json, Custom_decoders) ->
 
 -spec decode_object(
     binary(),
-    list(fun((gleam@dynamic:dynamic_()) -> {ok, ACF} |
+    list(fun((gleam@dynamic:dynamic_()) -> {ok, FMB} |
         {error, list(gleam@dynamic:decode_error())}))
-) -> {ok, value(ACF)} | {error, gleam@json:decode_error()}.
+) -> {ok, value(FMB)} | {error, gleam@json:decode_error()}.
 decode_object(Json, Custom_decoders) ->
     gleam@json:decode(Json, object(gleam@list:map(Custom_decoders, fun wrap/1))).
 
 -spec array(
-    list(fun((gleam@dynamic:dynamic_()) -> {ok, value(AEV)} |
+    list(fun((gleam@dynamic:dynamic_()) -> {ok, value(FOR)} |
         {error, list(gleam@dynamic:decode_error())}))
-) -> fun((gleam@dynamic:dynamic_()) -> {ok, value(AEV)} |
+) -> fun((gleam@dynamic:dynamic_()) -> {ok, value(FOR)} |
     {error, list(gleam@dynamic:decode_error())}).
 array(Custom_decoders) ->
     fun(_capture) ->

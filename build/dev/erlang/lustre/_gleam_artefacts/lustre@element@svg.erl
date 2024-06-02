@@ -3,7 +3,7 @@
 
 -export([animate/1, animate_motion/1, animate_transform/1, mpath/1, set/1, circle/1, ellipse/1, line/1, polygon/1, polyline/1, rect/1, a/2, defs/2, g/2, marker/2, mask/2, missing_glyph/2, pattern/2, svg/2, switch/2, symbol/2, desc/2, metadata/2, title/2, fe_blend/1, fe_color_matrix/1, fe_component_transfer/1, fe_composite/1, fe_convolve_matrix/1, fe_diffuse_lighting/2, fe_displacement_map/1, fe_drop_shadow/1, fe_flood/1, fe_func_a/1, fe_func_b/1, fe_func_g/1, fe_func_r/1, fe_gaussian_blur/1, fe_image/1, fe_merge/2, fe_merge_node/1, fe_morphology/1, fe_offset/1, fe_specular_lighting/2, fe_tile/2, fe_turbulence/1, linear_gradient/2, radial_gradient/2, stop/1, image/1, path/1, text/2, use_/1, fe_distant_light/1, fe_point_light/1, fe_spot_light/1, clip_path/2, script/2, style/2, foreign_object/2, text_path/2, tspan/2]).
 
--spec animate(list(lustre@internals@vdom:attribute(PYN))) -> lustre@internals@vdom:element(PYN).
+-spec animate(list(lustre@internals@vdom:attribute(QZZ))) -> lustre@internals@vdom:element(QZZ).
 animate(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -12,7 +12,7 @@ animate(Attrs) ->
         []
     ).
 
--spec animate_motion(list(lustre@internals@vdom:attribute(PYR))) -> lustre@internals@vdom:element(PYR).
+-spec animate_motion(list(lustre@internals@vdom:attribute(RAD))) -> lustre@internals@vdom:element(RAD).
 animate_motion(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -21,7 +21,7 @@ animate_motion(Attrs) ->
         []
     ).
 
--spec animate_transform(list(lustre@internals@vdom:attribute(PYV))) -> lustre@internals@vdom:element(PYV).
+-spec animate_transform(list(lustre@internals@vdom:attribute(RAH))) -> lustre@internals@vdom:element(RAH).
 animate_transform(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -30,7 +30,7 @@ animate_transform(Attrs) ->
         []
     ).
 
--spec mpath(list(lustre@internals@vdom:attribute(PYZ))) -> lustre@internals@vdom:element(PYZ).
+-spec mpath(list(lustre@internals@vdom:attribute(RAL))) -> lustre@internals@vdom:element(RAL).
 mpath(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -39,7 +39,7 @@ mpath(Attrs) ->
         []
     ).
 
--spec set(list(lustre@internals@vdom:attribute(PZD))) -> lustre@internals@vdom:element(PZD).
+-spec set(list(lustre@internals@vdom:attribute(RAP))) -> lustre@internals@vdom:element(RAP).
 set(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -48,7 +48,7 @@ set(Attrs) ->
         []
     ).
 
--spec circle(list(lustre@internals@vdom:attribute(PZH))) -> lustre@internals@vdom:element(PZH).
+-spec circle(list(lustre@internals@vdom:attribute(RAT))) -> lustre@internals@vdom:element(RAT).
 circle(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -57,7 +57,7 @@ circle(Attrs) ->
         []
     ).
 
--spec ellipse(list(lustre@internals@vdom:attribute(PZL))) -> lustre@internals@vdom:element(PZL).
+-spec ellipse(list(lustre@internals@vdom:attribute(RAX))) -> lustre@internals@vdom:element(RAX).
 ellipse(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -66,7 +66,7 @@ ellipse(Attrs) ->
         []
     ).
 
--spec line(list(lustre@internals@vdom:attribute(PZP))) -> lustre@internals@vdom:element(PZP).
+-spec line(list(lustre@internals@vdom:attribute(RBB))) -> lustre@internals@vdom:element(RBB).
 line(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -75,7 +75,7 @@ line(Attrs) ->
         []
     ).
 
--spec polygon(list(lustre@internals@vdom:attribute(PZT))) -> lustre@internals@vdom:element(PZT).
+-spec polygon(list(lustre@internals@vdom:attribute(RBF))) -> lustre@internals@vdom:element(RBF).
 polygon(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -84,7 +84,7 @@ polygon(Attrs) ->
         []
     ).
 
--spec polyline(list(lustre@internals@vdom:attribute(PZX))) -> lustre@internals@vdom:element(PZX).
+-spec polyline(list(lustre@internals@vdom:attribute(RBJ))) -> lustre@internals@vdom:element(RBJ).
 polyline(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -93,7 +93,7 @@ polyline(Attrs) ->
         []
     ).
 
--spec rect(list(lustre@internals@vdom:attribute(QAB))) -> lustre@internals@vdom:element(QAB).
+-spec rect(list(lustre@internals@vdom:attribute(RBN))) -> lustre@internals@vdom:element(RBN).
 rect(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -103,9 +103,9 @@ rect(Attrs) ->
     ).
 
 -spec a(
-    list(lustre@internals@vdom:attribute(QAF)),
-    list(lustre@internals@vdom:element(QAF))
-) -> lustre@internals@vdom:element(QAF).
+    list(lustre@internals@vdom:attribute(RBR)),
+    list(lustre@internals@vdom:element(RBR))
+) -> lustre@internals@vdom:element(RBR).
 a(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -115,9 +115,9 @@ a(Attrs, Children) ->
     ).
 
 -spec defs(
-    list(lustre@internals@vdom:attribute(QAL)),
-    list(lustre@internals@vdom:element(QAL))
-) -> lustre@internals@vdom:element(QAL).
+    list(lustre@internals@vdom:attribute(RBX)),
+    list(lustre@internals@vdom:element(RBX))
+) -> lustre@internals@vdom:element(RBX).
 defs(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -127,9 +127,9 @@ defs(Attrs, Children) ->
     ).
 
 -spec g(
-    list(lustre@internals@vdom:attribute(QAR)),
-    list(lustre@internals@vdom:element(QAR))
-) -> lustre@internals@vdom:element(QAR).
+    list(lustre@internals@vdom:attribute(RCD)),
+    list(lustre@internals@vdom:element(RCD))
+) -> lustre@internals@vdom:element(RCD).
 g(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -139,9 +139,9 @@ g(Attrs, Children) ->
     ).
 
 -spec marker(
-    list(lustre@internals@vdom:attribute(QAX)),
-    list(lustre@internals@vdom:element(QAX))
-) -> lustre@internals@vdom:element(QAX).
+    list(lustre@internals@vdom:attribute(RCJ)),
+    list(lustre@internals@vdom:element(RCJ))
+) -> lustre@internals@vdom:element(RCJ).
 marker(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -151,9 +151,9 @@ marker(Attrs, Children) ->
     ).
 
 -spec mask(
-    list(lustre@internals@vdom:attribute(QBD)),
-    list(lustre@internals@vdom:element(QBD))
-) -> lustre@internals@vdom:element(QBD).
+    list(lustre@internals@vdom:attribute(RCP)),
+    list(lustre@internals@vdom:element(RCP))
+) -> lustre@internals@vdom:element(RCP).
 mask(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -163,9 +163,9 @@ mask(Attrs, Children) ->
     ).
 
 -spec missing_glyph(
-    list(lustre@internals@vdom:attribute(QBJ)),
-    list(lustre@internals@vdom:element(QBJ))
-) -> lustre@internals@vdom:element(QBJ).
+    list(lustre@internals@vdom:attribute(RCV)),
+    list(lustre@internals@vdom:element(RCV))
+) -> lustre@internals@vdom:element(RCV).
 missing_glyph(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -175,9 +175,9 @@ missing_glyph(Attrs, Children) ->
     ).
 
 -spec pattern(
-    list(lustre@internals@vdom:attribute(QBP)),
-    list(lustre@internals@vdom:element(QBP))
-) -> lustre@internals@vdom:element(QBP).
+    list(lustre@internals@vdom:attribute(RDB)),
+    list(lustre@internals@vdom:element(RDB))
+) -> lustre@internals@vdom:element(RDB).
 pattern(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -187,9 +187,9 @@ pattern(Attrs, Children) ->
     ).
 
 -spec svg(
-    list(lustre@internals@vdom:attribute(QBV)),
-    list(lustre@internals@vdom:element(QBV))
-) -> lustre@internals@vdom:element(QBV).
+    list(lustre@internals@vdom:attribute(RDH)),
+    list(lustre@internals@vdom:element(RDH))
+) -> lustre@internals@vdom:element(RDH).
 svg(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -199,9 +199,9 @@ svg(Attrs, Children) ->
     ).
 
 -spec switch(
-    list(lustre@internals@vdom:attribute(QCB)),
-    list(lustre@internals@vdom:element(QCB))
-) -> lustre@internals@vdom:element(QCB).
+    list(lustre@internals@vdom:attribute(RDN)),
+    list(lustre@internals@vdom:element(RDN))
+) -> lustre@internals@vdom:element(RDN).
 switch(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -211,9 +211,9 @@ switch(Attrs, Children) ->
     ).
 
 -spec symbol(
-    list(lustre@internals@vdom:attribute(QCH)),
-    list(lustre@internals@vdom:element(QCH))
-) -> lustre@internals@vdom:element(QCH).
+    list(lustre@internals@vdom:attribute(RDT)),
+    list(lustre@internals@vdom:element(RDT))
+) -> lustre@internals@vdom:element(RDT).
 symbol(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -223,9 +223,9 @@ symbol(Attrs, Children) ->
     ).
 
 -spec desc(
-    list(lustre@internals@vdom:attribute(QCN)),
-    list(lustre@internals@vdom:element(QCN))
-) -> lustre@internals@vdom:element(QCN).
+    list(lustre@internals@vdom:attribute(RDZ)),
+    list(lustre@internals@vdom:element(RDZ))
+) -> lustre@internals@vdom:element(RDZ).
 desc(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -235,9 +235,9 @@ desc(Attrs, Children) ->
     ).
 
 -spec metadata(
-    list(lustre@internals@vdom:attribute(QCT)),
-    list(lustre@internals@vdom:element(QCT))
-) -> lustre@internals@vdom:element(QCT).
+    list(lustre@internals@vdom:attribute(REF)),
+    list(lustre@internals@vdom:element(REF))
+) -> lustre@internals@vdom:element(REF).
 metadata(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -247,9 +247,9 @@ metadata(Attrs, Children) ->
     ).
 
 -spec title(
-    list(lustre@internals@vdom:attribute(QCZ)),
-    list(lustre@internals@vdom:element(QCZ))
-) -> lustre@internals@vdom:element(QCZ).
+    list(lustre@internals@vdom:attribute(REL)),
+    list(lustre@internals@vdom:element(REL))
+) -> lustre@internals@vdom:element(REL).
 title(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -258,7 +258,7 @@ title(Attrs, Children) ->
         Children
     ).
 
--spec fe_blend(list(lustre@internals@vdom:attribute(QDF))) -> lustre@internals@vdom:element(QDF).
+-spec fe_blend(list(lustre@internals@vdom:attribute(RER))) -> lustre@internals@vdom:element(RER).
 fe_blend(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -267,7 +267,7 @@ fe_blend(Attrs) ->
         []
     ).
 
--spec fe_color_matrix(list(lustre@internals@vdom:attribute(QDJ))) -> lustre@internals@vdom:element(QDJ).
+-spec fe_color_matrix(list(lustre@internals@vdom:attribute(REV))) -> lustre@internals@vdom:element(REV).
 fe_color_matrix(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -276,7 +276,7 @@ fe_color_matrix(Attrs) ->
         []
     ).
 
--spec fe_component_transfer(list(lustre@internals@vdom:attribute(QDN))) -> lustre@internals@vdom:element(QDN).
+-spec fe_component_transfer(list(lustre@internals@vdom:attribute(REZ))) -> lustre@internals@vdom:element(REZ).
 fe_component_transfer(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -285,7 +285,7 @@ fe_component_transfer(Attrs) ->
         []
     ).
 
--spec fe_composite(list(lustre@internals@vdom:attribute(QDR))) -> lustre@internals@vdom:element(QDR).
+-spec fe_composite(list(lustre@internals@vdom:attribute(RFD))) -> lustre@internals@vdom:element(RFD).
 fe_composite(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -294,7 +294,7 @@ fe_composite(Attrs) ->
         []
     ).
 
--spec fe_convolve_matrix(list(lustre@internals@vdom:attribute(QDV))) -> lustre@internals@vdom:element(QDV).
+-spec fe_convolve_matrix(list(lustre@internals@vdom:attribute(RFH))) -> lustre@internals@vdom:element(RFH).
 fe_convolve_matrix(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -304,9 +304,9 @@ fe_convolve_matrix(Attrs) ->
     ).
 
 -spec fe_diffuse_lighting(
-    list(lustre@internals@vdom:attribute(QDZ)),
-    list(lustre@internals@vdom:element(QDZ))
-) -> lustre@internals@vdom:element(QDZ).
+    list(lustre@internals@vdom:attribute(RFL)),
+    list(lustre@internals@vdom:element(RFL))
+) -> lustre@internals@vdom:element(RFL).
 fe_diffuse_lighting(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -315,7 +315,7 @@ fe_diffuse_lighting(Attrs, Children) ->
         Children
     ).
 
--spec fe_displacement_map(list(lustre@internals@vdom:attribute(QEF))) -> lustre@internals@vdom:element(QEF).
+-spec fe_displacement_map(list(lustre@internals@vdom:attribute(RFR))) -> lustre@internals@vdom:element(RFR).
 fe_displacement_map(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -324,7 +324,7 @@ fe_displacement_map(Attrs) ->
         []
     ).
 
--spec fe_drop_shadow(list(lustre@internals@vdom:attribute(QEJ))) -> lustre@internals@vdom:element(QEJ).
+-spec fe_drop_shadow(list(lustre@internals@vdom:attribute(RFV))) -> lustre@internals@vdom:element(RFV).
 fe_drop_shadow(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -333,7 +333,7 @@ fe_drop_shadow(Attrs) ->
         []
     ).
 
--spec fe_flood(list(lustre@internals@vdom:attribute(QEN))) -> lustre@internals@vdom:element(QEN).
+-spec fe_flood(list(lustre@internals@vdom:attribute(RFZ))) -> lustre@internals@vdom:element(RFZ).
 fe_flood(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -342,7 +342,7 @@ fe_flood(Attrs) ->
         []
     ).
 
--spec fe_func_a(list(lustre@internals@vdom:attribute(QER))) -> lustre@internals@vdom:element(QER).
+-spec fe_func_a(list(lustre@internals@vdom:attribute(RGD))) -> lustre@internals@vdom:element(RGD).
 fe_func_a(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -351,7 +351,7 @@ fe_func_a(Attrs) ->
         []
     ).
 
--spec fe_func_b(list(lustre@internals@vdom:attribute(QEV))) -> lustre@internals@vdom:element(QEV).
+-spec fe_func_b(list(lustre@internals@vdom:attribute(RGH))) -> lustre@internals@vdom:element(RGH).
 fe_func_b(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -360,7 +360,7 @@ fe_func_b(Attrs) ->
         []
     ).
 
--spec fe_func_g(list(lustre@internals@vdom:attribute(QEZ))) -> lustre@internals@vdom:element(QEZ).
+-spec fe_func_g(list(lustre@internals@vdom:attribute(RGL))) -> lustre@internals@vdom:element(RGL).
 fe_func_g(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -369,7 +369,7 @@ fe_func_g(Attrs) ->
         []
     ).
 
--spec fe_func_r(list(lustre@internals@vdom:attribute(QFD))) -> lustre@internals@vdom:element(QFD).
+-spec fe_func_r(list(lustre@internals@vdom:attribute(RGP))) -> lustre@internals@vdom:element(RGP).
 fe_func_r(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -378,7 +378,7 @@ fe_func_r(Attrs) ->
         []
     ).
 
--spec fe_gaussian_blur(list(lustre@internals@vdom:attribute(QFH))) -> lustre@internals@vdom:element(QFH).
+-spec fe_gaussian_blur(list(lustre@internals@vdom:attribute(RGT))) -> lustre@internals@vdom:element(RGT).
 fe_gaussian_blur(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -387,7 +387,7 @@ fe_gaussian_blur(Attrs) ->
         []
     ).
 
--spec fe_image(list(lustre@internals@vdom:attribute(QFL))) -> lustre@internals@vdom:element(QFL).
+-spec fe_image(list(lustre@internals@vdom:attribute(RGX))) -> lustre@internals@vdom:element(RGX).
 fe_image(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -397,9 +397,9 @@ fe_image(Attrs) ->
     ).
 
 -spec fe_merge(
-    list(lustre@internals@vdom:attribute(QFP)),
-    list(lustre@internals@vdom:element(QFP))
-) -> lustre@internals@vdom:element(QFP).
+    list(lustre@internals@vdom:attribute(RHB)),
+    list(lustre@internals@vdom:element(RHB))
+) -> lustre@internals@vdom:element(RHB).
 fe_merge(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -408,7 +408,7 @@ fe_merge(Attrs, Children) ->
         Children
     ).
 
--spec fe_merge_node(list(lustre@internals@vdom:attribute(QFV))) -> lustre@internals@vdom:element(QFV).
+-spec fe_merge_node(list(lustre@internals@vdom:attribute(RHH))) -> lustre@internals@vdom:element(RHH).
 fe_merge_node(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -417,7 +417,7 @@ fe_merge_node(Attrs) ->
         []
     ).
 
--spec fe_morphology(list(lustre@internals@vdom:attribute(QFZ))) -> lustre@internals@vdom:element(QFZ).
+-spec fe_morphology(list(lustre@internals@vdom:attribute(RHL))) -> lustre@internals@vdom:element(RHL).
 fe_morphology(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -426,7 +426,7 @@ fe_morphology(Attrs) ->
         []
     ).
 
--spec fe_offset(list(lustre@internals@vdom:attribute(QGD))) -> lustre@internals@vdom:element(QGD).
+-spec fe_offset(list(lustre@internals@vdom:attribute(RHP))) -> lustre@internals@vdom:element(RHP).
 fe_offset(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -436,9 +436,9 @@ fe_offset(Attrs) ->
     ).
 
 -spec fe_specular_lighting(
-    list(lustre@internals@vdom:attribute(QGH)),
-    list(lustre@internals@vdom:element(QGH))
-) -> lustre@internals@vdom:element(QGH).
+    list(lustre@internals@vdom:attribute(RHT)),
+    list(lustre@internals@vdom:element(RHT))
+) -> lustre@internals@vdom:element(RHT).
 fe_specular_lighting(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -448,9 +448,9 @@ fe_specular_lighting(Attrs, Children) ->
     ).
 
 -spec fe_tile(
-    list(lustre@internals@vdom:attribute(QGN)),
-    list(lustre@internals@vdom:element(QGN))
-) -> lustre@internals@vdom:element(QGN).
+    list(lustre@internals@vdom:attribute(RHZ)),
+    list(lustre@internals@vdom:element(RHZ))
+) -> lustre@internals@vdom:element(RHZ).
 fe_tile(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -459,7 +459,7 @@ fe_tile(Attrs, Children) ->
         Children
     ).
 
--spec fe_turbulence(list(lustre@internals@vdom:attribute(QGT))) -> lustre@internals@vdom:element(QGT).
+-spec fe_turbulence(list(lustre@internals@vdom:attribute(RIF))) -> lustre@internals@vdom:element(RIF).
 fe_turbulence(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -469,9 +469,9 @@ fe_turbulence(Attrs) ->
     ).
 
 -spec linear_gradient(
-    list(lustre@internals@vdom:attribute(QGX)),
-    list(lustre@internals@vdom:element(QGX))
-) -> lustre@internals@vdom:element(QGX).
+    list(lustre@internals@vdom:attribute(RIJ)),
+    list(lustre@internals@vdom:element(RIJ))
+) -> lustre@internals@vdom:element(RIJ).
 linear_gradient(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -481,9 +481,9 @@ linear_gradient(Attrs, Children) ->
     ).
 
 -spec radial_gradient(
-    list(lustre@internals@vdom:attribute(QHD)),
-    list(lustre@internals@vdom:element(QHD))
-) -> lustre@internals@vdom:element(QHD).
+    list(lustre@internals@vdom:attribute(RIP)),
+    list(lustre@internals@vdom:element(RIP))
+) -> lustre@internals@vdom:element(RIP).
 radial_gradient(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -492,7 +492,7 @@ radial_gradient(Attrs, Children) ->
         Children
     ).
 
--spec stop(list(lustre@internals@vdom:attribute(QHJ))) -> lustre@internals@vdom:element(QHJ).
+-spec stop(list(lustre@internals@vdom:attribute(RIV))) -> lustre@internals@vdom:element(RIV).
 stop(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -501,7 +501,7 @@ stop(Attrs) ->
         []
     ).
 
--spec image(list(lustre@internals@vdom:attribute(QHN))) -> lustre@internals@vdom:element(QHN).
+-spec image(list(lustre@internals@vdom:attribute(RIZ))) -> lustre@internals@vdom:element(RIZ).
 image(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -510,7 +510,7 @@ image(Attrs) ->
         []
     ).
 
--spec path(list(lustre@internals@vdom:attribute(QHR))) -> lustre@internals@vdom:element(QHR).
+-spec path(list(lustre@internals@vdom:attribute(RJD))) -> lustre@internals@vdom:element(RJD).
 path(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -519,7 +519,7 @@ path(Attrs) ->
         []
     ).
 
--spec text(list(lustre@internals@vdom:attribute(QHV)), binary()) -> lustre@internals@vdom:element(QHV).
+-spec text(list(lustre@internals@vdom:attribute(RJH)), binary()) -> lustre@internals@vdom:element(RJH).
 text(Attrs, Content) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -528,7 +528,7 @@ text(Attrs, Content) ->
         [lustre@element:text(Content)]
     ).
 
--spec use_(list(lustre@internals@vdom:attribute(QHZ))) -> lustre@internals@vdom:element(QHZ).
+-spec use_(list(lustre@internals@vdom:attribute(RJL))) -> lustre@internals@vdom:element(RJL).
 use_(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -537,7 +537,7 @@ use_(Attrs) ->
         []
     ).
 
--spec fe_distant_light(list(lustre@internals@vdom:attribute(QID))) -> lustre@internals@vdom:element(QID).
+-spec fe_distant_light(list(lustre@internals@vdom:attribute(RJP))) -> lustre@internals@vdom:element(RJP).
 fe_distant_light(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -546,7 +546,7 @@ fe_distant_light(Attrs) ->
         []
     ).
 
--spec fe_point_light(list(lustre@internals@vdom:attribute(QIH))) -> lustre@internals@vdom:element(QIH).
+-spec fe_point_light(list(lustre@internals@vdom:attribute(RJT))) -> lustre@internals@vdom:element(RJT).
 fe_point_light(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -555,7 +555,7 @@ fe_point_light(Attrs) ->
         []
     ).
 
--spec fe_spot_light(list(lustre@internals@vdom:attribute(QIL))) -> lustre@internals@vdom:element(QIL).
+-spec fe_spot_light(list(lustre@internals@vdom:attribute(RJX))) -> lustre@internals@vdom:element(RJX).
 fe_spot_light(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -565,9 +565,9 @@ fe_spot_light(Attrs) ->
     ).
 
 -spec clip_path(
-    list(lustre@internals@vdom:attribute(QIP)),
-    list(lustre@internals@vdom:element(QIP))
-) -> lustre@internals@vdom:element(QIP).
+    list(lustre@internals@vdom:attribute(RKB)),
+    list(lustre@internals@vdom:element(RKB))
+) -> lustre@internals@vdom:element(RKB).
 clip_path(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -576,7 +576,7 @@ clip_path(Attrs, Children) ->
         Children
     ).
 
--spec script(list(lustre@internals@vdom:attribute(QIV)), binary()) -> lustre@internals@vdom:element(QIV).
+-spec script(list(lustre@internals@vdom:attribute(RKH)), binary()) -> lustre@internals@vdom:element(RKH).
 script(Attrs, Js) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -585,7 +585,7 @@ script(Attrs, Js) ->
         [lustre@element:text(Js)]
     ).
 
--spec style(list(lustre@internals@vdom:attribute(QIZ)), binary()) -> lustre@internals@vdom:element(QIZ).
+-spec style(list(lustre@internals@vdom:attribute(RKL)), binary()) -> lustre@internals@vdom:element(RKL).
 style(Attrs, Css) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -595,9 +595,9 @@ style(Attrs, Css) ->
     ).
 
 -spec foreign_object(
-    list(lustre@internals@vdom:attribute(QJD)),
-    list(lustre@internals@vdom:element(QJD))
-) -> lustre@internals@vdom:element(QJD).
+    list(lustre@internals@vdom:attribute(RKP)),
+    list(lustre@internals@vdom:element(RKP))
+) -> lustre@internals@vdom:element(RKP).
 foreign_object(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -607,9 +607,9 @@ foreign_object(Attrs, Children) ->
     ).
 
 -spec text_path(
-    list(lustre@internals@vdom:attribute(QJJ)),
-    list(lustre@internals@vdom:element(QJJ))
-) -> lustre@internals@vdom:element(QJJ).
+    list(lustre@internals@vdom:attribute(RKV)),
+    list(lustre@internals@vdom:element(RKV))
+) -> lustre@internals@vdom:element(RKV).
 text_path(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -619,9 +619,9 @@ text_path(Attrs, Children) ->
     ).
 
 -spec tspan(
-    list(lustre@internals@vdom:attribute(QJP)),
-    list(lustre@internals@vdom:element(QJP))
-) -> lustre@internals@vdom:element(QJP).
+    list(lustre@internals@vdom:attribute(RLB)),
+    list(lustre@internals@vdom:element(RLB))
+) -> lustre@internals@vdom:element(RLB).
 tspan(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,

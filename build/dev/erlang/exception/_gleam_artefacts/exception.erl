@@ -8,10 +8,10 @@
     {thrown, gleam@dynamic:dynamic_()} |
     {exited, gleam@dynamic:dynamic_()}.
 
--spec rescue(fun(() -> HCG)) -> {ok, HCG} | {error, exception()}.
+-spec rescue(fun(() -> FXC)) -> {ok, FXC} | {error, exception()}.
 rescue(Body) ->
     exception_ffi:rescue(Body).
 
--spec defer(fun(() -> any()), fun(() -> HCK)) -> HCK.
+-spec defer(fun(() -> any()), fun(() -> FXG)) -> FXG.
 defer(Cleanup, Body) ->
     exception_ffi:defer(Cleanup, Body).

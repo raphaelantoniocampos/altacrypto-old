@@ -3,9 +3,7 @@
 
 -export([start/0]).
 
--spec start() -> nil.
+-spec start() -> birl:time().
 start() ->
     gleam@io:println(<<"Bot started"/utf8>>),
-    Time = birl:now(),
-    gleam@io:debug(Time),
-    gleam@io:println(<<"Bot running"/utf8>>).
+    Time = birl:now().

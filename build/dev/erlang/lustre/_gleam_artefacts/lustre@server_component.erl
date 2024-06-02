@@ -3,7 +3,7 @@
 
 -export([component/1, script/0, route/1, data/1, include/1, subscribe/2, unsubscribe/1, emit/2, set_selector/1, decode_action/1, encode_patch/1]).
 
--spec component(list(lustre@internals@vdom:attribute(QTE))) -> lustre@internals@vdom:element(QTE).
+-spec component(list(lustre@internals@vdom:attribute(RUQ))) -> lustre@internals@vdom:element(RUQ).
 component(Attrs) ->
     lustre@element:element(<<"lustre-server-component"/utf8>>, Attrs, []).
 
@@ -34,7 +34,7 @@ include(Properties) ->
     _pipe@2 = gleam@json:to_string(_pipe@1),
     lustre@attribute:attribute(<<"data-lustre-include"/utf8>>, _pipe@2).
 
--spec subscribe(binary(), fun((lustre@internals@patch:patch(QTR)) -> nil)) -> lustre@internals@runtime:action(QTR, lustre:server_component()).
+-spec subscribe(binary(), fun((lustre@internals@patch:patch(RVD)) -> nil)) -> lustre@internals@runtime:action(RVD, lustre:server_component()).
 subscribe(Id, Renderer) ->
     {subscribe, Id, Renderer}.
 
@@ -47,8 +47,8 @@ emit(Event, Data) ->
     lustre@effect:event(Event, Data).
 
 -spec do_set_selector(
-    gleam@erlang@process:selector(lustre@internals@runtime:action(any(), QUH))
-) -> lustre@effect:effect(QUH).
+    gleam@erlang@process:selector(lustre@internals@runtime:action(any(), RVT))
+) -> lustre@effect:effect(RVT).
 do_set_selector(Sel) ->
     lustre@effect:from(
         fun(_) ->
@@ -58,8 +58,8 @@ do_set_selector(Sel) ->
     ).
 
 -spec set_selector(
-    gleam@erlang@process:selector(lustre@internals@runtime:action(any(), QUB))
-) -> lustre@effect:effect(QUB).
+    gleam@erlang@process:selector(lustre@internals@runtime:action(any(), RVN))
+) -> lustre@effect:effect(RVN).
 set_selector(Sel) ->
     do_set_selector(Sel).
 

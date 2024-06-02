@@ -3,6 +3,6 @@
     {applications, [gleam_json,
                     gleam_stdlib]},
     {description, "Flexible JSON decoding for Gleam"},
-    {modules, [juno]},
+    {modules, []},
     {registered, []}
 ]}.

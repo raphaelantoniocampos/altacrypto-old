@@ -26,9 +26,9 @@
         mist@internal@buffer:buffer(),
         boolean()}.
 
--opaque builder(UOF, UOG) :: {builder,
+-opaque builder(FTP, FTQ) :: {builder,
         integer(),
-        fun((gleam@http@request:request(UOF)) -> gleam@http@response:response(UOG)),
+        fun((gleam@http@request:request(FTP)) -> gleam@http@response:response(FTQ)),
         fun((integer(), gleam@http:scheme()) -> nil)}.
 
 -type certificate_error() :: no_certificate | no_key | no_key_or_certificate.
@@ -36,11 +36,11 @@
 -type https_error() :: {glisten_error, glisten:start_error()} |
     {certificate_error, certificate_error()}.
 
--type websocket_message(UOH) :: {text, binary()} |
+-type websocket_message(FTR) :: {text, binary()} |
     {binary, bitstring()} |
     closed |
     shutdown |
-    {custom, UOH}.
+    {custom, FTR}.
 
 -opaque sse_connection() :: {sse_connection, mist@internal@http:connection()}.
 
@@ -335,8 +335,8 @@ stream(Req) ->
     ).
 
 -spec new(
-    fun((gleam@http@request:request(UPC)) -> gleam@http@response:response(UPE))
-) -> builder(UPC, UPE).
+    fun((gleam@http@request:request(FUM)) -> gleam@http@response:response(FUO))
+) -> builder(FUM, FUO).
 new(Handler) ->
     {builder,
         4000,
@@ -349,15 +349,15 @@ new(Handler) ->
             gleam@io:println(Message)
         end}.
 
--spec port(builder(UPI, UPJ), integer()) -> builder(UPI, UPJ).
+-spec port(builder(FUS, FUT), integer()) -> builder(FUS, FUT).
 port(Builder, Port) ->
     erlang:setelement(2, Builder, Port).
 
 -spec read_request_body(
-    builder(bitstring(), UPO),
+    builder(bitstring(), FUY),
     integer(),
-    gleam@http@response:response(UPO)
-) -> builder(mist@internal@http:connection(), UPO).
+    gleam@http@response:response(FUY)
+) -> builder(mist@internal@http:connection(), FUY).
 read_request_body(Builder, Bytes_limit, Failure_response) ->
     Handler = fun(Request) -> case read_body(Request, Bytes_limit) of
             {ok, Request@1} ->
@@ -369,9 +369,9 @@ read_request_body(Builder, Bytes_limit, Failure_response) ->
     {builder, erlang:element(2, Builder), Handler, erlang:element(4, Builder)}.
 
 -spec after_start(
-    builder(UPU, UPV),
+    builder(FVE, FVF),
     fun((integer(), gleam@http:scheme()) -> nil)
-) -> builder(UPU, UPV).
+) -> builder(FVE, FVF).
 after_start(Builder, After_start) ->
     erlang:setelement(4, Builder, After_start).
 
@@ -467,8 +467,8 @@ start_https(Builder, Certfile, Keyfile) ->
     ).
 
 -spec internal_to_public_ws_message(
-    mist@internal@websocket:handler_message(UQM)
-) -> {ok, websocket_message(UQM)} | {error, nil}.
+    mist@internal@websocket:handler_message(FVW)
+) -> {ok, websocket_message(FVW)} | {error, nil}.
 internal_to_public_ws_message(Msg) ->
     case Msg of
         {internal, {data, {text_frame, _, Data}}} ->
@@ -488,10 +488,10 @@ internal_to_public_ws_message(Msg) ->
 
 -spec websocket(
     gleam@http@request:request(mist@internal@http:connection()),
-    fun((UQS, mist@internal@websocket:websocket_connection(), websocket_message(UQT)) -> gleam@otp@actor:next(UQT, UQS)),
-    fun((mist@internal@websocket:websocket_connection()) -> {UQS,
-        gleam@option:option(gleam@erlang@process:selector(UQT))}),
-    fun((UQS) -> nil)
+    fun((FWC, mist@internal@websocket:websocket_connection(), websocket_message(FWD)) -> gleam@otp@actor:next(FWD, FWC)),
+    fun((mist@internal@websocket:websocket_connection()) -> {FWC,
+        gleam@option:option(gleam@erlang@process:selector(FWD))}),
+    fun((FWC) -> nil)
 ) -> gleam@http@response:response(response_data()).
 websocket(Request, Handler, On_init, On_close) ->
     Handler@1 = fun(State, Connection, Message) -> _pipe = Message,
@@ -640,8 +640,8 @@ event_name(Event, Name) ->
 -spec server_sent_events(
     gleam@http@request:request(mist@internal@http:connection()),
     gleam@http@response:response(any()),
-    fun(() -> gleam@otp@actor:init_result(URH, URI)),
-    fun((URI, sse_connection(), URH) -> gleam@otp@actor:next(URI, URH))
+    fun(() -> gleam@otp@actor:init_result(FWR, FWS)),
+    fun((FWS, sse_connection(), FWR) -> gleam@otp@actor:next(FWS, FWR))
 ) -> gleam@http@response:response(response_data()).
 server_sent_events(Req, Resp, Init, Loop) ->
     With_default_headers = begin

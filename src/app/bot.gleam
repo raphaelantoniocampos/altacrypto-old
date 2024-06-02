@@ -8,7 +8,7 @@ pub fn start() {
   io.println("Bot started")
 
   let time = birl.now()
-  io.debug(time)
+  // io.debug(time)
   // Simulação de um trabalho do bot
   // process.sleep(time.seconds(5))
 
@@ -21,5 +21,5 @@ pub fn start() {
   // _ -> io.debug()
   // }
 
-  io.println("Bot running")
+  // io.println("Bot running")
 }

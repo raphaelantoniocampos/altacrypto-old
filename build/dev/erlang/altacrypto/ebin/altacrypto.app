@@ -4,6 +4,7 @@
                     bison,
                     dot_env,
                     gleam_erlang,
+                    gleam_otp,
                     gleam_stdlib,
                     gleeunit,
                     lustre,
@@ -12,10 +13,6 @@
                     wisp]},
     {description, ""},
     {modules, [altacrypto,
-               app@bot,
-               app@database,
-               app@models@asset,
-               app@models@crypto_snapshot,
-               app@models@order]},
+               app@db]},
     {registered, []}
 ]}.

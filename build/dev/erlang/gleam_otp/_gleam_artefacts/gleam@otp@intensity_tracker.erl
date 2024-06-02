@@ -44,7 +44,7 @@ add_event(Tracker) ->
         Now,
         erlang:element(3, Tracker)
     ),
-    case erlang:length(Events) > erlang:element(2, Tracker) of
+    case gleam@list:length(Events) > erlang:element(2, Tracker) of
         true ->
             {error, too_intense};
 

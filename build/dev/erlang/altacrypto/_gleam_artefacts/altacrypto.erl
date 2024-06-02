@@ -16,7 +16,7 @@ static_directory() ->
                         value => _assert_fail,
                         module => <<"altacrypto"/utf8>>,
                         function => <<"static_directory"/utf8>>,
-                        line => 33})
+                        line => 38})
     end,
     <<Priv_directory/binary, "/static"/utf8>>.
 
@@ -33,7 +33,7 @@ main() ->
                         value => _assert_fail,
                         module => <<"altacrypto"/utf8>>,
                         function => <<"main"/utf8>>,
-                        line => 14})
+                        line => 16})
     end,
     Ctx = {context, static_directory()},
     Handler = fun(_capture) -> app@router:handle_request(_capture, Ctx) end,
@@ -51,8 +51,10 @@ main() ->
                         value => _assert_fail@1,
                         module => <<"altacrypto"/utf8>>,
                         function => <<"main"/utf8>>,
-                        line => 20})
+                        line => 22})
     end,
     Start_bot = fun app@bot:start/0,
     gleam@erlang@process:start(Start_bot, true),
+    Db = app@db:get_collection(<<"user_data"/utf8>>),
+    gleam@io:debug(Db),
     gleam_erlang_ffi:sleep_forever().

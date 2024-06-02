@@ -4,18 +4,18 @@
 -export([async/1, try_await/2, await/2, try_await_forever/1, await_forever/1]).
 -export_type([task/1, await_error/0, message/1]).
 
--opaque task(KBZ) :: {task,
+-opaque task(GYX) :: {task,
         gleam@erlang@process:pid_(),
         gleam@erlang@process:pid_(),
         gleam@erlang@process:process_monitor(),
-        gleam@erlang@process:selector(message(KBZ))}.
+        gleam@erlang@process:selector(message(GYX))}.
 
 -type await_error() :: timeout | {exit, gleam@dynamic:dynamic_()}.
 
--type message(KCA) :: {from_monitor, gleam@erlang@process:process_down()} |
-    {from_subject, KCA}.
+-type message(GYY) :: {from_monitor, gleam@erlang@process:process_down()} |
+    {from_subject, GYY}.
 
--spec async(fun(() -> KCB)) -> task(KCB).
+-spec async(fun(() -> GYZ)) -> task(GYZ).
 async(Work) ->
     Owner = erlang:self(),
     Subject = gleam@erlang@process:new_subject(),
@@ -53,7 +53,7 @@ assert_owner(Task) ->
             )
     end.
 
--spec try_await(task(KCF), integer()) -> {ok, KCF} | {error, await_error()}.
+-spec try_await(task(GZD), integer()) -> {ok, GZD} | {error, await_error()}.
 try_await(Task, Timeout) ->
     assert_owner(Task),
     case gleam_erlang_ffi:select(erlang:element(5, Task), Timeout) of
@@ -68,7 +68,7 @@ try_await(Task, Timeout) ->
             {error, timeout}
     end.
 
--spec await(task(KCJ), integer()) -> KCJ.
+-spec await(task(GZH), integer()) -> GZH.
 await(Task, Timeout) ->
     _assert_subject = try_await(Task, Timeout),
     {ok, Value} = case _assert_subject of
@@ -83,7 +83,7 @@ await(Task, Timeout) ->
     end,
     Value.
 
--spec try_await_forever(task(KCL)) -> {ok, KCL} | {error, await_error()}.
+-spec try_await_forever(task(GZJ)) -> {ok, GZJ} | {error, await_error()}.
 try_await_forever(Task) ->
     assert_owner(Task),
     case gleam_erlang_ffi:select(erlang:element(5, Task)) of
@@ -95,7 +95,7 @@ try_await_forever(Task) ->
             {error, {exit, Reason}}
     end.
 
--spec await_forever(task(KCP)) -> KCP.
+-spec await_forever(task(GZN)) -> GZN.
 await_forever(Task) ->
     _assert_subject = try_await_forever(Task),
     {ok, Value} = case _assert_subject of
