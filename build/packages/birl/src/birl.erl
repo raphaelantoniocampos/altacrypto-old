@@ -229,7 +229,7 @@ range(A, B, S) ->
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"range"/utf8>>,
-                        line => 1149})
+                        line => 1145})
     end,
     Range.
 
@@ -624,7 +624,7 @@ parse_offset(Offset) ->
                                 value => _assert_fail,
                                 module => <<"birl"/utf8>>,
                                 function => <<"parse_offset"/utf8>>,
-                                line => 1330})
+                                line => 1326})
             end,
             gleam@result:then(case gleam@regex:split(Re, Offset) of
                     [<<""/utf8>>, <<"+"/utf8>>, Offset@1] ->
@@ -700,7 +700,7 @@ parse_offset(Offset) ->
                                                         value => _assert_fail@1,
                                                         module => <<"birl"/utf8>>,
                                                         function => <<"parse_offset"/utf8>>,
-                                                        line => 1360}
+                                                        line => 1356}
                                                 )
                                     end,
                                     Minute_str@1 = gleam@string:slice(
@@ -887,7 +887,7 @@ get_offset(Value) ->
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"get_offset"/utf8>>,
-                        line => 1206})
+                        line => 1202})
     end,
     Offset@1.
 
@@ -932,7 +932,7 @@ parse_section(Section, Pattern_string, Default) ->
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"parse_section"/utf8>>,
-                        line => 1525})
+                        line => 1521})
     end,
     case gleam@regex:scan(Pattern, Section) of
         [{match, _, [{some, Major}]}] ->
@@ -969,7 +969,7 @@ parse_date_section(Date) ->
                                         value => _assert_fail,
                                         module => <<"birl"/utf8>>,
                                         function => <<"parse_date_section"/utf8>>,
-                                        line => 1445})
+                                        line => 1441})
                     end,
                     case gleam@regex:scan(Dash_pattern, Date) of
                         [{match, _, [{some, Major}]}] ->
@@ -1031,7 +1031,7 @@ parse_time_of_day(Value) ->
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"parse_time_of_day"/utf8>>,
-                        line => 397})
+                        line => 398})
     end,
     Time_string = case {gleam@string:starts_with(Value, <<"T"/utf8>>),
         gleam@string:starts_with(Value, <<"t"/utf8>>)} of
@@ -1121,7 +1121,7 @@ parse_time_of_day(Value) ->
                                                         value => _assert_fail@1,
                                                         module => <<"birl"/utf8>>,
                                                         function => <<"parse_time_of_day"/utf8>>,
-                                                        line => 445}
+                                                        line => 447}
                                                 )
                                     end,
                                     gleam@result:then(
@@ -1219,7 +1219,7 @@ parse_naive_time_of_day(Value) ->
                                                 value => _assert_fail,
                                                 module => <<"birl"/utf8>>,
                                                 function => <<"parse_naive_time_of_day"/utf8>>,
-                                                line => 493})
+                                                line => 496})
                             end,
                             {ok,
                                 {{time_of_day,
@@ -1716,7 +1716,7 @@ to_parts(Value) ->
                                 value => _assert_fail,
                                 module => <<"birl"/utf8>>,
                                 function => <<"to_parts"/utf8>>,
-                                line => 1322})
+                                line => 1318})
             end,
             {Date, Time, Offset}
     end.
@@ -1942,7 +1942,7 @@ month(Value) ->
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"month"/utf8>>,
-                        line => 1103})
+                        line => 1099})
     end,
     Month@1.
 
@@ -2054,7 +2054,7 @@ to_erlang_universal_datetime(Value) ->
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"to_erlang_universal_datetime"/utf8>>,
-                        line => 1259})
+                        line => 1255})
     end,
     {Date, {Hour, Minute, Second, _}, _} = to_parts(Value@1),
     {Date, {Hour, Minute, Second}}.
@@ -2228,7 +2228,7 @@ parse(Value) ->
                                                                 value => _assert_fail@1,
                                                                 module => <<"birl"/utf8>>,
                                                                 function => <<"parse"/utf8>>,
-                                                                line => 362}
+                                                                line => 363}
                                                         )
                                             end,
                                             gleam@result:then(
@@ -2245,7 +2245,7 @@ parse(Value) ->
                                                                         value => _assert_fail@2,
                                                                         module => <<"birl"/utf8>>,
                                                                         function => <<"parse"/utf8>>,
-                                                                        line => 365}
+                                                                        line => 366}
                                                                 )
                                                     end,
                                                     from_parts(
@@ -2355,7 +2355,7 @@ from_naive(Value) ->
                                                         value => _assert_fail,
                                                         module => <<"birl"/utf8>>,
                                                         function => <<"from_naive"/utf8>>,
-                                                        line => 608}
+                                                        line => 612}
                                                 )
                                     end,
                                     gleam@result:then(
@@ -2370,7 +2370,7 @@ from_naive(Value) ->
                                                                 value => _assert_fail@1,
                                                                 module => <<"birl"/utf8>>,
                                                                 function => <<"from_naive"/utf8>>,
-                                                                line => 611}
+                                                                line => 615}
                                                         )
                                             end,
                                             from_parts(
@@ -2407,7 +2407,7 @@ set_day(Value, Day) ->
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"set_day"/utf8>>,
-                        line => 1213})
+                        line => 1209})
     end,
     {time,
         erlang:element(2, New_value),
@@ -2432,7 +2432,7 @@ set_time_of_day(Value, Time) ->
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"set_time_of_day"/utf8>>,
-                        line => 1231})
+                        line => 1227})
     end,
     {time,
         erlang:element(2, New_value),
@@ -2453,7 +2453,7 @@ weekday(Value) ->
                                 value => _assert_fail,
                                 module => <<"birl"/utf8>>,
                                 function => <<"weekday"/utf8>>,
-                                line => 1037})
+                                line => 1033})
             end,
             Weekday
     end.
@@ -2479,7 +2479,7 @@ to_http(Value) ->
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"to_http"/utf8>>,
-                        line => 626})
+                        line => 630})
     end,
     {{Year, _, Day}, {Hour, Minute, Second, _}, _} = to_parts(Value@1),
     Short_weekday = short_string_weekday(Value@1),
@@ -2984,7 +2984,7 @@ from_erlang_local_datetime(Erlang_datetime) ->
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"from_erlang_local_datetime"/utf8>>,
-                        line => 1272})
+                        line => 1268})
     end,
     Timezone = birl_ffi:local_timezone(),
     {time,
@@ -3392,7 +3392,7 @@ from_erlang_universal_datetime(Erlang_datetime) ->
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"from_erlang_universal_datetime"/utf8>>,
-                        line => 1299})
+                        line => 1295})
     end,
     New_value.
 
@@ -3797,7 +3797,7 @@ legible_difference(A, B) ->
                                 value => _assert_fail,
                                 module => <<"birl"/utf8>>,
                                 function => <<"legible_difference"/utf8>>,
-                                line => 967})
+                                line => 963})
             end,
             Is_negative = Amount < 0,
             Amount@1 = gleam@int:absolute_value(Amount),
@@ -3884,7 +3884,7 @@ from_http(Value) ->
                                         value => _assert_fail,
                                         module => <<"birl"/utf8>>,
                                         function => <<"from_http"/utf8>>,
-                                        line => 733})
+                                        line => 737})
                     end,
                     case gleam@regex:split(Whitespace_pattern, Rest@1) of
                         [Day_string,

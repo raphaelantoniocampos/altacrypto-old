@@ -278,7 +278,7 @@ inner_blur(Values) ->
                         value => _assert_fail,
                         module => <<"birl/duration"/utf8>>,
                         function => <<"inner_blur"/utf8>>,
-                        line => 260})
+                        line => 254})
     end,
     _assert_subject = gleam@list:key_find(
         [{year, 31536000000000},
@@ -300,7 +300,7 @@ inner_blur(Values) ->
                         value => _assert_fail@1,
                         module => <<"birl/duration"/utf8>>,
                         function => <<"inner_blur"/utf8>>,
-                        line => 261})
+                        line => 255})
     end,
     _assert_subject@1 = gleam@list:key_find(
         [{year, 31536000000000},
@@ -322,7 +322,7 @@ inner_blur(Values) ->
                         value => _assert_fail@2,
                         module => <<"birl/duration"/utf8>>,
                         function => <<"inner_blur"/utf8>>,
-                        line => 262})
+                        line => 256})
     end,
     Leading@1 = case (erlang:element(1, Second) * Second_unit) < ((Leading_unit
     * 2)
@@ -366,7 +366,7 @@ parse(Expression) ->
                         value => _assert_fail,
                         module => <<"birl/duration"/utf8>>,
                         function => <<"parse"/utf8>>,
-                        line => 330})
+                        line => 319})
     end,
     {Constructor, Expression@2} = case gleam@string:starts_with(
         Expression,
@@ -382,7 +382,7 @@ parse(Expression) ->
                                 value => _assert_fail@1,
                                 module => <<"birl/duration"/utf8>>,
                                 function => <<"parse"/utf8>>,
-                                line => 336})
+                                line => 325})
             end,
             {fun accurate_new/1, Expression@1};
 

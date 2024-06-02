@@ -1,5 +1,5 @@
 {application, birl, [
-    {vsn, "1.7.0"},
+    {vsn, "1.7.1"},
     {applications, [gleam_stdlib,
                     gleeunit,
                     ranger]},
