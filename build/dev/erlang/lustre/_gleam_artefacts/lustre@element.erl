@@ -5,9 +5,9 @@
 
 -spec element(
     binary(),
-    list(lustre@internals@vdom:attribute(NWK)),
-    list(lustre@internals@vdom:element(NWK))
-) -> lustre@internals@vdom:element(NWK).
+    list(lustre@internals@vdom:attribute(PNP)),
+    list(lustre@internals@vdom:element(PNP))
+) -> lustre@internals@vdom:element(PNP).
 element(Tag, Attrs, Children) ->
     case Tag of
         <<"area"/utf8>> ->
@@ -63,7 +63,7 @@ element(Tag, Attrs, Children) ->
                 false}
     end.
 
--spec do_keyed(lustre@internals@vdom:element(NWX), binary()) -> lustre@internals@vdom:element(NWX).
+-spec do_keyed(lustre@internals@vdom:element(POC), binary()) -> lustre@internals@vdom:element(POC).
 do_keyed(El, Key) ->
     case El of
         {element, _, Namespace, Tag, Attrs, Children, Self_closing, Void} ->
@@ -100,9 +100,9 @@ do_keyed(El, Key) ->
     end.
 
 -spec keyed(
-    fun((list(lustre@internals@vdom:element(NWQ))) -> lustre@internals@vdom:element(NWQ)),
-    list({binary(), lustre@internals@vdom:element(NWQ)})
-) -> lustre@internals@vdom:element(NWQ).
+    fun((list(lustre@internals@vdom:element(PNV))) -> lustre@internals@vdom:element(PNV)),
+    list({binary(), lustre@internals@vdom:element(PNV)})
+) -> lustre@internals@vdom:element(PNV).
 keyed(El, Children) ->
     El(
         (gleam@list:map(
@@ -117,20 +117,20 @@ keyed(El, Children) ->
 -spec namespaced(
     binary(),
     binary(),
-    list(lustre@internals@vdom:attribute(NXA)),
-    list(lustre@internals@vdom:element(NXA))
-) -> lustre@internals@vdom:element(NXA).
+    list(lustre@internals@vdom:attribute(POF)),
+    list(lustre@internals@vdom:element(POF))
+) -> lustre@internals@vdom:element(POF).
 namespaced(Namespace, Tag, Attrs, Children) ->
     {element, <<""/utf8>>, Namespace, Tag, Attrs, Children, false, false}.
 
 -spec advanced(
     binary(),
     binary(),
-    list(lustre@internals@vdom:attribute(NXG)),
-    list(lustre@internals@vdom:element(NXG)),
+    list(lustre@internals@vdom:attribute(POL)),
+    list(lustre@internals@vdom:element(POL)),
     boolean(),
     boolean()
-) -> lustre@internals@vdom:element(NXG).
+) -> lustre@internals@vdom:element(POL).
 advanced(Namespace, Tag, Attrs, Children, Self_closing, Void) ->
     {element, <<""/utf8>>, Namespace, Tag, Attrs, Children, Self_closing, Void}.
 
@@ -142,7 +142,7 @@ text(Content) ->
 none() ->
     {text, <<""/utf8>>}.
 
--spec flatten_fragment_elements(list(lustre@internals@vdom:element(NXU))) -> list(lustre@internals@vdom:element(NXU)).
+-spec flatten_fragment_elements(list(lustre@internals@vdom:element(POZ))) -> list(lustre@internals@vdom:element(POZ)).
 flatten_fragment_elements(Elements) ->
     gleam@list:fold_right(
         Elements,
@@ -156,7 +156,7 @@ flatten_fragment_elements(Elements) ->
             end end
     ).
 
--spec fragment(list(lustre@internals@vdom:element(NXQ))) -> lustre@internals@vdom:element(NXQ).
+-spec fragment(list(lustre@internals@vdom:element(POV))) -> lustre@internals@vdom:element(POV).
 fragment(Elements) ->
     _pipe = flatten_fragment_elements(Elements),
     {fragment, _pipe, <<""/utf8>>}.
@@ -189,7 +189,7 @@ escape(Escaped, Content) ->
             end
     end.
 
--spec map(lustre@internals@vdom:element(NXY), fun((NXY) -> NYA)) -> lustre@internals@vdom:element(NYA).
+-spec map(lustre@internals@vdom:element(PPD), fun((PPD) -> PPF)) -> lustre@internals@vdom:element(PPF).
 map(Element, F) ->
     case Element of
         {text, Content} ->

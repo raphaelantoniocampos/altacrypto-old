@@ -13,13 +13,13 @@
         gleam@option:option(glisten@socket:socket()),
         glisten@transport:transport()}.
 
--type pool(HPZ, HQA) :: {pool,
+-type pool(NSY, NSZ) :: {pool,
         glisten@socket:listen_socket(),
-        fun((glisten@internal@handler:loop_message(HPZ), HQA, glisten@internal@handler:connection(HPZ)) -> gleam@otp@actor:next(glisten@internal@handler:loop_message(HPZ), HQA)),
+        fun((glisten@internal@handler:loop_message(NSY), NSZ, glisten@internal@handler:connection(NSY)) -> gleam@otp@actor:next(glisten@internal@handler:loop_message(NSY), NSZ)),
         integer(),
-        fun((glisten@internal@handler:connection(HPZ)) -> {HQA,
-            gleam@option:option(gleam@erlang@process:selector(HPZ))}),
-        gleam@option:option(fun((HQA) -> nil)),
+        fun((glisten@internal@handler:connection(NSY)) -> {NSZ,
+            gleam@option:option(gleam@erlang@process:selector(NSY))}),
+        gleam@option:option(fun((NSZ) -> nil)),
         glisten@transport:transport()}.
 
 -spec start(pool(any(), any())) -> {ok,

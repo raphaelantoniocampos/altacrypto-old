@@ -1,5 +1,5 @@
 -module(marceau).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 
 -export([extension_to_mime_type/1, mime_type_to_extensions/1]).
 

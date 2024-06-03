@@ -3,7 +3,7 @@
 
 -export([layout/1]).
 
--spec layout(list(lustre@internals@vdom:element(BMY))) -> lustre@internals@vdom:element(BMY).
+-spec layout(list(lustre@internals@vdom:element(ACFG))) -> lustre@internals@vdom:element(ACFG).
 layout(Elements) ->
     lustre@element@html:html(
         [],

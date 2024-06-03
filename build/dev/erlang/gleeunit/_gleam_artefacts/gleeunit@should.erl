@@ -3,23 +3,23 @@
 
 -export([equal/2, not_equal/2, be_ok/1, be_error/1, be_some/1, be_none/1, be_true/1, be_false/1, fail/0]).
 
--spec equal(FMP, FMP) -> nil.
+-spec equal(MYS, MYS) -> nil.
 equal(A, B) ->
     gleeunit_ffi:should_equal(A, B).
 
--spec not_equal(FMQ, FMQ) -> nil.
+-spec not_equal(MYT, MYT) -> nil.
 not_equal(A, B) ->
     gleeunit_ffi:should_not_equal(A, B).
 
--spec be_ok({ok, FMR} | {error, any()}) -> FMR.
+-spec be_ok({ok, MYU} | {error, any()}) -> MYU.
 be_ok(A) ->
     gleeunit_ffi:should_be_ok(A).
 
--spec be_error({ok, any()} | {error, FMW}) -> FMW.
+-spec be_error({ok, any()} | {error, MYZ}) -> MYZ.
 be_error(A) ->
     gleeunit_ffi:should_be_error(A).
 
--spec be_some(gleam@option:option(FMZ)) -> FMZ.
+-spec be_some(gleam@option:option(MZC)) -> MZC.
 be_some(A) ->
     case A of
         {some, Value} ->

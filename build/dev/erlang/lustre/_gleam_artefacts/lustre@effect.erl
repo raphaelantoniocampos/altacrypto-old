@@ -4,10 +4,10 @@
 -export([from/1, event/2, none/0, batch/1, map/2, perform/3]).
 -export_type([effect/1]).
 
--opaque effect(NBY) :: {effect,
-        list(fun((fun((NBY) -> nil), fun((binary(), gleam@json:json()) -> nil)) -> nil))}.
+-opaque effect(OTD) :: {effect,
+        list(fun((fun((OTD) -> nil), fun((binary(), gleam@json:json()) -> nil)) -> nil))}.
 
--spec from(fun((fun((NBZ) -> nil)) -> nil)) -> effect(NBZ).
+-spec from(fun((fun((OTE) -> nil)) -> nil)) -> effect(OTE).
 from(Effect) ->
     {effect, [fun(Dispatch, _) -> Effect(Dispatch) end]}.
 
@@ -19,7 +19,7 @@ event(Name, Data) ->
 none() ->
     {effect, []}.
 
--spec batch(list(effect(NCF))) -> effect(NCF).
+-spec batch(list(effect(OTK))) -> effect(OTK).
 batch(Effects) ->
     {effect,
         (gleam@list:fold(
@@ -31,7 +31,7 @@ batch(Effects) ->
             end
         ))}.
 
--spec map(effect(NCJ), fun((NCJ) -> NCL)) -> effect(NCL).
+-spec map(effect(OTO), fun((OTO) -> OTQ)) -> effect(OTQ).
 map(Effect, F) ->
     {effect,
         (gleam@list:map(
@@ -44,8 +44,8 @@ map(Effect, F) ->
         ))}.
 
 -spec perform(
-    effect(NCN),
-    fun((NCN) -> nil),
+    effect(OTS),
+    fun((OTS) -> nil),
     fun((binary(), gleam@json:json()) -> nil)
 ) -> nil.
 perform(Effect, Dispatch, Emit) ->

@@ -4,18 +4,18 @@
 -export([add/2, supervisor/1, worker/1, returning/2, start_spec/1, start/1, application_stopped/0, to_erlang_start_result/1]).
 -export_type([spec/2, children/1, child_spec/3, child_start_error/0, message/0, instruction/0, state/1, starter/1, child/1, handle_exit_error/0, application_start_mode/0, application_stop/0]).
 
--type spec(GMB, GMC) :: {spec,
-        GMB,
+-type spec(MHU, MHV) :: {spec,
+        MHU,
         integer(),
         integer(),
-        fun((children(GMB)) -> children(GMC))}.
+        fun((children(MHU)) -> children(MHV))}.
 
--opaque children(GMD) :: {ready, starter(GMD)} | {failed, child_start_error()}.
+-opaque children(MHW) :: {ready, starter(MHW)} | {failed, child_start_error()}.
 
--opaque child_spec(GME, GMF, GMG) :: {child_spec,
-        fun((GMF) -> {ok, gleam@erlang@process:subject(GME)} |
+-opaque child_spec(MHX, MHY, MHZ) :: {child_spec,
+        fun((MHY) -> {ok, gleam@erlang@process:subject(MHX)} |
             {error, gleam@otp@actor:start_error()}),
-        fun((GMF, gleam@erlang@process:subject(GME)) -> GMG)}.
+        fun((MHY, gleam@erlang@process:subject(MHX)) -> MHZ)}.
 
 -type child_start_error() :: {child_start_error,
         gleam@option:option(gleam@erlang@process:pid_()),
@@ -26,18 +26,18 @@
 
 -type instruction() :: start_all | {start_from, gleam@erlang@process:pid_()}.
 
--type state(GMH) :: {state,
+-type state(MIA) :: {state,
         gleam@otp@intensity_tracker:intensity_tracker(),
-        starter(GMH),
+        starter(MIA),
         gleam@erlang@process:subject(gleam@erlang@process:pid_())}.
 
--type starter(GMI) :: {starter,
-        GMI,
+-type starter(MIB) :: {starter,
+        MIB,
         gleam@option:option(fun((instruction()) -> {ok,
-                {starter(GMI), instruction()}} |
+                {starter(MIB), instruction()}} |
             {error, child_start_error()}))}.
 
--type child(GMJ) :: {child, gleam@erlang@process:pid_(), GMJ}.
+-type child(MIC) :: {child, gleam@erlang@process:pid_(), MIC}.
 
 -type handle_exit_error() :: {restart_failed,
         gleam@erlang@process:pid_(),
@@ -50,7 +50,7 @@
 
 -type application_stop() :: any().
 
--spec start_child(child_spec(any(), GMN, GMO), GMN) -> {ok, child(GMO)} |
+-spec start_child(child_spec(any(), MIG, MIH), MIG) -> {ok, child(MIH)} |
     {error, child_start_error()}.
 start_child(Child_spec, Argument) ->
     gleam@result:then(
@@ -77,11 +77,11 @@ shutdown_child(Pid, _) ->
     gleam@erlang@process:send_exit(Pid).
 
 -spec perform_instruction_for_child(
-    GNB,
+    MIU,
     instruction(),
-    child_spec(any(), GNB, GND),
-    child(GND)
-) -> {ok, {child(GND), instruction()}} | {error, child_start_error()}.
+    child_spec(any(), MIU, MIW),
+    child(MIW)
+) -> {ok, {child(MIW), instruction()}} | {error, child_start_error()}.
 perform_instruction_for_child(Argument, Instruction, Child_spec, Child) ->
     Current = erlang:element(2, Child),
     case Instruction of
@@ -97,10 +97,10 @@ perform_instruction_for_child(Argument, Instruction, Child_spec, Child) ->
     end.
 
 -spec add_child_to_starter(
-    starter(GNL),
-    child_spec(any(), GNL, GNO),
-    child(GNO)
-) -> starter(GNO).
+    starter(MJE),
+    child_spec(any(), MJE, MJH),
+    child(MJH)
+) -> starter(MJH).
 add_child_to_starter(Starter, Child_spec, Child) ->
     Starter@3 = fun(Instruction) ->
         gleam@result:then(case erlang:element(3, Starter) of
@@ -132,7 +132,7 @@ add_child_to_starter(Starter, Child_spec, Child) ->
     end,
     {starter, erlang:element(3, Child), {some, Starter@3}}.
 
--spec start_and_add_child(starter(GNU), child_spec(any(), GNU, GNX)) -> children(GNX).
+-spec start_and_add_child(starter(MJN), child_spec(any(), MJN, MJQ)) -> children(MJQ).
 start_and_add_child(State, Child_spec) ->
     case start_child(Child_spec, erlang:element(2, State)) of
         {ok, Child} ->
@@ -142,7 +142,7 @@ start_and_add_child(State, Child_spec) ->
             {failed, Reason}
     end.
 
--spec add(children(GOC), child_spec(any(), GOC, GOF)) -> children(GOF).
+-spec add(children(MJV), child_spec(any(), MJV, MJY)) -> children(MJY).
 add(Children, Child_spec) ->
     case Children of
         {failed, Fail} ->
@@ -153,27 +153,27 @@ add(Children, Child_spec) ->
     end.
 
 -spec supervisor(
-    fun((GOK) -> {ok, gleam@erlang@process:subject(GOL)} |
+    fun((MKD) -> {ok, gleam@erlang@process:subject(MKE)} |
         {error, gleam@otp@actor:start_error()})
-) -> child_spec(GOL, GOK, GOK).
+) -> child_spec(MKE, MKD, MKD).
 supervisor(Start) ->
     {child_spec, Start, fun(Argument, _) -> Argument end}.
 
 -spec worker(
-    fun((GOS) -> {ok, gleam@erlang@process:subject(GOT)} |
+    fun((MKL) -> {ok, gleam@erlang@process:subject(MKM)} |
         {error, gleam@otp@actor:start_error()})
-) -> child_spec(GOT, GOS, GOS).
+) -> child_spec(MKM, MKL, MKL).
 worker(Start) ->
     {child_spec, Start, fun(Argument, _) -> Argument end}.
 
 -spec returning(
-    child_spec(GPA, GPB, any()),
-    fun((GPB, gleam@erlang@process:subject(GPA)) -> GPH)
-) -> child_spec(GPA, GPB, GPH).
+    child_spec(MKT, MKU, any()),
+    fun((MKU, gleam@erlang@process:subject(MKT)) -> MLA)
+) -> child_spec(MKT, MKU, MLA).
 returning(Child, Updater) ->
     {child_spec, erlang:element(2, Child), Updater}.
 
--spec init(spec(any(), GPM)) -> gleam@otp@actor:init_result(state(GPM), message()).
+-spec init(spec(any(), MLF)) -> gleam@otp@actor:init_result(state(MLF), message()).
 init(Spec) ->
     Retry = gleam@erlang@process:new_subject(),
     gleam_erlang_ffi:trap_exits(true),
@@ -222,7 +222,7 @@ init(Spec) ->
                 end}
     end.
 
--spec handle_exit(gleam@erlang@process:pid_(), state(GPS)) -> gleam@otp@actor:next(message(), state(GPS)).
+-spec handle_exit(gleam@erlang@process:pid_(), state(MLL)) -> gleam@otp@actor:next(message(), state(MLL)).
 handle_exit(Pid, State) ->
     Outcome = begin
         _assert_subject = erlang:element(3, erlang:element(3, State)),
@@ -286,7 +286,7 @@ handle_exit(Pid, State) ->
                     <<"Child processes restarted too many times within allowed period"/utf8>>}}
     end.
 
--spec loop(message(), state(GPX)) -> gleam@otp@actor:next(message(), state(GPX)).
+-spec loop(message(), state(MLQ)) -> gleam@otp@actor:next(message(), state(MLQ)).
 loop(Message, State) ->
     case Message of
         {exit, Exit_message} ->

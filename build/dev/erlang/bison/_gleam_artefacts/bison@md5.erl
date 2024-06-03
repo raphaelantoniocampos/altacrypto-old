@@ -15,7 +15,7 @@ to_bit_array(Md5) ->
 
 -spec from_int_list(list(integer())) -> {ok, md5()} | {error, nil}.
 from_int_list(Md5) ->
-    case gleam@list:length(Md5) of
+    case erlang:length(Md5) of
         16 ->
             case gleam@list:try_fold(
                 Md5,

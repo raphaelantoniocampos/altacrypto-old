@@ -42,7 +42,7 @@ system_time(A) ->
 erlang_timestamp() ->
     os:timestamp().
 
--spec rescue(fun(() -> FKU)) -> {ok, FKU} | {error, crash()}.
+-spec rescue(fun(() -> KEK)) -> {ok, KEK} | {error, crash()}.
 rescue(A) ->
     gleam_erlang_ffi:rescue(A).
 

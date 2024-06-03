@@ -13,13 +13,13 @@ property(Name, Value) ->
 
 -spec on(
     binary(),
-    fun((gleam@dynamic:dynamic_()) -> {ok, NOQ} |
+    fun((gleam@dynamic:dynamic_()) -> {ok, PFV} |
         {error, list(gleam@dynamic:decode_error())})
-) -> lustre@internals@vdom:attribute(NOQ).
+) -> lustre@internals@vdom:attribute(PFV).
 on(Name, Handler) ->
     {event, <<"on"/utf8, Name/binary>>, Handler}.
 
--spec map(lustre@internals@vdom:attribute(NOV), fun((NOV) -> NOX)) -> lustre@internals@vdom:attribute(NOX).
+-spec map(lustre@internals@vdom:attribute(PGA), fun((PGA) -> PGC)) -> lustre@internals@vdom:attribute(PGC).
 map(Attr, F) ->
     case Attr of
         {attribute, Name, Value, As_property} ->

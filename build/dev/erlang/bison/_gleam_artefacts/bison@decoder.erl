@@ -24,8 +24,8 @@ consume_till_zero(Binary, Storage) ->
             {error, nil}
     end.
 
--spec decode_boolean(integer(), fun((boolean()) -> {ok, BTT} | {error, nil})) -> {ok,
-        BTT} |
+-spec decode_boolean(integer(), fun((boolean()) -> {ok, HYQ} | {error, nil})) -> {ok,
+        HYQ} |
     {error, nil}.
 decode_boolean(Value, Rest) ->
     case Value of

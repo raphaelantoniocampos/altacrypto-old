@@ -15,7 +15,7 @@ to_bit_array(Uuid) ->
 
 -spec from_int_list(list(integer())) -> {ok, uuid()} | {error, nil}.
 from_int_list(Uuid) ->
-    case gleam@list:length(Uuid) of
+    case erlang:length(Uuid) of
         16 ->
             case gleam@list:try_fold(
                 Uuid,

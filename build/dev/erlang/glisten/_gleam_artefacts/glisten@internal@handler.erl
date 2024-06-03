@@ -10,35 +10,35 @@
     ssl_closed |
     tcp_closed.
 
--type message(HGV) :: {internal, internal_message()} | {user, HGV}.
+-type message(NJU) :: {internal, internal_message()} | {user, NJU}.
 
--type loop_message(HGW) :: {packet, bitstring()} | {custom, HGW}.
+-type loop_message(NJV) :: {packet, bitstring()} | {custom, NJV}.
 
--type loop_state(HGX, HGY) :: {loop_state,
+-type loop_state(NJW, NJX) :: {loop_state,
         {ok, {{integer(), integer(), integer(), integer()}, integer()}} |
             {error, nil},
         glisten@socket:socket(),
-        gleam@erlang@process:subject(message(HGX)),
+        gleam@erlang@process:subject(message(NJW)),
         glisten@transport:transport(),
-        HGY}.
+        NJX}.
 
--type connection(HGZ) :: {connection,
+-type connection(NJY) :: {connection,
         {ok, {{integer(), integer(), integer(), integer()}, integer()}} |
             {error, nil},
         glisten@socket:socket(),
         glisten@transport:transport(),
-        gleam@erlang@process:subject(message(HGZ))}.
+        gleam@erlang@process:subject(message(NJY))}.
 
--type handler(HHA, HHB) :: {handler,
+-type handler(NJZ, NKA) :: {handler,
         glisten@socket:socket(),
-        fun((loop_message(HHA), HHB, connection(HHA)) -> gleam@otp@actor:next(loop_message(HHA), HHB)),
-        fun((connection(HHA)) -> {HHB,
-            gleam@option:option(gleam@erlang@process:selector(HHA))}),
-        gleam@option:option(fun((HHB) -> nil)),
+        fun((loop_message(NJZ), NKA, connection(NJZ)) -> gleam@otp@actor:next(loop_message(NJZ), NKA)),
+        fun((connection(NJZ)) -> {NKA,
+            gleam@option:option(gleam@erlang@process:selector(NJZ))}),
+        gleam@option:option(fun((NKA) -> nil)),
         glisten@transport:transport()}.
 
--spec start(handler(HHL, any())) -> {ok,
-        gleam@erlang@process:subject(message(HHL))} |
+-spec start(handler(NKK, any())) -> {ok,
+        gleam@erlang@process:subject(message(NKK))} |
     {error, gleam@otp@actor:start_error()}.
 start(Handler) ->
     gleam@otp@actor:start_spec(

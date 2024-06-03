@@ -4,7 +4,7 @@
 -export([new/1, get_header/2, set_header/3, prepend_header/3, set_body/2, try_map/2, map/2, redirect/1, get_cookies/1, set_cookie/4, expire_cookie/3]).
 -export_type([response/1]).
 
--type response(GNK) :: {response, integer(), list({binary(), binary()}), GNK}.
+-type response(LPC) :: {response, integer(), list({binary(), binary()}), LPC}.
 
 -spec new(integer()) -> response(binary()).
 new(Status) ->
@@ -17,7 +17,7 @@ get_header(Response, Key) ->
         gleam@string:lowercase(Key)
     ).
 
--spec set_header(response(GNZ), binary(), binary()) -> response(GNZ).
+-spec set_header(response(LPR), binary(), binary()) -> response(LPR).
 set_header(Response, Key, Value) ->
     Headers = gleam@list:key_set(
         erlang:element(3, Response),
@@ -26,27 +26,27 @@ set_header(Response, Key, Value) ->
     ),
     erlang:setelement(3, Response, Headers).
 
--spec prepend_header(response(GOC), binary(), binary()) -> response(GOC).
+-spec prepend_header(response(LPU), binary(), binary()) -> response(LPU).
 prepend_header(Response, Key, Value) ->
     Headers = [{gleam@string:lowercase(Key), Value} |
         erlang:element(3, Response)],
     erlang:setelement(3, Response, Headers).
 
--spec set_body(response(any()), GOH) -> response(GOH).
+-spec set_body(response(any()), LPZ) -> response(LPZ).
 set_body(Response, Body) ->
     {response, Status, Headers, _} = Response,
     {response, Status, Headers, Body}.
 
--spec try_map(response(GNL), fun((GNL) -> {ok, GNN} | {error, GNO})) -> {ok,
-        response(GNN)} |
-    {error, GNO}.
+-spec try_map(response(LPD), fun((LPD) -> {ok, LPF} | {error, LPG})) -> {ok,
+        response(LPF)} |
+    {error, LPG}.
 try_map(Response, Transform) ->
     gleam@result:then(
         Transform(erlang:element(4, Response)),
         fun(Body) -> {ok, set_body(Response, Body)} end
     ).
 
--spec map(response(GOJ), fun((GOJ) -> GOL)) -> response(GOL).
+-spec map(response(LQB), fun((LQB) -> LQD)) -> response(LQD).
 map(Response, Transform) ->
     _pipe = erlang:element(4, Response),
     _pipe@1 = Transform(_pipe),
@@ -79,11 +79,11 @@ get_cookies(Resp) ->
     gleam@list:flatten(_pipe@1).
 
 -spec set_cookie(
-    response(GOQ),
+    response(LQI),
     binary(),
     binary(),
     gleam@http@cookie:attributes()
-) -> response(GOQ).
+) -> response(LQI).
 set_cookie(Response, Name, Value, Attributes) ->
     prepend_header(
         Response,
@@ -91,7 +91,7 @@ set_cookie(Response, Name, Value, Attributes) ->
         gleam@http@cookie:set_header(Name, Value, Attributes)
     ).
 
--spec expire_cookie(response(GOT), binary(), gleam@http@cookie:attributes()) -> response(GOT).
+-spec expire_cookie(response(LQL), binary(), gleam@http@cookie:attributes()) -> response(LQL).
 expire_cookie(Response, Name, Attributes) ->
     Attrs = erlang:setelement(2, Attributes, {some, 0}),
     set_cookie(Response, Name, <<""/utf8>>, Attrs).

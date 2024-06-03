@@ -254,7 +254,7 @@ parse_rfc_2045_parameter(Header, Name) ->
 parse_rfc_2045_parameters(Header, Parameters) ->
     case gleam@string:pop_grapheme(Header) of
         {error, nil} ->
-            {ok, gleam@list:reverse(Parameters)};
+            {ok, lists:reverse(Parameters)};
 
         {ok, {<<";"/utf8>>, Rest}} ->
             parse_rfc_2045_parameters(Rest, Parameters);
@@ -441,7 +441,7 @@ parse_header_value(Data, Headers, Name, Value) ->
                     gleam@result:map(
                         gleam@bit_array:to_string(Value),
                         fun(Value@1) ->
-                            Headers@1 = gleam@list:reverse(
+                            Headers@1 = lists:reverse(
                                 [{gleam@string:lowercase(Name@1), Value@1} |
                                     Headers]
                             ),

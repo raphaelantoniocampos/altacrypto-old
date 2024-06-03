@@ -3,7 +3,7 @@
 
 -export([parse/1]).
 
--spec parse_comment(list(binary()), fun((list(binary())) -> FZY)) -> FZY.
+-spec parse_comment(list(binary()), fun((list(binary())) -> JTO)) -> JTO.
 parse_comment(Text, Next) ->
     case Text of
         [<<"\r"/utf8>>, <<"\n"/utf8>> | _] ->
@@ -22,7 +22,7 @@ parse_comment(Text, Next) ->
 -spec join(list(binary())) -> binary().
 join(Strings) ->
     _pipe = Strings,
-    _pipe@1 = gleam@list:reverse(_pipe),
+    _pipe@1 = lists:reverse(_pipe),
     gleam@string:join(_pipe@1, <<""/utf8>>).
 
 -spec parse_key(list(binary()), list(binary())) -> {ok,
@@ -170,7 +170,7 @@ parse_kv(Text) ->
 parse_kvs(Text, Acc) ->
     case Text of
         [] ->
-            {ok, gleam@list:reverse(Acc)};
+            {ok, lists:reverse(Acc)};
 
         [<<"\r"/utf8>>, <<"\n"/utf8>> | Rest] ->
             parse_kvs(Rest, Acc);

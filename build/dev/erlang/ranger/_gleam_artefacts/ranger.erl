@@ -7,11 +7,11 @@
 -type direction() :: forward | backward.
 
 -spec create(
-    fun((FJS) -> boolean()),
-    fun((FJT) -> FJT),
-    fun((FJS, FJT) -> FJS),
-    fun((FJS, FJS) -> gleam@order:order())
-) -> fun((FJS, FJS, FJT) -> {ok, gleam@iterator:iterator(FJS)} | {error, nil}).
+    fun((FNO) -> boolean()),
+    fun((FNP) -> FNP),
+    fun((FNO, FNP) -> FNO),
+    fun((FNO, FNO) -> gleam@order:order())
+) -> fun((FNO, FNO, FNP) -> {ok, gleam@iterator:iterator(FNO)} | {error, nil}).
 create(Validate, Negate_step, Add, Compare) ->
     Adjust_step = fun(A, B, Step) ->
         Negated_step = Negate_step(Step),
@@ -78,10 +78,10 @@ create(Validate, Negate_step, Add, Compare) ->
     end.
 
 -spec create_infinite(
-    fun((FJX) -> boolean()),
-    fun((FJX, FJY) -> FJX),
-    fun((FJX, FJX) -> gleam@order:order())
-) -> fun((FJX, FJY) -> {ok, gleam@iterator:iterator(FJX)} | {error, nil}).
+    fun((FNT) -> boolean()),
+    fun((FNT, FNU) -> FNT),
+    fun((FNT, FNT) -> gleam@order:order())
+) -> fun((FNT, FNU) -> {ok, gleam@iterator:iterator(FNT)} | {error, nil}).
 create_infinite(Validate, Add, Compare) ->
     Is_step_zero = fun(A, S) -> case Compare(A, Add(A, S)) of
             eq ->

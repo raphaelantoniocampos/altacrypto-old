@@ -4,25 +4,25 @@
 -export([attribute_to_json/2, attribute_to_event_handler/1, element_to_string/1, element_to_string_builder/1, element_to_json/1, handlers/1]).
 -export_type([element/1, attribute/1]).
 
--type element(NEB) :: {text, binary()} |
+-type element(OVG) :: {text, binary()} |
     {element,
         binary(),
         binary(),
         binary(),
-        list(attribute(NEB)),
-        list(element(NEB)),
+        list(attribute(OVG)),
+        list(element(OVG)),
         boolean(),
         boolean()} |
-    {map, fun(() -> element(NEB))} |
-    {fragment, list(element(NEB)), binary()}.
+    {map, fun(() -> element(OVG))} |
+    {fragment, list(element(OVG)), binary()}.
 
--type attribute(NEC) :: {attribute,
+-type attribute(OVH) :: {attribute,
         binary(),
         gleam@dynamic:dynamic_(),
         boolean()} |
     {event,
         binary(),
-        fun((gleam@dynamic:dynamic_()) -> {ok, NEC} |
+        fun((gleam@dynamic:dynamic_()) -> {ok, OVH} |
             {error, list(gleam@dynamic:decode_error())})}.
 
 -spec attribute_to_json(attribute(any()), binary()) -> {ok, gleam@json:json()} |
@@ -290,9 +290,9 @@ attributes_to_string_builder(Attrs) ->
                 )
         end, Inner_html@1}.
 
--spec attribute_to_event_handler(attribute(NFZ)) -> {ok,
+-spec attribute_to_event_handler(attribute(OXE)) -> {ok,
         {binary(),
-            fun((gleam@dynamic:dynamic_()) -> {ok, NFZ} |
+            fun((gleam@dynamic:dynamic_()) -> {ok, OXE} |
                 {error, list(gleam@dynamic:decode_error())})}} |
     {error, nil}.
 attribute_to_event_handler(Attribute) ->
@@ -529,11 +529,11 @@ element_to_json(Element) ->
     do_element_to_json(Element, <<"0"/utf8>>).
 
 -spec do_element_list_handlers(
-    list(element(NEQ)),
-    gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, NEQ} |
+    list(element(OVV)),
+    gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, OVV} |
         {error, list(gleam@dynamic:decode_error())})),
     binary()
-) -> gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, NEQ} |
+) -> gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, OVV} |
     {error, list(gleam@dynamic:decode_error())})).
 do_element_list_handlers(Elements, Handlers, Key) ->
     gleam@list:index_fold(
@@ -547,11 +547,11 @@ do_element_list_handlers(Elements, Handlers, Key) ->
     ).
 
 -spec do_handlers(
-    element(NEI),
-    gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, NEI} |
+    element(OVN),
+    gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, OVN} |
         {error, list(gleam@dynamic:decode_error())})),
     binary()
-) -> gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, NEI} |
+) -> gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, OVN} |
     {error, list(gleam@dynamic:decode_error())})).
 do_handlers(Element, Handlers, Key) ->
     case Element of
@@ -585,8 +585,8 @@ do_handlers(Element, Handlers, Key) ->
             do_element_list_handlers(Elements, Handlers, Key)
     end.
 
--spec handlers(element(NED)) -> gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok,
-        NED} |
+-spec handlers(element(OVI)) -> gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok,
+        OVI} |
     {error, list(gleam@dynamic:decode_error())})).
 handlers(Element) ->
     do_handlers(Element, gleam@dict:new(), <<"0"/utf8>>).

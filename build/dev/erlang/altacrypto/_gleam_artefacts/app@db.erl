@@ -28,11 +28,13 @@ get_connection_string() ->
                         function => <<"get_connection_string"/utf8>>,
                         line => 12})
     end,
-    <<"mongodb+srv://{mongo_user}:{
+    _ = <<"mongodb+srv://{mongo_user}:{
   mongo_password}@cluster0.wovexfa.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"/utf8>>,
     <<<<<<<<"mongodb+srv://"/utf8, User/binary>>/binary, ":"/utf8>>/binary,
             Pass/binary>>/binary,
-        "@cluster0.wovexfa.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"/utf8>>.
+        "@cluster0.wovexfa.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"/utf8>>,
+    <<"mongodb+srv://admin:dinheiromtechobatmannmuie@cluster0.wovexfa.mongodb.net/"/utf8>>,
+    <<"mongodb://admin:dinheiromtechobatmannmuie@cluster0.wovexfa.mongodb.net:27017/?directConnection=true"/utf8>>.
 
 -spec get_collection(binary()) -> mungo@client:collection().
 get_collection(Name) ->
@@ -46,7 +48,8 @@ get_collection(Name) ->
                         value => _assert_fail,
                         module => <<"app/db"/utf8>>,
                         function => <<"get_collection"/utf8>>,
-                        line => 27})
+                        line => 32})
     end,
+    gleam@io:debug(Client),
     _pipe = Client,
     mungo:collection(_pipe, Name).
