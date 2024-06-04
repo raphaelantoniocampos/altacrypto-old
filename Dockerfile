@@ -12,7 +12,7 @@ RUN . .venv/bin/activate && pip install --no-cache-dir -r requirements.txt
 
 COPY ./src ./
 
-RUN mkdir -p /src/logs
+RUN mkdir -p app/src/logs
 
 EXPOSE 5000
 
