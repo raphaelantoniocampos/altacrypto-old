@@ -304,9 +304,7 @@ class DatabaseManager:
                     collection_name="assets",
                     index_name="sold",
                     ascending=False,
-                    expire_after_seconds=(
-                        GlobalSettings.INTERVALS_IN_MINUTES[-1] * 60)
-                )
+                    expire_after_seconds=3600)
             collection.insert_one(
                 {
                     "user_id": asset.user_id,
@@ -319,6 +317,7 @@ class DatabaseManager:
                     "variation": asset.variation,
                     "should_be_sold": asset.should_be_sold,
                     "sold": asset.sold,
+                    "current_value": asset.current_value,
                 }
             )
         except pymongo.errors.PyMongoError as e:

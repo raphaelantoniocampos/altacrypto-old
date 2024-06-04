@@ -38,17 +38,10 @@ class CryptoTrader:
         self.database_manager = database_manager
 
         load_dotenv()
-        logging_filepath = os.getenv("LOG_FILEPATH")
+        self.logging_filepath = os.getenv("LOG_FILEPATH")
 
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
-
-        file_handler = logging.FileHandler(logging_filepath, mode='a')
-        file_handler.setLevel(logging.INFO)
-        formatter = logging.Formatter(
-            '%(asctime)s - %(levelname)s - %(message)s')
-        file_handler.setFormatter(formatter)
-        self.logger.addHandler(file_handler)
         self.logger.propagate = False
 
     async def start(self) -> None:
@@ -58,6 +51,21 @@ class CryptoTrader:
         Fetches crypto snapshots, updates the database, analyzes data,
         and executes trading orders if conditions are met.
         """
+        current_datetime = datetime.now()
+        date_str = current_datetime.strftime("%Y-%m-%d")
+        log_file_path = f"{self.logging_filepath}/log_{date_str}.txt"
+
+        for handler in self.logger.handlers:
+            if isinstance(handler, logging.FileHandler):
+                self.logger.removeHandler(handler)
+
+        file_handler = logging.FileHandler(log_file_path, mode='a')
+        file_handler.setLevel(logging.INFO)
+        formatter = logging.Formatter(
+            '%(asctime)s - %(levelname)s - %(message)s')
+        file_handler.setFormatter(formatter)
+        self.logger.addHandler(file_handler)
+
         binance_manager = BinanceManager()
 
         crypto_snapshots = binance_manager.fetch_usdt_pairs()
@@ -67,7 +75,6 @@ class CryptoTrader:
 
         users = self.database_manager.get_users()
 
-        current_datetime = datetime.now()
         sell_orders = self._get_sell_orders(
             assets, crypto_snapshots, current_datetime)
 
@@ -276,7 +283,7 @@ class CryptoTrader:
         return orders
 
     def _execute_orders(
-        self, sell_orders: List[SellOrder], buy_orders: List[BuyOrder]
+        self, sell_orders: List[SellOrder] = [], buy_orders: List[BuyOrder] = []
     ) -> None:
         """
         Executes buy and sell orders.
