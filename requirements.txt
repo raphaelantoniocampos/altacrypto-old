@@ -5,5 +5,5 @@ python-dateutil
 python-dotenv
 requests
 types-requests
-pymongo[srv]
-flask
+pymongo
+python-dotenv

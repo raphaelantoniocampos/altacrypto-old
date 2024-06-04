@@ -39,7 +39,7 @@ class SellOrder(Order):
         Returns a string representation of the SellOrder.
         """
         return (
-            f"User ID: {self.asset.user_id}\n"
+            f"\nUser ID: {self.asset.user_id}\n"
             f"Side: {self.side}\n"
             f"Symbol: {self.asset.symbol}\n"
             f"Highest Price: {self.asset.highest_price}\n"
@@ -53,7 +53,7 @@ class BuyOrder(Order):
     """Represents a buy order."""
 
     def __init__(
-        self, side: str, interval, symbol: str, variation: float, current_price: float
+        self, user_id, side: str, interval, symbol: str, variation: float, current_price: float
     ):
         """
         Initializes a BuyOrder object.
@@ -65,7 +65,7 @@ class BuyOrder(Order):
             variation (float): The variation for the buy order.
             current_price (float): The current price of the asset.
         """
-        super().__init__(None, side, interval)
+        super().__init__(user_id, side, interval)
         self.symbol = symbol
         self.variation = round(variation, 2)
         self.current_price = current_price
@@ -73,7 +73,7 @@ class BuyOrder(Order):
     def __str__(self) -> str:
         """Returns a string representation of the BuyOrder."""
         return (
-            f"User ID: None\n"
+            f"\nUser ID: {self.user_id}\n"
             f"Side: {self.side}\n"
             f"Symbol: {self.symbol}\n"
             f"Interval: {self.interval}\n"
