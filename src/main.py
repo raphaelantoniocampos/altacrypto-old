@@ -9,7 +9,7 @@ from core.crypto_trader import CryptoTrader
 from global_settings import GlobalSettings
 
 
-async def main():
+async def main() -> None:
     """
     The main entry point of the application.
     """

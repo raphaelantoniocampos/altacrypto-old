@@ -51,8 +51,9 @@ jobs:
           else
             echo 'docker running'
           fi
-          sudo docker load -i /home/${{ secrets.EC2_USER }}/altacrypto.tar
           sudo docker stop altacrypto || true
           sudo docker rm altacrypto || true
+          sudo docker system prune -a || true
+          sudo docker load -i /home/${{ secrets.EC2_USER }}/altacrypto.tar
           sudo docker run -d -e LOG_FILEPATH=${{ secrets.LOG_FILEPATH }} -e MONGO_USER=${{ secrets.MONGO_USER }} -e MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }} -v /home/${{ secrets.EC2_USER }}/logs:/./${{ secrets.LOG_FILEPATH }} --name altacrypto -p 5000:5000 altacrypto:latest
           EOF
