@@ -28,7 +28,7 @@ pub fn main() {
   let start_bot = bot.start
   process.start(start_bot, True)
 
-  let db = db.get_collection("user_data")
+  let db = db.get_collection("users")
   io.debug(db)
 
   process.sleep_forever()

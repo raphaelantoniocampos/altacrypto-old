@@ -9,6 +9,7 @@
                     gleeunit,
                     lustre,
                     mist,
+                    mug,
                     mungo,
                     wisp]},
     {description, ""},

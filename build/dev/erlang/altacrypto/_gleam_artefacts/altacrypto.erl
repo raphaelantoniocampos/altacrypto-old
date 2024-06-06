@@ -55,6 +55,6 @@ main() ->
     end,
     Start_bot = fun app@bot:start/0,
     gleam@erlang@process:start(Start_bot, true),
-    Db = app@db:get_collection(<<"user_data"/utf8>>),
+    Db = app@db:get_collection(<<"users"/utf8>>),
     gleam@io:debug(Db),
     gleam_erlang_ffi:sleep_forever().

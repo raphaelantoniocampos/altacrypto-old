@@ -12,7 +12,7 @@
 -export([format_error/1]).
 
 %% User code. This is placed here to allow extra attributes.
--file("/home/raphaelac/altacrypto/build/dev/erlang/thoas/_build/default/plugins/hex_core/src/safe_erl_term.xrl", 24).
+-file("/home/raphaelac/personal/altacrypto/build/dev/erlang/thoas/_build/default/plugins/hex_core/src/safe_erl_term.xrl", 24).
 
 -export([terms/1]).
 
@@ -424,7 +424,7 @@ tab_size() -> 8.
 %% return signal either an unrecognised character or end of current
 %% input.
 
--file("/home/raphaelac/altacrypto/build/dev/erlang/thoas/_build/default/plugins/hex_core/src/safe_erl_term.erl", 392).
+-file("/home/raphaelac/personal/altacrypto/build/dev/erlang/thoas/_build/default/plugins/hex_core/src/safe_erl_term.erl", 392).
 yystate() -> 12.
 
 yystate(19, [92|Ics], Line, Col, Tlen, Action, Alen) ->
@@ -679,47 +679,47 @@ yyaction(8, _, _, _, _) ->
 yyaction(_, _, _, _, _) -> error.
 
 -compile({inline,yyaction_0/2}).
--file("/home/raphaelac/altacrypto/build/dev/erlang/thoas/_build/default/plugins/hex_core/src/safe_erl_term.xrl", 12).
+-file("/home/raphaelac/personal/altacrypto/build/dev/erlang/thoas/_build/default/plugins/hex_core/src/safe_erl_term.xrl", 12).
 yyaction_0(TokenChars, TokenLine) ->
      tokenize_atom (TokenChars, TokenLine) .
 
 -compile({inline,yyaction_1/3}).
--file("/home/raphaelac/altacrypto/build/dev/erlang/thoas/_build/default/plugins/hex_core/src/safe_erl_term.xrl", 13).
+-file("/home/raphaelac/personal/altacrypto/build/dev/erlang/thoas/_build/default/plugins/hex_core/src/safe_erl_term.xrl", 13).
 yyaction_1(TokenChars, TokenLen, TokenLine) ->
      tokenize_atom (escape (unquote (TokenChars, TokenLen)), TokenLine) .
 
 -compile({inline,yyaction_2/3}).
--file("/home/raphaelac/altacrypto/build/dev/erlang/thoas/_build/default/plugins/hex_core/src/safe_erl_term.xrl", 14).
+-file("/home/raphaelac/personal/altacrypto/build/dev/erlang/thoas/_build/default/plugins/hex_core/src/safe_erl_term.xrl", 14).
 yyaction_2(TokenChars, TokenLen, TokenLine) ->
      { token, { string, TokenLine, escape (unquote (TokenChars, TokenLen)) } } .
 
 -compile({inline,yyaction_3/2}).
--file("/home/raphaelac/altacrypto/build/dev/erlang/thoas/_build/default/plugins/hex_core/src/safe_erl_term.xrl", 15).
+-file("/home/raphaelac/personal/altacrypto/build/dev/erlang/thoas/_build/default/plugins/hex_core/src/safe_erl_term.xrl", 15).
 yyaction_3(TokenChars, TokenLine) ->
      { token, { integer, TokenLine, list_to_integer (TokenChars) } } .
 
 -compile({inline,yyaction_4/2}).
--file("/home/raphaelac/altacrypto/build/dev/erlang/thoas/_build/default/plugins/hex_core/src/safe_erl_term.xrl", 16).
+-file("/home/raphaelac/personal/altacrypto/build/dev/erlang/thoas/_build/default/plugins/hex_core/src/safe_erl_term.xrl", 16).
 yyaction_4(TokenChars, TokenLine) ->
      { token, { list_to_atom (TokenChars), TokenLine } } .
 
 -compile({inline,yyaction_5/2}).
--file("/home/raphaelac/altacrypto/build/dev/erlang/thoas/_build/default/plugins/hex_core/src/safe_erl_term.xrl", 17).
+-file("/home/raphaelac/personal/altacrypto/build/dev/erlang/thoas/_build/default/plugins/hex_core/src/safe_erl_term.xrl", 17).
 yyaction_5(TokenChars, TokenLine) ->
      { token, { list_to_atom (TokenChars), TokenLine } } .
 
 -compile({inline,yyaction_6/1}).
--file("/home/raphaelac/altacrypto/build/dev/erlang/thoas/_build/default/plugins/hex_core/src/safe_erl_term.xrl", 18).
+-file("/home/raphaelac/personal/altacrypto/build/dev/erlang/thoas/_build/default/plugins/hex_core/src/safe_erl_term.xrl", 18).
 yyaction_6(TokenLine) ->
      { token, { dot, TokenLine } } .
 
 -compile({inline,yyaction_7/1}).
--file("/home/raphaelac/altacrypto/build/dev/erlang/thoas/_build/default/plugins/hex_core/src/safe_erl_term.xrl", 19).
+-file("/home/raphaelac/personal/altacrypto/build/dev/erlang/thoas/_build/default/plugins/hex_core/src/safe_erl_term.xrl", 19).
 yyaction_7(TokenLine) ->
      { token, { '/', TokenLine } } .
 
 -compile({inline,yyaction_8/0}).
--file("/home/raphaelac/altacrypto/build/dev/erlang/thoas/_build/default/plugins/hex_core/src/safe_erl_term.xrl", 20).
+-file("/home/raphaelac/personal/altacrypto/build/dev/erlang/thoas/_build/default/plugins/hex_core/src/safe_erl_term.xrl", 20).
 yyaction_8() ->
      skip_token .
 -file("/usr/lib/erlang/lib/parsetools-2.5/include/leexinc.hrl", 344).

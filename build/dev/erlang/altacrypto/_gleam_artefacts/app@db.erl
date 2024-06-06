@@ -28,28 +28,38 @@ get_connection_string() ->
                         function => <<"get_connection_string"/utf8>>,
                         line => 12})
     end,
-    _ = <<"mongodb+srv://{mongo_user}:{
-  mongo_password}@cluster0.wovexfa.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"/utf8>>,
-    <<<<<<<<"mongodb+srv://"/utf8, User/binary>>/binary, ":"/utf8>>/binary,
-            Pass/binary>>/binary,
-        "@cluster0.wovexfa.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"/utf8>>,
-    <<"mongodb+srv://admin:dinheiromtechobatmannmuie@cluster0.wovexfa.mongodb.net/"/utf8>>,
-    <<"mongodb://admin:dinheiromtechobatmannmuie@cluster0.wovexfa.mongodb.net:27017/?directConnection=true"/utf8>>.
-
--spec get_collection(binary()) -> mungo@client:collection().
-get_collection(Name) ->
-    Connection_string = get_connection_string(),
-    _assert_subject = mungo:start(Connection_string, 512),
-    {ok, Client} = case _assert_subject of
-        {ok, _} -> _assert_subject;
-        _assert_fail ->
+    _assert_subject@2 = dot_env_ffi:get_env(<<"MONGO_DB"/utf8>>),
+    {ok, Db} = case _assert_subject@2 of
+        {ok, _} -> _assert_subject@2;
+        _assert_fail@2 ->
             erlang:error(#{gleam_error => let_assert,
                         message => <<"Assertion pattern match failed"/utf8>>,
-                        value => _assert_fail,
+                        value => _assert_fail@2,
                         module => <<"app/db"/utf8>>,
-                        function => <<"get_collection"/utf8>>,
-                        line => 32})
+                        function => <<"get_connection_string"/utf8>>,
+                        line => 13})
     end,
-    gleam@io:debug(Client),
-    _pipe = Client,
-    mungo:collection(_pipe, Name).
+    String = <<<<<<<<<<<<"mongodb://"/utf8, User/binary>>/binary, ":"/utf8>>/binary,
+                    Pass/binary>>/binary,
+                "@cluster0.wovexfa.mongodb.net:27017/"/utf8>>/binary,
+            Db/binary>>/binary,
+        "?authSource=admin"/utf8>>,
+    String,
+    New_string = <<"mongodb://admin:dinheiromtechobatmannmuie@cluster0.wovexfa.mongodb.net/altadata?authSource=admin"/utf8>>,
+    gleam@io:println(New_string),
+    New_string.
+
+-spec get_collection(binary()) -> binary().
+get_collection(Name) ->
+    Connection_string = get_connection_string(),
+    case mungo:start(Connection_string, 512) of
+        {ok, Client} ->
+            gleam@io:debug(Client),
+            _pipe = Client,
+            mungo:collection(_pipe, Name),
+            <<""/utf8>>;
+
+        {error, E} ->
+            gleam@io:debug(E),
+            <<""/utf8>>
+    end.
