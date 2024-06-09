@@ -6,7 +6,9 @@ import dot_env
 import dot_env/env
 import gleam/erlang/process
 import gleam/io
+import gleam/list
 import mist
+import mungo
 import wisp
 
 pub fn main() {
@@ -29,7 +31,10 @@ pub fn main() {
   process.start(start_bot, True)
 
   let db = db.get_collection("users")
-  io.debug(db)
+  let assert Ok(cursor) = mungo.find_all(db, [], 512)
+  let new_list = mungo.to_list(cursor, 128)
+  let result = list.pop(new_list, fn(_) { True })
+  io.debug(result)
 
   process.sleep_forever()
 }

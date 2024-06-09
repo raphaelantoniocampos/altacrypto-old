@@ -22,25 +22,21 @@ fn get_connection_string() -> String {
     <> "?authSource=admin"
   // io.println(string)
   string
-
   let new_string =
     "mongodb://admin:dinheiromtechobatmannmuie@cluster0.wovexfa.mongodb.net/altadata?authSource=admin"
-  io.println(new_string)
-  new_string
+  //io.println(new_string)
+  //new_string
+
+  "mongodb://127.0.0.1:27017/altadata?authSource=admin&directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.2.6"
 }
 
-pub fn get_collection(name: String) -> String {
+pub fn get_collection(name: String) {
   let connection_string = get_connection_string()
 
   case mungo.start(connection_string, 512) {
     Ok(client) -> {
-      io.debug(client)
       client |> mungo.collection(name)
-      ""
     }
-    Error(e) -> {
-      io.debug(e)
-      ""
-    }
+    Error(_) -> get_collection(name)
   }
 }

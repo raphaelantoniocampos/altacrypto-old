@@ -16,7 +16,7 @@ static_directory() ->
                         value => _assert_fail,
                         module => <<"altacrypto"/utf8>>,
                         function => <<"static_directory"/utf8>>,
-                        line => 38})
+                        line => 43})
     end,
     <<Priv_directory/binary, "/static"/utf8>>.
 
@@ -33,7 +33,7 @@ main() ->
                         value => _assert_fail,
                         module => <<"altacrypto"/utf8>>,
                         function => <<"main"/utf8>>,
-                        line => 16})
+                        line => 18})
     end,
     Ctx = {context, static_directory()},
     Handler = fun(_capture) -> app@router:handle_request(_capture, Ctx) end,
@@ -51,10 +51,23 @@ main() ->
                         value => _assert_fail@1,
                         module => <<"altacrypto"/utf8>>,
                         function => <<"main"/utf8>>,
-                        line => 22})
+                        line => 24})
     end,
     Start_bot = fun app@bot:start/0,
     gleam@erlang@process:start(Start_bot, true),
     Db = app@db:get_collection(<<"users"/utf8>>),
-    gleam@io:debug(Db),
+    _assert_subject@2 = mungo:find_all(Db, [], 512),
+    {ok, Cursor} = case _assert_subject@2 of
+        {ok, _} -> _assert_subject@2;
+        _assert_fail@2 ->
+            erlang:error(#{gleam_error => let_assert,
+                        message => <<"Assertion pattern match failed"/utf8>>,
+                        value => _assert_fail@2,
+                        module => <<"altacrypto"/utf8>>,
+                        function => <<"main"/utf8>>,
+                        line => 34})
+    end,
+    New_list = mungo:to_list(Cursor, 128),
+    Result = gleam@list:pop(New_list, fun(_) -> true end),
+    gleam@io:debug(Result),
     gleam_erlang_ffi:sleep_forever().

@@ -13,7 +13,6 @@
                     mungo,
                     wisp]},
     {description, ""},
-    {modules, [altacrypto,
-               app@db]},
+    {modules, [altacrypto]},
     {registered, []}
 ]}.

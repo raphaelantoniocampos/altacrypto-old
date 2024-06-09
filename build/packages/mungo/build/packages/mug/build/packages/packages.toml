@@ -1,0 +1,6 @@
+[packages]
+gleeunit = "1.1.2"
+gleam_erlang = "0.25.0"
+gleam_stdlib = "0.38.0"
+gleam_otp = "0.10.0"
+glisten = "0.11.0"

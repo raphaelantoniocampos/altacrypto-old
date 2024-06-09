@@ -46,20 +46,16 @@ get_connection_string() ->
         "?authSource=admin"/utf8>>,
     String,
     New_string = <<"mongodb://admin:dinheiromtechobatmannmuie@cluster0.wovexfa.mongodb.net/altadata?authSource=admin"/utf8>>,
-    gleam@io:println(New_string),
-    New_string.
+    <<"mongodb://127.0.0.1:27017/altadata?authSource=admin&directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.2.6"/utf8>>.
 
--spec get_collection(binary()) -> binary().
+-spec get_collection(binary()) -> mungo@client:collection().
 get_collection(Name) ->
     Connection_string = get_connection_string(),
     case mungo:start(Connection_string, 512) of
         {ok, Client} ->
-            gleam@io:debug(Client),
             _pipe = Client,
-            mungo:collection(_pipe, Name),
-            <<""/utf8>>;
+            mungo:collection(_pipe, Name);
 
-        {error, E} ->
-            gleam@io:debug(E),
-            <<""/utf8>>
+        {error, _} ->
+            get_collection(Name)
     end.

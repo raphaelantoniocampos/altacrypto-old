@@ -1,5 +1,5 @@
 -module(marceau).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 
 -export([extension_to_mime_type/1, mime_type_to_extensions/1]).
 
@@ -2625,6 +2625,9 @@ extension_to_mime_type(Extension) ->
         <<"wav"/utf8>> ->
             <<"audio/x-wav"/utf8>>;
 
+        <<"wasm"/utf8>> ->
+            <<"application/wasm"/utf8>>;
+
         <<"wax"/utf8>> ->
             <<"audio/x-ms-wax"/utf8>>;
 
@@ -4390,6 +4393,9 @@ mime_type_to_extensions(Mime_type) ->
 
         <<"application/voicexml+xml"/utf8>> ->
             [<<"vxml"/utf8>>];
+
+        <<"application/wasm"/utf8>> ->
+            [<<"wasm"/utf8>>];
 
         <<"application/widget"/utf8>> ->
             [<<"wgt"/utf8>>];

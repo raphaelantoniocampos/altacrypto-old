@@ -2625,6 +2625,9 @@ extension_to_mime_type(Extension) ->
         <<"wav"/utf8>> ->
             <<"audio/x-wav"/utf8>>;
 
+        <<"wasm"/utf8>> ->
+            <<"application/wasm"/utf8>>;
+
         <<"wax"/utf8>> ->
             <<"audio/x-ms-wax"/utf8>>;
 
@@ -4390,6 +4393,9 @@ mime_type_to_extensions(Mime_type) ->
 
         <<"application/voicexml+xml"/utf8>> ->
             [<<"vxml"/utf8>>];
+
+        <<"application/wasm"/utf8>> ->
+            [<<"wasm"/utf8>>];
 
         <<"application/widget"/utf8>> ->
             [<<"wgt"/utf8>>];
