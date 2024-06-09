@@ -148,7 +148,7 @@ receive_next_packet_as_message(Socket) ->
 unsafe_coerce_to_socket(Socket) ->
     gleam@dynamic:unsafe_coerce(Socket).
 
--spec unsafe_coerce_packet(fun((tcp_message()) -> YCP)) -> fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> YCP).
+-spec unsafe_coerce_packet(fun((tcp_message()) -> YCQ)) -> fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> YCQ).
 unsafe_coerce_packet(Mapper) ->
     fun(Socket, Data) ->
         _pipe = {packet,
@@ -157,12 +157,12 @@ unsafe_coerce_packet(Mapper) ->
         Mapper(_pipe)
     end.
 
--spec unsafe_coerce_closed(fun((tcp_message()) -> YCQ)) -> fun((gleam@dynamic:dynamic_()) -> YCQ).
+-spec unsafe_coerce_closed(fun((tcp_message()) -> YCR)) -> fun((gleam@dynamic:dynamic_()) -> YCR).
 unsafe_coerce_closed(Mapper) ->
     fun(Socket) -> _pipe = {socket_closed, unsafe_coerce_to_socket(Socket)},
         Mapper(_pipe) end.
 
--spec unsafe_coerce_to_tcp_error(fun((tcp_message()) -> YCR)) -> fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> YCR).
+-spec unsafe_coerce_to_tcp_error(fun((tcp_message()) -> YCS)) -> fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> YCS).
 unsafe_coerce_to_tcp_error(Mapper) ->
     fun(Socket, Reason) ->
         Mapper(
@@ -173,9 +173,9 @@ unsafe_coerce_to_tcp_error(Mapper) ->
     end.
 
 -spec selecting_tcp_messages(
-    gleam@erlang@process:selector(YCM),
-    fun((tcp_message()) -> YCM)
-) -> gleam@erlang@process:selector(YCM).
+    gleam@erlang@process:selector(YCN),
+    fun((tcp_message()) -> YCN)
+) -> gleam@erlang@process:selector(YCN).
 selecting_tcp_messages(Selector, Mapper) ->
     Tcp = erlang:binary_to_atom(<<"tcp"/utf8>>),
     Closed = erlang:binary_to_atom(<<"tcp_closed"/utf8>>),

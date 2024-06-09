@@ -55,9 +55,8 @@ main() ->
     end,
     Start_bot = fun app@bot:start/0,
     gleam@erlang@process:start(Start_bot, true),
-    Db = app@db:get_collection(<<"users"/utf8>>),
-    _assert_subject@2 = mungo:find_all(Db, [], 512),
-    {ok, Cursor} = case _assert_subject@2 of
+    _assert_subject@2 = app@db:get_collection(<<"users"/utf8>>),
+    {ok, Db} = case _assert_subject@2 of
         {ok, _} -> _assert_subject@2;
         _assert_fail@2 ->
             erlang:error(#{gleam_error => let_assert,
@@ -65,9 +64,20 @@ main() ->
                         value => _assert_fail@2,
                         module => <<"altacrypto"/utf8>>,
                         function => <<"main"/utf8>>,
+                        line => 33})
+    end,
+    _assert_subject@3 = mungo:find_all(Db, [], 512),
+    {ok, Cursor} = case _assert_subject@3 of
+        {ok, _} -> _assert_subject@3;
+        _assert_fail@3 ->
+            erlang:error(#{gleam_error => let_assert,
+                        message => <<"Assertion pattern match failed"/utf8>>,
+                        value => _assert_fail@3,
+                        module => <<"altacrypto"/utf8>>,
+                        function => <<"main"/utf8>>,
                         line => 34})
     end,
     New_list = mungo:to_list(Cursor, 128),
-    Result = gleam@list:pop(New_list, fun(_) -> true end),
-    gleam@io:debug(Result),
+    Reso = gleam@list:pop(New_list, fun(_) -> true end),
+    gleam@io:debug(Reso),
     gleam_erlang_ffi:sleep_forever().

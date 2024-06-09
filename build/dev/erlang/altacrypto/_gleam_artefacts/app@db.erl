@@ -15,7 +15,7 @@ get_connection_string() ->
                         value => _assert_fail,
                         module => <<"app/db"/utf8>>,
                         function => <<"get_connection_string"/utf8>>,
-                        line => 11})
+                        line => 13})
     end,
     _assert_subject@1 = dot_env_ffi:get_env(<<"MONGO_PASSWORD"/utf8>>),
     {ok, Pass} = case _assert_subject@1 of
@@ -26,7 +26,7 @@ get_connection_string() ->
                         value => _assert_fail@1,
                         module => <<"app/db"/utf8>>,
                         function => <<"get_connection_string"/utf8>>,
-                        line => 12})
+                        line => 14})
     end,
     _assert_subject@2 = dot_env_ffi:get_env(<<"MONGO_DB"/utf8>>),
     {ok, Db} = case _assert_subject@2 of
@@ -37,25 +37,28 @@ get_connection_string() ->
                         value => _assert_fail@2,
                         module => <<"app/db"/utf8>>,
                         function => <<"get_connection_string"/utf8>>,
-                        line => 13})
+                        line => 15})
     end,
-    String = <<<<<<<<<<<<"mongodb://"/utf8, User/binary>>/binary, ":"/utf8>>/binary,
+    _ = <<<<<<<<<<<<"mongodb://"/utf8, User/binary>>/binary, ":"/utf8>>/binary,
                     Pass/binary>>/binary,
                 "@cluster0.wovexfa.mongodb.net:27017/"/utf8>>/binary,
             Db/binary>>/binary,
         "?authSource=admin"/utf8>>,
-    String,
-    New_string = <<"mongodb://admin:dinheiromtechobatmannmuie@cluster0.wovexfa.mongodb.net/altadata?authSource=admin"/utf8>>,
-    <<"mongodb://127.0.0.1:27017/altadata?authSource=admin&directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.2.6"/utf8>>.
+    New_string = <<"mongodb://127.0.0.1:27017/altadata?authSource=admin&directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.2.6"/utf8>>,
+    New_string.
 
--spec get_collection(binary()) -> mungo@client:collection().
+-spec get_collection(binary()) -> {ok, mungo@client:collection()} | {error, nil}.
 get_collection(Name) ->
     Connection_string = get_connection_string(),
-    case mungo:start(Connection_string, 512) of
-        {ok, Client} ->
-            _pipe = Client,
-            mungo:collection(_pipe, Name);
+    Client = mungo:start(Connection_string, 512),
+    case Client of
+        {ok, Client@1} ->
+            Col = begin
+                _pipe = Client@1,
+                mungo:collection(_pipe, Name)
+            end,
+            {ok, Col};
 
         {error, _} ->
-            get_collection(Name)
+            {error, nil}
     end.

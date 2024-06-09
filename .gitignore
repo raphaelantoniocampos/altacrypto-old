@@ -1,3 +1,4 @@
+build
 .env
 .mypy_cache
 .venv

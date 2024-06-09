@@ -30,11 +30,11 @@ pub fn main() {
   let start_bot = bot.start
   process.start(start_bot, True)
 
-  let db = db.get_collection("users")
+  let assert Ok(db) = db.get_collection("users")
   let assert Ok(cursor) = mungo.find_all(db, [], 512)
   let new_list = mungo.to_list(cursor, 128)
-  let result = list.pop(new_list, fn(_) { True })
-  io.debug(result)
+  let reso = list.pop(new_list, fn(_) { True })
+  io.debug(reso)
 
   process.sleep_forever()
 }

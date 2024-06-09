@@ -65,8 +65,8 @@ log(Path, Measurements, _, _) ->
 -spec span(
     list(event()),
     gleam@dict:dict(binary(), gleam@dynamic:dynamic_()),
-    fun(() -> XYM)
-) -> XYM.
+    fun(() -> XYN)
+) -> XYN.
 span(Path, Metadata, Wrapping) ->
     telemetry:span(
         Path,
