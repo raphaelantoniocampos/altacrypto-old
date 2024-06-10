@@ -6,12 +6,12 @@
 
 -type pid_() :: any().
 
--opaque subject(KHC) :: {subject, pid_(), gleam@erlang:reference_()} |
-    {gleam_phantom, KHC}.
+-opaque subject(FNM) :: {subject, pid_(), gleam@erlang:reference_()} |
+    {gleam_phantom, FNM}.
 
 -type do_not_leak() :: any().
 
--type selector(KHD) :: any() | {gleam_phantom, KHD}.
+-type selector(FNN) :: any() | {gleam_phantom, FNN}.
 
 -type exit_message() :: {exit_message, pid_(), exit_reason()}.
 
@@ -25,9 +25,9 @@
 
 -type process_down() :: {process_down, pid_(), gleam@dynamic:dynamic_()}.
 
--type call_error(KHE) :: {callee_down, gleam@dynamic:dynamic_()} |
+-type call_error(FNO) :: {callee_down, gleam@dynamic:dynamic_()} |
     call_timeout |
-    {gleam_phantom, KHE}.
+    {gleam_phantom, FNO}.
 
 -type timer() :: any().
 
@@ -57,7 +57,7 @@ new_subject() ->
 subject_owner(Subject) ->
     erlang:element(2, Subject).
 
--spec send(subject(KHN), KHN) -> nil.
+-spec send(subject(FNX), FNX) -> nil.
 send(Subject, Message) ->
     erlang:send(
         erlang:element(2, Subject),
@@ -69,19 +69,19 @@ send(Subject, Message) ->
 new_selector() ->
     gleam_erlang_ffi:new_selector().
 
--spec select(selector(KHV), integer()) -> {ok, KHV} | {error, nil}.
+-spec select(selector(FOF), integer()) -> {ok, FOF} | {error, nil}.
 select(From, Within) ->
     gleam_erlang_ffi:select(From, Within).
 
--spec select_forever(selector(KHZ)) -> KHZ.
+-spec select_forever(selector(FOJ)) -> FOJ.
 select_forever(From) ->
     gleam_erlang_ffi:select(From).
 
--spec map_selector(selector(KIB), fun((KIB) -> KID)) -> selector(KID).
+-spec map_selector(selector(FOL), fun((FOL) -> FON)) -> selector(FON).
 map_selector(A, B) ->
     gleam_erlang_ffi:map_selector(A, B).
 
--spec merge_selector(selector(KIF), selector(KIF)) -> selector(KIF).
+-spec merge_selector(selector(FOP), selector(FOP)) -> selector(FOP).
 merge_selector(A, B) ->
     gleam_erlang_ffi:merge_selector(A, B).
 
@@ -89,7 +89,7 @@ merge_selector(A, B) ->
 flush_messages() ->
     gleam_erlang_ffi:flush_messages().
 
--spec selecting_trapped_exits(selector(KIJ), fun((exit_message()) -> KIJ)) -> selector(KIJ).
+-spec selecting_trapped_exits(selector(FOT), fun((exit_message()) -> FOT)) -> selector(FOT).
 selecting_trapped_exits(Selector, Handler) ->
     Tag = erlang:binary_to_atom(<<"EXIT"/utf8>>),
     Handler@1 = fun(Message) ->
@@ -113,7 +113,7 @@ selecting_trapped_exits(Selector, Handler) ->
     end,
     gleam_erlang_ffi:insert_selector_handler(Selector, {Tag, 3}, Handler@1).
 
--spec selecting(selector(KIM), subject(KIO), fun((KIO) -> KIM)) -> selector(KIM).
+-spec selecting(selector(FOW), subject(FOY), fun((FOY) -> FOW)) -> selector(FOW).
 selecting(Selector, Subject, Transform) ->
     Handler = fun(Message) -> Transform(erlang:element(2, Message)) end,
     gleam_erlang_ffi:insert_selector_handler(
@@ -122,26 +122,26 @@ selecting(Selector, Subject, Transform) ->
         Handler
     ).
 
--spec 'receive'(subject(KHP), integer()) -> {ok, KHP} | {error, nil}.
+-spec 'receive'(subject(FNZ), integer()) -> {ok, FNZ} | {error, nil}.
 'receive'(Subject, Milliseconds) ->
     _pipe = gleam_erlang_ffi:new_selector(),
     _pipe@1 = selecting(_pipe, Subject, fun(X) -> X end),
     gleam_erlang_ffi:select(_pipe@1, Milliseconds).
 
 -spec selecting_record2(
-    selector(KIR),
+    selector(FPB),
     any(),
-    fun((gleam@dynamic:dynamic_()) -> KIR)
-) -> selector(KIR).
+    fun((gleam@dynamic:dynamic_()) -> FPB)
+) -> selector(FPB).
 selecting_record2(Selector, Tag, Transform) ->
     Handler = fun(Message) -> Transform(erlang:element(2, Message)) end,
     gleam_erlang_ffi:insert_selector_handler(Selector, {Tag, 2}, Handler).
 
 -spec selecting_record3(
-    selector(KIV),
+    selector(FPF),
     any(),
-    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> KIV)
-) -> selector(KIV).
+    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> FPF)
+) -> selector(FPF).
 selecting_record3(Selector, Tag, Transform) ->
     Handler = fun(Message) ->
         Transform(erlang:element(2, Message), erlang:element(3, Message))
@@ -149,10 +149,10 @@ selecting_record3(Selector, Tag, Transform) ->
     gleam_erlang_ffi:insert_selector_handler(Selector, {Tag, 3}, Handler).
 
 -spec selecting_record4(
-    selector(KIZ),
+    selector(FPJ),
     any(),
-    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> KIZ)
-) -> selector(KIZ).
+    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> FPJ)
+) -> selector(FPJ).
 selecting_record4(Selector, Tag, Transform) ->
     Handler = fun(Message) ->
         Transform(
@@ -164,10 +164,10 @@ selecting_record4(Selector, Tag, Transform) ->
     gleam_erlang_ffi:insert_selector_handler(Selector, {Tag, 4}, Handler).
 
 -spec selecting_record5(
-    selector(KJD),
+    selector(FPN),
     any(),
-    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> KJD)
-) -> selector(KJD).
+    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> FPN)
+) -> selector(FPN).
 selecting_record5(Selector, Tag, Transform) ->
     Handler = fun(Message) ->
         Transform(
@@ -180,10 +180,10 @@ selecting_record5(Selector, Tag, Transform) ->
     gleam_erlang_ffi:insert_selector_handler(Selector, {Tag, 5}, Handler).
 
 -spec selecting_record6(
-    selector(KJH),
+    selector(FPR),
     any(),
-    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> KJH)
-) -> selector(KJH).
+    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> FPR)
+) -> selector(FPR).
 selecting_record6(Selector, Tag, Transform) ->
     Handler = fun(Message) ->
         Transform(
@@ -197,10 +197,10 @@ selecting_record6(Selector, Tag, Transform) ->
     gleam_erlang_ffi:insert_selector_handler(Selector, {Tag, 6}, Handler).
 
 -spec selecting_record7(
-    selector(KJL),
+    selector(FPV),
     any(),
-    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> KJL)
-) -> selector(KJL).
+    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> FPV)
+) -> selector(FPV).
 selecting_record7(Selector, Tag, Transform) ->
     Handler = fun(Message) ->
         Transform(
@@ -215,10 +215,10 @@ selecting_record7(Selector, Tag, Transform) ->
     gleam_erlang_ffi:insert_selector_handler(Selector, {Tag, 7}, Handler).
 
 -spec selecting_record8(
-    selector(KJP),
+    selector(FPZ),
     any(),
-    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> KJP)
-) -> selector(KJP).
+    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> FPZ)
+) -> selector(FPZ).
 selecting_record8(Selector, Tag, Transform) ->
     Handler = fun(Message) ->
         Transform(
@@ -233,7 +233,7 @@ selecting_record8(Selector, Tag, Transform) ->
     end,
     gleam_erlang_ffi:insert_selector_handler(Selector, {Tag, 8}, Handler).
 
--spec selecting_anything(selector(KJT), fun((gleam@dynamic:dynamic_()) -> KJT)) -> selector(KJT).
+-spec selecting_anything(selector(FQD), fun((gleam@dynamic:dynamic_()) -> FQD)) -> selector(FQD).
 selecting_anything(Selector, Handler) ->
     gleam_erlang_ffi:insert_selector_handler(Selector, anything, Handler).
 
@@ -256,10 +256,10 @@ monitor_process(Pid) ->
     {process_monitor, _pipe@1}.
 
 -spec selecting_process_down(
-    selector(KKB),
+    selector(FQL),
     process_monitor(),
-    fun((process_down()) -> KKB)
-) -> selector(KKB).
+    fun((process_down()) -> FQL)
+) -> selector(FQL).
 selecting_process_down(Selector, Monitor, Mapping) ->
     gleam_erlang_ffi:insert_selector_handler(
         Selector,
@@ -271,8 +271,8 @@ selecting_process_down(Selector, Monitor, Mapping) ->
 demonitor_process(Monitor) ->
     gleam_erlang_ffi:demonitor(Monitor).
 
--spec try_call(subject(KKE), fun((subject(KKG)) -> KKE), integer()) -> {ok, KKG} |
-    {error, call_error(KKG)}.
+-spec try_call(subject(FQO), fun((subject(FQQ)) -> FQO), integer()) -> {ok, FQQ} |
+    {error, call_error(FQQ)}.
 try_call(Subject, Make_request, Timeout) ->
     Reply_subject = new_subject(),
     Monitor = monitor_process(subject_owner(Subject)),
@@ -300,7 +300,7 @@ try_call(Subject, Make_request, Timeout) ->
             Res
     end.
 
--spec call(subject(KKL), fun((subject(KKN)) -> KKL), integer()) -> KKN.
+-spec call(subject(FQV), fun((subject(FQX)) -> FQV), integer()) -> FQX.
 call(Subject, Make_request, Timeout) ->
     _assert_subject = try_call(Subject, Make_request, Timeout),
     {ok, Resp} = case _assert_subject of
@@ -324,7 +324,7 @@ unlink(Pid) ->
     erlang:unlink(Pid),
     nil.
 
--spec send_after(subject(KKQ), integer(), KKQ) -> timer().
+-spec send_after(subject(FRA), integer(), FRA) -> timer().
 send_after(Subject, Delay, Message) ->
     erlang:send_after(
         Delay,

@@ -15,7 +15,7 @@ new(Collection, Id, Batch) ->
     {cursor,
         Collection,
         Id,
-        erlang:length(Batch),
+        gleam@list:length(Batch),
         gleam@iterator:from_list(Batch)}.
 
 -spec get_more(cursor(), integer()) -> {ok, cursor()} |
@@ -110,7 +110,11 @@ next(Cursor, Timeout) ->
 to_list_internal(Cursor, Storage, Timeout) ->
     case next(Cursor, Timeout) of
         {{some, Next}, New_cursor} ->
-            to_list_internal(New_cursor, lists:append(Storage, [Next]), Timeout);
+            to_list_internal(
+                New_cursor,
+                gleam@list:append(Storage, [Next]),
+                Timeout
+            );
 
         {none, _} ->
             Storage

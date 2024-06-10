@@ -4,26 +4,26 @@
 -export([map_response_body/2, prepend_response_header/3, method_override/1]).
 
 -spec map_response_body(
-    fun((LTP) -> gleam@http@response:response(LTB)),
-    fun((LTB) -> LTC)
-) -> fun((LTP) -> gleam@http@response:response(LTC)).
+    fun((GRX) -> gleam@http@response:response(GRJ)),
+    fun((GRJ) -> GRK)
+) -> fun((GRX) -> gleam@http@response:response(GRK)).
 map_response_body(Service, Mapper) ->
     fun(Req) -> _pipe = Req,
         _pipe@1 = Service(_pipe),
         gleam@http@response:map(_pipe@1, Mapper) end.
 
 -spec prepend_response_header(
-    fun((LTT) -> gleam@http@response:response(LTV)),
+    fun((GSB) -> gleam@http@response:response(GSD)),
     binary(),
     binary()
-) -> fun((LTT) -> gleam@http@response:response(LTV)).
+) -> fun((GSB) -> gleam@http@response:response(GSD)).
 prepend_response_header(Service, Key, Value) ->
     fun(Req) -> _pipe = Req,
         _pipe@1 = Service(_pipe),
         gleam@http@response:prepend_header(_pipe@1, Key, Value) end.
 
--spec ensure_post(gleam@http@request:request(LTG)) -> {ok,
-        gleam@http@request:request(LTG)} |
+-spec ensure_post(gleam@http@request:request(GRO)) -> {ok,
+        gleam@http@request:request(GRO)} |
     {error, nil}.
 ensure_post(Req) ->
     case erlang:element(2, Req) of
@@ -65,7 +65,7 @@ get_override_method(Request) ->
         end
     ).
 
--spec method_override(fun((gleam@http@request:request(LVC)) -> LVK)) -> fun((gleam@http@request:request(LVC)) -> LVK).
+-spec method_override(fun((gleam@http@request:request(GTK)) -> GTS)) -> fun((gleam@http@request:request(GTK)) -> GTS).
 method_override(Service) ->
     fun(Request) -> _pipe = Request,
         _pipe@1 = ensure_post(_pipe),

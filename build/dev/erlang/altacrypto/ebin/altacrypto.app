@@ -4,6 +4,7 @@
                     bison,
                     dot_env,
                     gleam_erlang,
+                    gleam_http,
                     gleam_otp,
                     gleam_stdlib,
                     gleeunit,
@@ -13,6 +14,7 @@
                     mungo,
                     wisp]},
     {description, ""},
-    {modules, [altacrypto]},
+    {modules, [altacrypto,
+               app@binance]},
     {registered, []}
 ]}.

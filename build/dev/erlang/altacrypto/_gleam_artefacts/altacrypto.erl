@@ -16,7 +16,7 @@ static_directory() ->
                         value => _assert_fail,
                         module => <<"altacrypto"/utf8>>,
                         function => <<"static_directory"/utf8>>,
-                        line => 43})
+                        line => 39})
     end,
     <<Priv_directory/binary, "/static"/utf8>>.
 
@@ -33,7 +33,7 @@ main() ->
                         value => _assert_fail,
                         module => <<"altacrypto"/utf8>>,
                         function => <<"main"/utf8>>,
-                        line => 18})
+                        line => 19})
     end,
     Ctx = {context, static_directory()},
     Handler = fun(_capture) -> app@router:handle_request(_capture, Ctx) end,
@@ -51,33 +51,9 @@ main() ->
                         value => _assert_fail@1,
                         module => <<"altacrypto"/utf8>>,
                         function => <<"main"/utf8>>,
-                        line => 24})
+                        line => 25})
     end,
     Start_bot = fun app@bot:start/0,
     gleam@erlang@process:start(Start_bot, true),
-    _assert_subject@2 = app@db:get_collection(<<"users"/utf8>>),
-    {ok, Db} = case _assert_subject@2 of
-        {ok, _} -> _assert_subject@2;
-        _assert_fail@2 ->
-            erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
-                        value => _assert_fail@2,
-                        module => <<"altacrypto"/utf8>>,
-                        function => <<"main"/utf8>>,
-                        line => 33})
-    end,
-    _assert_subject@3 = mungo:find_all(Db, [], 512),
-    {ok, Cursor} = case _assert_subject@3 of
-        {ok, _} -> _assert_subject@3;
-        _assert_fail@3 ->
-            erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
-                        value => _assert_fail@3,
-                        module => <<"altacrypto"/utf8>>,
-                        function => <<"main"/utf8>>,
-                        line => 34})
-    end,
-    New_list = mungo:to_list(Cursor, 128),
-    Reso = gleam@list:pop(New_list, fun(_) -> true end),
-    gleam@io:debug(Reso),
+    app@binance:query_binance_status(),
     gleam_erlang_ffi:sleep_forever().

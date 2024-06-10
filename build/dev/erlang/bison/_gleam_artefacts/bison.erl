@@ -18,9 +18,9 @@ decode(Binary) ->
 
 -spec to_custom_type(
     gleam@dict:dict(binary(), bison@bson:value()),
-    fun((gleam@dynamic:dynamic_()) -> {ok, IIY} |
+    fun((gleam@dynamic:dynamic_()) -> {ok, IDL} |
         {error, list(gleam@dynamic:decode_error())})
-) -> {ok, IIY} | {error, list(gleam@dynamic:decode_error())}.
+) -> {ok, IDL} | {error, list(gleam@dynamic:decode_error())}.
 to_custom_type(Doc, Decoder) ->
     _pipe = Doc,
     _pipe@1 = gleam@dynamic:from(_pipe),

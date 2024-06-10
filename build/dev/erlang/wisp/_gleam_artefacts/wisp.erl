@@ -341,7 +341,7 @@ get_query(Request) ->
     _pipe = gleam@http@request:get_query(Request),
     gleam@result:unwrap(_pipe, []).
 
--spec method_override(gleam@http@request:request(ABEK)) -> gleam@http@request:request(ABEK).
+-spec method_override(gleam@http@request:request(PTS)) -> gleam@http@request:request(PTS).
 method_override(Request) ->
     gleam@bool:guard(
         erlang:element(2, Request) /= post,
@@ -461,8 +461,8 @@ bit_array_to_string(Bits) ->
     _pipe = gleam@bit_array:to_string(Bits),
     gleam@result:replace_error(_pipe, bad_request()).
 
--spec fn_with_bad_request_error(fun((ABFL) -> {ok, ABFM} | {error, any()})) -> fun((ABFL) -> {ok,
-        ABFM} |
+-spec fn_with_bad_request_error(fun((PUT) -> {ok, PUU} | {error, any()})) -> fun((PUT) -> {ok,
+        PUU} |
     {error, gleam@http@response:response(body())}).
 fn_with_bad_request_error(F) ->
     fun(A) -> _pipe = F(A),
@@ -520,10 +520,10 @@ read_chunk(Reader, Chunk_size) ->
     binary(),
     integer(),
     integer(),
-    fun((ABFF, bitstring()) -> {ok, ABFF} |
+    fun((PUN, bitstring()) -> {ok, PUN} |
         {error, gleam@http@response:response(body())}),
-    ABFF
-) -> {ok, {gleam@option:option(buffered_reader()), integer(), ABFF}} |
+    PUN
+) -> {ok, {gleam@option:option(buffered_reader()), integer(), PUN}} |
     {error, gleam@http@response:response(body())}.
 multipart_body(Reader, Parse, Boundary, Chunk_size, Quota, Append, Data) ->
     gleam@result:'try'(
@@ -628,7 +628,7 @@ multipart_headers(Reader, Parse, Chunk_size, Quotas) ->
         end
     ).
 
--spec sort_keys(list({binary(), ABGD})) -> list({binary(), ABGD}).
+-spec sort_keys(list({binary(), PVL})) -> list({binary(), PVL}).
 sort_keys(Pairs) ->
     gleam@list:sort(
         Pairs,
@@ -638,8 +638,8 @@ sort_keys(Pairs) ->
     ).
 
 -spec or_400(
-    {ok, ABGG} | {error, any()},
-    fun((ABGG) -> gleam@http@response:response(body()))
+    {ok, PVO} | {error, any()},
+    fun((PVO) -> gleam@http@response:response(body()))
 ) -> gleam@http@response:response(body()).
 or_400(Result, Next) ->
     case Result of
@@ -857,7 +857,7 @@ mist_response(Response) ->
     _pipe = Response,
     gleam@http@response:set_body(_pipe, Body).
 
--spec or_500({ok, ABEX} | {error, any()}) -> {ok, ABEX} |
+-spec or_500({ok, PUF} | {error, any()}) -> {ok, PUF} |
     {error, gleam@http@response:response(body())}.
 or_500(Result) ->
     case Result of

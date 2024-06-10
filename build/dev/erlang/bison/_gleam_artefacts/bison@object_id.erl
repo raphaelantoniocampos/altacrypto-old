@@ -77,7 +77,7 @@ to_bit_array(Id) ->
 
 -spec from_int_list(list(integer())) -> {ok, object_id()} | {error, nil}.
 from_int_list(Id) ->
-    case erlang:length(Id) of
+    case gleam@list:length(Id) of
         12 ->
             case gleam@list:try_fold(
                 Id,

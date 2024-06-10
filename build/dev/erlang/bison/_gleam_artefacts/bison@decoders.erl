@@ -111,9 +111,9 @@ regex(Dyn) ->
     ).
 
 -spec wrap(
-    fun((gleam@dynamic:dynamic_()) -> {ok, INL} |
+    fun((gleam@dynamic:dynamic_()) -> {ok, IHY} |
         {error, list(gleam@dynamic:decode_error())})
-) -> fun((gleam@dynamic:dynamic_()) -> {ok, INL} |
+) -> fun((gleam@dynamic:dynamic_()) -> {ok, IHY} |
     {error, list(gleam@dynamic:decode_error())}).
 wrap(Decoder) ->
     gleam@dynamic:element(1, Decoder).
@@ -183,17 +183,17 @@ object_id(Dyn) ->
     ).
 
 -spec list(
-    fun((gleam@dynamic:dynamic_()) -> {ok, IOU} |
+    fun((gleam@dynamic:dynamic_()) -> {ok, IJH} |
         {error, list(gleam@dynamic:decode_error())})
-) -> fun((gleam@dynamic:dynamic_()) -> {ok, list(IOU)} |
+) -> fun((gleam@dynamic:dynamic_()) -> {ok, list(IJH)} |
     {error, list(gleam@dynamic:decode_error())}).
 list(Value_decoder) ->
     wrap(gleam@dynamic:list(Value_decoder)).
 
 -spec dict(
-    fun((gleam@dynamic:dynamic_()) -> {ok, IOX} |
+    fun((gleam@dynamic:dynamic_()) -> {ok, IJK} |
         {error, list(gleam@dynamic:decode_error())})
-) -> fun((gleam@dynamic:dynamic_()) -> {ok, gleam@dict:dict(binary(), IOX)} |
+) -> fun((gleam@dynamic:dynamic_()) -> {ok, gleam@dict:dict(binary(), IJK)} |
     {error, list(gleam@dynamic:decode_error())}).
 dict(Value_decoder) ->
     wrap(gleam@dynamic:dict(fun gleam@dynamic:string/1, Value_decoder)).
