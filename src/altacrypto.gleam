@@ -1,8 +1,10 @@
 import app/binance
 import app/bot
 import app/db
+import app/models/crypto_snapshot
 import app/router
 import app/web.{Context}
+import birl
 import dot_env
 import dot_env/env
 import gleam/erlang/process
@@ -31,7 +33,10 @@ pub fn main() {
   let start_bot = bot.start
   process.start(start_bot, True)
 
-  binance.query_binance_status()
+  let assert Ok(pares) = binance.get_usdt_pairs()
+  pares
+  |> db.insert_crypto_snapshots
+
   process.sleep_forever()
 }
 

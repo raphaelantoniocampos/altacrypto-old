@@ -1,9 +1,11 @@
 import dot_env
 import dot_env/env
 
-import gleam/otp/actor.{type StartError}
 import mungo
 import mungo/client.{type Collection}
+
+import app/models/crypto_snapshot.{type CryptoSnapshot}
+import bison/bson
 
 fn get_connection_string() -> String {
   dot_env.load()
@@ -31,21 +33,52 @@ fn get_connection_string() -> String {
   new_string
 }
 
-pub fn get_collection(name: String) -> Result(Collection, StartError) {
+pub fn get_collection(name: String) -> Result(Collection, String) {
   let connection_string = get_connection_string()
 
   case mungo.start(connection_string, 512) {
     Ok(client) -> {
-      let col = client |> mungo.collection(name)
-      Ok(col)
+      client
+      |> mungo.collection(name)
+      |> Ok
     }
-    Error(e) -> {
-      Error(e)
+    Error(_) -> {
+      Error("Error getting collection: " <> name)
     }
   }
 }
 
-/// Get collection
-pub fn insert_crypto_snapshot() {
-  todo
+pub fn insert_crypto_snapshots(crypto_snapshots: List(CryptoSnapshot)) {
+  let assert Ok(collection) = get_collection("crypto_snapshots")
+  let lista = get_document_list("CryptoSnapshot", crypto_snapshots)
+  collection
+  |> mungo.insert_many(lista, 128)
+}
+
+fn convert_to_document(crypto_snapshot: CryptoSnapshot) {
+  [
+    #("symbol", bson.String(crypto_snapshot.symbol)),
+    #("datetime", bson.DateTime(crypto_snapshot.datetime)),
+    #("price", bson.Double(crypto_snapshot.price)),
+  ]
+}
+
+fn get_document_list(format: String, list: List(CryptoSnapshot)) {
+  case format {
+    "CryptoSnapshot" -> {
+      document_loop(list, [])
+    }
+    _ -> []
+  }
+}
+
+fn document_loop(documents, list) {
+  case documents {
+    [] -> list
+    [head, ..tail] -> {
+      let doc = convert_to_document(head)
+      let list = [doc, ..list]
+      document_loop(tail, list)
+    }
+  }
 }
