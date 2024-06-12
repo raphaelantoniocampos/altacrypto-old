@@ -1,5 +1,8 @@
+import app/binance
+import app/db
 import birl
-import gleam/erlang/process
+import birl/duration
+import gleam/int
 import gleam/io
 
 pub fn start() {
@@ -7,7 +10,15 @@ pub fn start() {
   // Lógica do bot, por exemplo, iniciar a negociação de criptomoedas
   io.println("Bot started")
 
-  let time = birl.now()
+  let name = "start bot"
+  let start = birl.now()
+  let assert Ok(pares) = binance.get_usdt_pairs()
+  pares
+  |> db.insert_crypto_snapshots
+  let end = birl.now()
+  let difference =
+    birl.difference(end, start) |> duration.blur_to(duration.MilliSecond)
+  io.println(name <> " took: " <> int.to_string(difference) <> "ms")
   // io.debug(time)
   // Simulação de um trabalho do bot
   // process.sleep(time.seconds(5))

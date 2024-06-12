@@ -1,14 +1,11 @@
 import dot_env
 import dot_env/env
-import gleam/dynamic
-import gleam/list
 
 import mungo
 import mungo/client.{type Collection}
 
 import app/models/crypto_snapshot.{type CryptoSnapshot}
 import bison/bson
-import gleam/io
 
 fn get_connection_string() -> String {
   dot_env.load()
@@ -51,9 +48,9 @@ pub fn get_collection(name: String) -> Result(Collection, String) {
   }
 }
 
-fn insert_list(collection, list) {
+fn insert_list(collection, list) -> String {
   case list {
-    [] -> Nil
+    [] -> "Done"
     [head, ..tail] -> {
       let _ = mungo.insert_one(collection, head, 128)
       insert_list(collection, tail)
@@ -61,13 +58,17 @@ fn insert_list(collection, list) {
   }
 }
 
-pub fn insert_crypto_snapshots(crypto_snapshots: List(CryptoSnapshot)) {
-  let assert Ok(collection) = get_collection("crypto_snapshots")
-  let lista = get_document_list("CryptoSnapshot", crypto_snapshots)
-
-  // insert one by one
-  insert_list(collection, lista)
-  io.debug("Done")
+pub fn insert_crypto_snapshots(
+  crypto_snapshots: List(CryptoSnapshot),
+) -> Result(String, String) {
+  case get_collection("crypto_snapshots") {
+    Ok(collection) -> {
+      get_document_list("CryptoSnapshot", crypto_snapshots)
+      |> insert_list(collection, _)
+      |> Ok
+    }
+    Error(err) -> Error(err)
+  }
   // insert_many
   // let _ =
   //   collection
