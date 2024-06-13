@@ -1,5 +1,6 @@
 import dot_env
 import dot_env/env
+import gleam/list
 
 import mungo
 import mungo/client.{type Collection}
@@ -13,7 +14,7 @@ fn get_connection_string() -> String {
   let assert Ok(pass) = env.get("MONGO_PASSWORD")
   let assert Ok(db) = env.get("MONGO_DB")
 
-  let _string =
+  let string =
     "mongodb://"
     <> user
     <> ":"
@@ -31,6 +32,7 @@ fn get_connection_string() -> String {
   let new_string =
     "mongodb://127.0.0.1:27017/altadata?authSource=admin&directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.2.6"
   new_string
+  string
 }
 
 pub fn get_collection(name: String) -> Result(Collection, String) {
@@ -48,31 +50,14 @@ pub fn get_collection(name: String) -> Result(Collection, String) {
   }
 }
 
-fn insert_list(collection, list) -> String {
-  case list {
-    [] -> "Done"
-    [head, ..tail] -> {
-      let _ = mungo.insert_one(collection, head, 128)
-      insert_list(collection, tail)
-    }
-  }
-}
-
-pub fn insert_crypto_snapshots(
-  crypto_snapshots: List(CryptoSnapshot),
-) -> Result(String, String) {
+pub fn insert_crypto_snapshots(crypto_snapshots: List(CryptoSnapshot)) -> Nil {
   case get_collection("crypto_snapshots") {
     Ok(collection) -> {
       get_document_list("CryptoSnapshot", crypto_snapshots)
-      |> insert_list(collection, _)
-      |> Ok
+      |> list.each(fn(a) { mungo.insert_one(collection, a, 128) })
     }
-    Error(err) -> Error(err)
+    Error(_) -> Nil
   }
-  // insert_many
-  // let _ =
-  //   collection
-  //   |> mungo.insert_many(lista, { 1024 * 1024 })
 }
 
 fn convert_to_document(crypto_snapshot: CryptoSnapshot) {

@@ -24,6 +24,7 @@ async def main():
         start_time = time.perf_counter()
         await crypto_trader.start()
         end_time = time.perf_counter()
+        logger.info(f"{__name__} took: {end_time - start_time}ms")
         remaining = (GlobalSettings.EXECUTION_FREQUENCY_MINUTES * 60) - (
             end_time - start_time
         )

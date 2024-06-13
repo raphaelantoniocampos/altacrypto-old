@@ -43,6 +43,7 @@ class DatabaseManager:
         mongo_password = os.getenv("MONGO_PASSWORD")
         connection_string = f"mongodb+srv://{mongo_user}:{
             mongo_password}@cluster0.wovexfa.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+        connection_string = "mongodb://127.0.0.1:27017/?authSource=admin&directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.2.6"
         client: pymongo.MongoClient = pymongo.MongoClient(connection_string)
         return client["altadata"]
 

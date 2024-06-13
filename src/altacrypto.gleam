@@ -23,8 +23,7 @@ pub fn main() {
     |> mist.port(8000)
     |> mist.start_http
 
-  let start_bot = bot.start
-  process.start(start_bot, True)
+  process.start(bot.start, False)
 
   process.sleep_forever()
 }
