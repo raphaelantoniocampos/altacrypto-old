@@ -32,7 +32,6 @@ fn get_connection_string() -> String {
   let new_string =
     "mongodb://127.0.0.1:27017/altadata?authSource=admin&directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.2.6"
   new_string
-  string
 }
 
 pub fn get_collection(name: String) -> Result(Collection, String) {
