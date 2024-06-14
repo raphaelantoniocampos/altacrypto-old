@@ -37,23 +37,29 @@ pub fn query_binance_status() -> Result(#(Int, String), String) {
 /// Gets the USDT pairs from Binance.
 ///
 pub fn get_usdt_pairs() -> Result(List(crypto_snapshot.CryptoSnapshot), String) {
-  let endpoint = "/api/v3/ticker/price"
-  use resp <- result.try(make_request(endpoint))
+  case query_binance_status() {
+    Ok(status) if status.0 == 0 -> {
+      let endpoint = "/api/v3/ticker/price"
+      use resp <- result.try(make_request(endpoint))
 
-  case
-    json.decode(
-      from: resp.body,
-      using: dynamic.list(of: crypto_snapshot.ticker_decoder()),
-    )
-  {
-    Ok(tickers) -> {
-      tickers
-      |> crypto_snapshot.get_snapshots_list
-      |> Ok
+      case
+        json.decode(
+          from: resp.body,
+          using: dynamic.list(of: crypto_snapshot.ticker_decoder()),
+        )
+      {
+        Ok(tickers) -> {
+          tickers
+          |> crypto_snapshot.get_snapshots_list
+          |> Ok
+        }
+        Error(_) -> {
+          Error("Failed to get USDT pairs from BinanceAPI")
+        }
+      }
     }
-    Error(_) -> {
-      Error("Failed to get USDT pairs from BinanceAPI")
-    }
+    Ok(status) -> Error("Binance API Error: " <> status.1)
+    Error(err) -> Error(err)
   }
 }
 
