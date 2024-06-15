@@ -54,7 +54,6 @@ class CryptoTrader:
         current_datetime = datetime.now()
         date_str = current_datetime.strftime("%Y-%m-%d")
         log_file_path = f"{self.logging_filepath}/log_{date_str}.txt"
-        print(log_file_path)
 
         for handler in self.logger.handlers:
             if isinstance(handler, logging.FileHandler):
