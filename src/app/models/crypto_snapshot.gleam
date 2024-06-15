@@ -1,7 +1,7 @@
 import birl
+import bison/bson
 import gleam/dynamic
 import gleam/float
-import gleam/io
 import gleam/list
 import gleam/string
 
@@ -63,4 +63,27 @@ fn tickers_loop(
       tickers_loop(tail, crypto_snapshots, now)
     }
   }
+}
+
+pub fn to_documents(list: List(CryptoSnapshot)) {
+  document_loop(list, [])
+}
+
+fn document_loop(documents, list) {
+  case documents {
+    [] -> list
+    [head, ..tail] -> {
+      let doc = to_document(head)
+      let list = [doc, ..list]
+      document_loop(tail, list)
+    }
+  }
+}
+
+fn to_document(crypto_snapshot: CryptoSnapshot) {
+  [
+    #("symbol", bson.String(crypto_snapshot.symbol)),
+    #("datetime", bson.DateTime(crypto_snapshot.datetime)),
+    #("price", bson.Double(crypto_snapshot.price)),
+  ]
 }

@@ -1,5 +1,7 @@
 import app/binance
 import app/db
+import app/models/asset.{type Asset}
+import app/models/crypto_snapshot.{type CryptoSnapshot}
 import birl
 import birl/duration
 import gleam/int
@@ -8,23 +10,57 @@ import gleam/result
 
 pub fn start() {
   io.println("Bot started")
-  case feed_database() {
-    Ok(a) -> io.debug(a)
-    Error(err) -> io.debug(err)
-  }
+  use crypto_snapshots <- result.try(binance.get_usdt_pairs())
+
+  feed_database(crypto_snapshots)
+  |> io.debug
+
+  db.get_assets()
+  |> io.debug
 }
 
-pub fn feed_database() -> Result(String, String) {
+/// Updates the database with crypto snapshots.
+///
+/// Args:
+/// crypto_snapshots (List(CryptoSnapshot)): containing asset pairs and their prices.
+pub fn feed_database(
+  crypto_snapshots: List(CryptoSnapshot),
+) -> Result(String, String) {
   let name = "feed_database"
   let start = birl.now()
 
-  use pares <- result.try(binance.get_usdt_pairs())
-
-  use _ <- result.try(db.insert_crypto_snapshots(pares))
+  use _ <- result.try(db.insert_crypto_snapshots(crypto_snapshots))
   let end = birl.now()
   let difference =
     birl.difference(end, start)
     |> duration.blur_to(duration.MilliSecond)
 
   Ok(name <> " took: " <> int.to_string(difference) <> "ms")
+}
+
+/// Updates asset information in the database based on crypto snapshots.
+///
+/// Args:
+/// crypto_snapshots (List(CryptoSnapshot)): A list of CryptoSnapshot objects.
+fn update_assets(crypto_snapshots: List(CryptoSnapshot)) -> List(Asset) {
+  todo
+  // try:
+  //     assets = self.get_assets({"sold": None})
+  //     crypto_snapshots_dict = {
+  //         crypto_snapshot.symbol: crypto_snapshot
+  //         for crypto_snapshot in crypto_snapshots
+  //     }
+  //     updated_assets = []
+  //     for asset in assets:
+  //         if asset.symbol in crypto_snapshots_dict:
+  //             updated_asset = asset.update_asset(
+  //                 crypto_snapshots_dict[asset.symbol].price)
+  //             self._update_asset(updated_asset)
+  //             updated_assets.append(updated_asset)
+  //     return updated_assets
+  // except pymongo.errors.PyMongoError as e:
+  //     self.logger.info(
+  //         f"Error updating assets: {e}"
+  //     )
+  //     return []
 }

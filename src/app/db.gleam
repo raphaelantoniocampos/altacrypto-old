@@ -1,15 +1,15 @@
+import bison/bson
 import dot_env
 import dot_env/env
 import gleam/io
 import gleam/list
-import gleam/queue
 import gleam/result
 
 import mungo
 import mungo/client.{type Collection}
+import mungo/crud
 
-import app/models/crypto_snapshot.{type CryptoSnapshot}
-import bison/bson
+import app/models/crypto_snapshot
 
 fn get_connection_string() -> String {
   dot_env.load()
@@ -40,47 +40,27 @@ pub fn get_collection(name: String) -> Result(Collection, String) {
   |> Ok
 }
 
-fn get_document_list(format: String, list: List(CryptoSnapshot)) {
-  case format {
-    "CryptoSnapshot" -> {
-      document_loop(list, [])
-    }
-    _ -> []
-  }
-}
-
-fn document_loop(documents, list) {
-  case documents {
-    [] -> list
-    [head, ..tail] -> {
-      let doc = snapshot_to_document(head)
-      let list = [doc, ..list]
-      document_loop(tail, list)
-    }
-  }
-}
-
 // CryptoSnapshots
 
 pub fn insert_crypto_snapshots(
-  crypto_snapshots: List(CryptoSnapshot),
+  crypto_snapshots: List(crypto_snapshot.CryptoSnapshot),
 ) -> Result(Nil, String) {
   use collection <- result.try(get_collection("crypto_snapshots"))
-  // get_document_list("CryptoSnapshot", crypto_snapshots)
-  // |> list.sized_chunk(5)
-  // |> list.each(fn(a) { mungo.insert_many(collection, a, 128) })
-  // |> Ok
-
-  get_document_list("CryptoSnapshot", crypto_snapshots)
-  |> list.each(fn(a) { mungo.insert_one(collection, a, 128) })
+  crypto_snapshot.to_documents(crypto_snapshots)
+  |> list.sized_chunk(5)
+  |> list.each(fn(a) { mungo.insert_many(collection, a, 128) })
   |> Ok
 }
 
-fn snapshot_to_document(crypto_snapshot: CryptoSnapshot) {
-  [
-    #("symbol", bson.String(crypto_snapshot.symbol)),
-    #("datetime", bson.DateTime(crypto_snapshot.datetime)),
-    #("price", bson.Double(crypto_snapshot.price)),
-  ]
+// Assets
+
+pub fn get_assets() {
+  use collection <- result.try(get_collection("assets"))
+  case mungo.find_all(collection, [], 128) {
+    Ok(cursor) -> {
+      mungo.to_list(cursor, 128)
+      |> Ok
+    }
+    Error(_) -> Error("Error getting assets")
+  }
 }
-/// Assets

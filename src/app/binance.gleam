@@ -2,7 +2,7 @@
 ////
 //// base_url: String - The base URL for the Binance API.
 
-import app/models/crypto_snapshot
+import app/models/crypto_snapshot.{type CryptoSnapshot}
 import gleam/dynamic
 import gleam/http/request
 import gleam/http/response.{type Response}
@@ -36,7 +36,7 @@ pub fn query_binance_status() -> Result(#(Int, String), String) {
 
 /// Gets the USDT pairs from Binance.
 ///
-pub fn get_usdt_pairs() -> Result(List(crypto_snapshot.CryptoSnapshot), String) {
+pub fn get_usdt_pairs() -> Result(List(CryptoSnapshot), String) {
   case query_binance_status() {
     Ok(status) if status.0 == 0 -> {
       let endpoint = "/api/v3/ticker/price"
