@@ -87,3 +87,7 @@ fn to_document(crypto_snapshot: CryptoSnapshot) {
     #("price", bson.Double(crypto_snapshot.price)),
   ]
 }
+
+pub fn to_dict(crypto_snapshots: List(CryptoSnapshot)) {
+  todo
+}

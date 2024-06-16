@@ -1,13 +1,11 @@
-import bison/bson
+import bison/bson.{type Value}
 import dot_env
 import dot_env/env
-import gleam/io
 import gleam/list
 import gleam/result
 
 import mungo
 import mungo/client.{type Collection}
-import mungo/crud
 
 import app/models/crypto_snapshot
 
@@ -54,13 +52,17 @@ pub fn insert_crypto_snapshots(
 
 // Assets
 
-pub fn get_assets() {
+pub fn get_assets(filter: List(#(String, Value))) -> Result(List(Value), String) {
   use collection <- result.try(get_collection("assets"))
-  case mungo.find_all(collection, [], 128) {
+  case mungo.find_many(collection, filter, [], 128) {
     Ok(cursor) -> {
       mungo.to_list(cursor, 128)
       |> Ok
     }
     Error(_) -> Error("Error getting assets")
   }
+}
+
+pub fn update_assets() {
+  todo
 }

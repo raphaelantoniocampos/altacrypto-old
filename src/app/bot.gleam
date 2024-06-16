@@ -4,19 +4,32 @@ import app/models/asset.{type Asset}
 import app/models/crypto_snapshot.{type CryptoSnapshot}
 import birl
 import birl/duration
+import bison
+import gleam/dict
+import gleam/dynamic
 import gleam/int
 import gleam/io
+import gleam/list
 import gleam/result
 
 pub fn start() {
   io.println("Bot started")
   use crypto_snapshots <- result.try(binance.get_usdt_pairs())
 
-  feed_database(crypto_snapshots)
-  |> io.debug
+  let _ = feed_database(crypto_snapshots)
 
-  db.get_assets()
-  |> io.debug
+  use assets <- result.try(db.get_assets([]))
+  use asset <- result.try(
+    list.pop(assets, fn(_) { True })
+    |> result.replace_error("Error getting assets"),
+  )
+  let doc = asset.0
+  io.debug(doc)
+
+  bison.to_custom_type(doc, asset.bson_decoder)
+
+  //io.debug(asset.1)
+  Ok(asset)
 }
 
 /// Updates the database with crypto snapshots.
