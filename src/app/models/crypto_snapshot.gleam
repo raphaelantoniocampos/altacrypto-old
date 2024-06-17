@@ -1,9 +1,11 @@
 import birl
+import bison
 import bison/bson
+import bison/decoders
 import gleam/dynamic
 import gleam/float
-import gleam/io
 import gleam/list
+import gleam/result
 import gleam/string
 
 pub type CryptoSnapshot {
@@ -81,4 +83,41 @@ fn to_document(crypto_snapshot: CryptoSnapshot) {
     #("datetime", bson.DateTime(crypto_snapshot.datetime)),
     #("price", bson.Double(crypto_snapshot.price)),
   ]
+}
+
+pub fn values_to_crypto_snapshot(
+  values: List(bson.Value),
+) -> List(CryptoSnapshot) {
+  values_loop(values, [])
+  |> result.values
+}
+
+fn values_loop(values: List(bson.Value), list) {
+  case values {
+    [] -> list
+    [head, ..tail] -> {
+      case to_crypto_snapshot(head) {
+        asset -> values_loop(tail, [asset, ..list])
+      }
+    }
+  }
+}
+
+fn to_crypto_snapshot(value) -> Result(CryptoSnapshot, String) {
+  case value {
+    bson.Document(doc) -> {
+      bison.to_custom_type(doc, bson_decoder())
+      |> result.replace_error("Error decoding crypto snapshot")
+    }
+    _ -> Error("Error decoding crypto snapshot")
+  }
+}
+
+pub fn bson_decoder() {
+  dynamic.decode3(
+    CryptoSnapshot,
+    dynamic.field("symbol", decoders.string),
+    dynamic.field("datetime", decoders.time),
+    dynamic.field("price", decoders.float),
+  )
 }

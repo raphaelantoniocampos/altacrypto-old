@@ -1,13 +1,10 @@
 import app/global_settings
 import birl.{type Time}
 import bison
-import bison/bson.{type Value, Document}
+import bison/bson
 import bison/decoders
 import bison/object_id.{type ObjectId}
 import gleam/dynamic
-import gleam/float
-import gleam/int
-import gleam/io
 import gleam/result
 
 pub type Asset {
@@ -39,12 +36,12 @@ pub fn bson_decoder() {
   )
 }
 
-pub fn values_to_asset(values: List(Value)) -> List(Asset) {
+pub fn values_to_asset(values: List(bson.Value)) -> List(Asset) {
   values_loop(values, [])
   |> result.values
 }
 
-fn values_loop(values: List(Value), list) {
+fn values_loop(values: List(bson.Value), list) {
   case values {
     [] -> list
     [head, ..tail] -> {
@@ -57,7 +54,7 @@ fn values_loop(values: List(Value), list) {
 
 fn to_asset(value) -> Result(Asset, String) {
   case value {
-    Document(doc) -> {
+    bson.Document(doc) -> {
       bison.to_custom_type(doc, bson_decoder())
       |> result.replace_error("Error decoding asset")
     }
@@ -94,4 +91,18 @@ pub fn update_asset(asset: Asset, price: Float) -> Asset {
     current_price: price,
     should_be_sold: should_be_sold,
   )
+}
+
+pub fn to_document(asset: Asset) {
+  [
+    #("_id", bson.ObjectId(asset.id)),
+    #("user_id", bson.ObjectId(asset.user_id)),
+    #("symbol", bson.String(asset.symbol)),
+    #("quantity", bson.Double(asset.quantity)),
+    #("purchase_price", bson.Double(asset.purchase_price)),
+    #("highest_price", bson.Double(asset.highest_price)),
+    #("current_price", bson.Double(asset.current_price)),
+    #("should_be_sold", bson.Boolean(asset.should_be_sold)),
+    #("datetime", bson.DateTime(asset.datetime)),
+  ]
 }

@@ -20,8 +20,11 @@ pub fn start() {
   feed_database(tickers)
   |> io.debug
 
-  let assets = update_assets(tickers)
-  io.debug(assets)
+  update_assets(tickers)
+  |> io.debug
+
+  get_intervals_data()
+  |> io.debug
 }
 
 pub fn feed_database(tickers: List(#(String, Float))) -> Result(String, String) {
@@ -44,26 +47,23 @@ fn update_assets(tickers: List(#(String, Float))) -> Result(List(Asset), String)
   use assets <- result.try(db.get_assets([]))
 
   dict.from_list(tickers)
-  |> update_assets_loop(assets, _, [])
+  |> db.update_assets_loop(assets, _, [])
   |> Ok
 }
 
-fn update_assets_loop(
-  assets: List(Asset),
-  tickers: dict.Dict(String, Float),
-  updated_assets: List(Asset),
-) -> List(Asset) {
-  case assets {
-    [] -> updated_assets
-    [head, ..tail] -> {
-      case dict.get(tickers, head.symbol) {
-        Ok(price) -> {
-          let updated_asset = asset.update_asset(head, price)
-          db.update_asset(updated_asset)
-          update_assets_loop(tail, tickers, [updated_asset, ..updated_assets])
-        }
-        Error(_) -> update_assets_loop(tail, tickers, updated_assets)
-      }
-    }
-  }
+fn get_intervals_data() {
+  db.get_crypto_snapshots([])
+  // intervals_dataframe = []
+  // all_crypto_snapshots = self.database_manager.get_all_crypto_snapshots()
+  // crypto_snapshots_by_symbol = self._separate_crypto_snapshots_by_symbol(
+  //     all_crypto_snapshots
+  // )
+  // current_datetime = datetime.now()
+  // for interval_in_minutes in GlobalSettings.INTERVALS_IN_MINUTES:
+  //     interval_dataframe = self._get_interval_dataframe(
+  //         interval_in_minutes, crypto_snapshots_by_symbol, current_datetime
+  //     )
+  //     if not interval_dataframe.empty:
+  //         intervals_dataframe.append(interval_dataframe)
+  // return intervals_dataframe
 }
