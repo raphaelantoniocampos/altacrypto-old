@@ -1,8 +1,11 @@
+import app/models/asset.{type Asset}
 import bison/bson.{type Value}
+import bison/object_id
 import dot_env
 import dot_env/env
 import gleam/list
 import gleam/result
+import mungo/crud.{type UpdateResult}
 
 import mungo
 import mungo/client.{type Collection}
@@ -45,24 +48,39 @@ pub fn insert_crypto_snapshots(
 ) -> Result(Nil, String) {
   use collection <- result.try(get_collection("crypto_snapshots"))
   crypto_snapshot.to_documents(crypto_snapshots)
-  |> list.sized_chunk(5)
-  |> list.each(fn(a) { mungo.insert_many(collection, a, 128) })
+  |> list.sized_chunk(10)
+  |> list.each(fn(a) { mungo.insert_many(collection, a, 1024) })
   |> Ok
 }
 
 // Assets
 
-pub fn get_assets(filter: List(#(String, Value))) -> Result(List(Value), String) {
+pub fn get_assets(filter: List(#(String, Value))) -> Result(List(Asset), String) {
   use collection <- result.try(get_collection("assets"))
   case mungo.find_many(collection, filter, [], 128) {
     Ok(cursor) -> {
       mungo.to_list(cursor, 128)
+      |> asset.values_to_asset
       |> Ok
     }
     Error(_) -> Error("Error getting assets")
   }
 }
 
-pub fn update_assets() {
-  todo
+pub fn update_asset(asset: Asset) -> Result(UpdateResult, String) {
+  use collection <- result.try(get_collection("assets"))
+  mungo.update_one(
+    collection,
+    [#("_id", bson.ObjectId(asset.id))],
+    [
+      #("highest_price", bson.Double(asset.highest_price)),
+      #("current_price", bson.Double(asset.current_price)),
+      #("should_be_sold", bson.Boolean(asset.should_be_sold)),
+    ],
+    [],
+    512,
+  )
+  |> result.replace_error(
+    "Error updating asset" <> object_id.to_string(asset.id),
+  )
 }

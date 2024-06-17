@@ -5,6 +5,7 @@ import app/models/crypto_snapshot.{type CryptoSnapshot}
 import birl
 import birl/duration
 import bison
+import bison/bson
 import gleam/dict
 import gleam/dynamic
 import gleam/int
@@ -14,35 +15,23 @@ import gleam/result
 
 pub fn start() {
   io.println("Bot started")
-  use crypto_snapshots <- result.try(binance.get_usdt_pairs())
+  use tickers <- result.try(binance.get_usdt_tickers())
 
-  let _ = feed_database(crypto_snapshots)
+  feed_database(tickers)
+  |> io.debug
 
-  use assets <- result.try(db.get_assets([]))
-  use asset <- result.try(
-    list.pop(assets, fn(_) { True })
-    |> result.replace_error("Error getting assets"),
-  )
-  let doc = asset.0
-  io.debug(doc)
-
-  bison.to_custom_type(doc, asset.bson_decoder)
-
-  //io.debug(asset.1)
-  Ok(asset)
+  let assets = update_assets(tickers)
+  io.debug(assets)
 }
 
-/// Updates the database with crypto snapshots.
-///
-/// Args:
-/// crypto_snapshots (List(CryptoSnapshot)): containing asset pairs and their prices.
-pub fn feed_database(
-  crypto_snapshots: List(CryptoSnapshot),
-) -> Result(String, String) {
+pub fn feed_database(tickers: List(#(String, Float))) -> Result(String, String) {
   let name = "feed_database"
   let start = birl.now()
-
-  use _ <- result.try(db.insert_crypto_snapshots(crypto_snapshots))
+  crypto_snapshot.get_snapshots_list(tickers)
+  use _ <- result.try(
+    crypto_snapshot.get_snapshots_list(tickers)
+    |> db.insert_crypto_snapshots,
+  )
   let end = birl.now()
   let difference =
     birl.difference(end, start)
@@ -51,29 +40,30 @@ pub fn feed_database(
   Ok(name <> " took: " <> int.to_string(difference) <> "ms")
 }
 
-/// Updates asset information in the database based on crypto snapshots.
-///
-/// Args:
-/// crypto_snapshots (List(CryptoSnapshot)): A list of CryptoSnapshot objects.
-fn update_assets(crypto_snapshots: List(CryptoSnapshot)) -> List(Asset) {
-  todo
-  // try:
-  //     assets = self.get_assets({"sold": None})
-  //     crypto_snapshots_dict = {
-  //         crypto_snapshot.symbol: crypto_snapshot
-  //         for crypto_snapshot in crypto_snapshots
-  //     }
-  //     updated_assets = []
-  //     for asset in assets:
-  //         if asset.symbol in crypto_snapshots_dict:
-  //             updated_asset = asset.update_asset(
-  //                 crypto_snapshots_dict[asset.symbol].price)
-  //             self._update_asset(updated_asset)
-  //             updated_assets.append(updated_asset)
-  //     return updated_assets
-  // except pymongo.errors.PyMongoError as e:
-  //     self.logger.info(
-  //         f"Error updating assets: {e}"
-  //     )
-  //     return []
+fn update_assets(tickers: List(#(String, Float))) -> Result(List(Asset), String) {
+  use assets <- result.try(db.get_assets([]))
+
+  dict.from_list(tickers)
+  |> update_assets_loop(assets, _, [])
+  |> Ok
+}
+
+fn update_assets_loop(
+  assets: List(Asset),
+  tickers: dict.Dict(String, Float),
+  updated_assets: List(Asset),
+) -> List(Asset) {
+  case assets {
+    [] -> updated_assets
+    [head, ..tail] -> {
+      case dict.get(tickers, head.symbol) {
+        Ok(price) -> {
+          let updated_asset = asset.update_asset(head, price)
+          db.update_asset(updated_asset)
+          update_assets_loop(tail, tickers, [updated_asset, ..updated_assets])
+        }
+        Error(_) -> update_assets_loop(tail, tickers, updated_assets)
+      }
+    }
+  }
 }

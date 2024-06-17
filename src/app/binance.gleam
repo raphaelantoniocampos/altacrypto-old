@@ -36,7 +36,7 @@ pub fn query_binance_status() -> Result(#(Int, String), String) {
 
 /// Gets the USDT pairs from Binance.
 ///
-pub fn get_usdt_pairs() -> Result(List(CryptoSnapshot), String) {
+pub fn get_usdt_tickers() -> Result(List(#(String, Float)), String) {
   case query_binance_status() {
     Ok(status) if status.0 == 0 -> {
       let endpoint = "/api/v3/ticker/price"
@@ -48,11 +48,7 @@ pub fn get_usdt_pairs() -> Result(List(CryptoSnapshot), String) {
           using: dynamic.list(of: crypto_snapshot.ticker_decoder()),
         )
       {
-        Ok(tickers) -> {
-          tickers
-          |> crypto_snapshot.get_snapshots_list
-          |> Ok
-        }
+        Ok(tickers) -> Ok(tickers)
         Error(_) -> {
           Error("Failed to get USDT pairs from BinanceAPI")
         }

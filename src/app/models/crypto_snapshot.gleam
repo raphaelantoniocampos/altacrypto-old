@@ -2,6 +2,7 @@ import birl
 import bison/bson
 import gleam/dynamic
 import gleam/float
+import gleam/io
 import gleam/list
 import gleam/string
 
@@ -9,32 +10,24 @@ pub type CryptoSnapshot {
   CryptoSnapshot(symbol: String, datetime: birl.Time, price: Float)
 }
 
-pub type Ticker {
-  Ticker(symbol: String, price: String)
-}
-
 pub fn ticker_decoder() {
   dynamic.decode2(
-    Ticker,
+    fn(a, b) {
+      case float.parse(b) {
+        Ok(b) -> #(a, b)
+        Error(_) -> #("", 0.0)
+      }
+    },
     dynamic.field("symbol", dynamic.string),
     dynamic.field("price", dynamic.string),
   )
 }
 
 fn ticker_to_snapshot(
-  ticker: Ticker,
+  ticker: #(String, Float),
   current_datetime: birl.Time,
 ) -> CryptoSnapshot {
-  case float.parse(ticker.price) {
-    Ok(price) -> {
-      CryptoSnapshot(
-        symbol: ticker.symbol,
-        datetime: current_datetime,
-        price: price,
-      )
-    }
-    Error(_) -> CryptoSnapshot("", current_datetime, 0.0)
-  }
+  CryptoSnapshot(symbol: ticker.0, datetime: current_datetime, price: ticker.1)
 }
 
 pub fn filter_usdt(snapshots: List(CryptoSnapshot)) -> List(CryptoSnapshot) {
@@ -44,14 +37,16 @@ pub fn filter_usdt(snapshots: List(CryptoSnapshot)) -> List(CryptoSnapshot) {
   list.filter(snapshots, usdt)
 }
 
-pub fn get_snapshots_list(tickers: List(Ticker)) -> List(CryptoSnapshot) {
+pub fn get_snapshots_list(
+  tickers: List(#(String, Float)),
+) -> List(CryptoSnapshot) {
   let now = birl.now()
   tickers_loop(tickers, [], now)
   |> filter_usdt
 }
 
 fn tickers_loop(
-  tickers: List(Ticker),
+  tickers: List(#(String, Float)),
   crypto_snapshots: List(CryptoSnapshot),
   now: birl.Time,
 ) {
@@ -86,8 +81,4 @@ fn to_document(crypto_snapshot: CryptoSnapshot) {
     #("datetime", bson.DateTime(crypto_snapshot.datetime)),
     #("price", bson.Double(crypto_snapshot.price)),
   ]
-}
-
-pub fn to_dict(crypto_snapshots: List(CryptoSnapshot)) {
-  todo
 }

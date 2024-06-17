@@ -48,7 +48,6 @@ class CryptoTrader:
         crypto_snapshots = binance_manager.fetch_usdt_pairs()
         self.database_manager.feed_database(crypto_snapshots)
         assets = self.database_manager.update_assets(crypto_snapshots)
-        return
         intervals_dataframe = self._get_intervals_dataframes()
 
         # users = self.database_manager.get_all_users()
