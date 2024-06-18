@@ -1,6 +1,8 @@
 import asyncio
 import time
 
+import os
+from dotenv import load_dotenv
 import logging
 from datetime import datetime
 from typing import List
@@ -34,7 +36,13 @@ class CryptoTrader:
             database_manager (DatabaseManager): An instance of DatabaseManager for database interactions.
         """
         self.database_manager = database_manager
+
+        load_dotenv()
+        self.logging_filepath = os.getenv("LOG_FILEPATH")
+
         self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
+        self.logger.propagate = False
 
     async def start(self) -> None:
         """
@@ -43,6 +51,21 @@ class CryptoTrader:
         Fetches crypto snapshots, updates the database, analyzes data,
         and executes trading orders if conditions are met.
         """
+        current_datetime = datetime.now()
+        date_str = current_datetime.strftime("%Y-%m-%d")
+        log_file_path = f"{self.logging_filepath}/log_{date_str}.txt"
+
+        for handler in self.logger.handlers:
+            if isinstance(handler, logging.FileHandler):
+                self.logger.removeHandler(handler)
+
+        file_handler = logging.FileHandler(log_file_path, mode='a')
+        file_handler.setLevel(logging.INFO)
+        formatter = logging.Formatter(
+            '%(asctime)s - %(levelname)s - %(message)s')
+        file_handler.setFormatter(formatter)
+        self.logger.addHandler(file_handler)
+
         binance_manager = BinanceManager()
 
         crypto_snapshots = binance_manager.fetch_usdt_pairs()
@@ -50,12 +73,16 @@ class CryptoTrader:
         assets = self.database_manager.update_assets(crypto_snapshots)
         intervals_dataframe = self._get_intervals_dataframes()
 
-        # users = self.database_manager.get_all_users()
+        users = self.database_manager.get_users()
 
-        current_datetime = datetime.now()
         sell_orders = self._get_sell_orders(
             assets, crypto_snapshots, current_datetime)
-        buy_orders = self._get_buy_orders(intervals_dataframe)
+
+        buy_orders = []
+        for user in users:
+            user_buy_orders = self._get_buy_orders(
+                intervals_dataframe, user)
+            buy_orders.extend(user_buy_orders)
 
         if sell_orders or buy_orders:
             self._execute_orders(sell_orders, buy_orders)
@@ -154,7 +181,7 @@ class CryptoTrader:
                         }
                     )
             except IndexError as e:
-                self.logger.info(f"Error getting interval dataframe: {e}")
+                self.logger.error(f"Error getting interval dataframe: {e}")
                 variation_data.append(
                     {
                         "symbol": symbol,
@@ -195,7 +222,7 @@ class CryptoTrader:
         df = pd.DataFrame(data)
         return [group for _, group in df.groupby("symbol")]
 
-    def _get_buy_orders(self, intervals_dataframes: List[pd.DataFrame]) -> List[BuyOrder]:
+    def _get_buy_orders(self, intervals_dataframes: List[pd.DataFrame], user: User) -> List[BuyOrder]:
         """
         Generates buy orders based on interval dataframes.
 
@@ -212,13 +239,14 @@ class CryptoTrader:
                 mean_variation = interval_dataframe["variation"].mean()
                 interval_recommendations = interval_dataframe[
                     interval_dataframe["variation"]
-                    >= mean_variation + GlobalSettings.BUYING_PERCENTAGE_THRESHOLD
+                    >= mean_variation + user.user_settings.buying_percentage_threshold
                 ].copy()
                 if not interval_recommendations.empty:
                     for _, row in interval_recommendations.iterrows():
                         symbol = row['symbol']
                         if symbol not in symbols_set:
                             order = BuyOrder(
+                                user._id,
                                 "buy",
                                 row["interval"],
                                 symbol,
@@ -255,7 +283,7 @@ class CryptoTrader:
         return orders
 
     def _execute_orders(
-        self, sell_orders: List[SellOrder], buy_orders: List[BuyOrder]
+        self, sell_orders: List[SellOrder] = [], buy_orders: List[BuyOrder] = []
     ) -> None:
         """
         Executes buy and sell orders.
@@ -266,8 +294,6 @@ class CryptoTrader:
         """
         current_datetime = datetime.now()
         users_list = self.database_manager.get_users()
-        if not users_list:
-            return
         users = {user._id: user for user in users_list}
         sell_orders_by_user = self._separate_orders_by_user(sell_orders)
         tasks = []
@@ -327,7 +353,7 @@ class CryptoTrader:
         for buy_order in buy_orders:
             if buy_order.symbol not in user_assets:
                 if user.name == "Logger":
-                    self.logger.info(f"{buy_order}{current_datetime}")
+                    self.logger.info(f"{buy_order}\n")
                 if user.usd_balance >= operation_value:
                     quantity = operation_value / buy_order.current_price
                     asset = Asset(
@@ -343,7 +369,8 @@ class CryptoTrader:
                     time.sleep(0.05)
                     self.database_manager.add_asset(asset)
                     user.usd_balance -= operation_value
-                    self.database_manager.update_user(user)
+                    self.database_manager.update_user(
+                        user, "usd_balance", round(user.usd_balance, 2))
 
     async def _execute_sell_orders(
         self, user: User, sell_orders: List[SellOrder], user_assets, current_datetime: datetime
@@ -362,11 +389,12 @@ class CryptoTrader:
             if asset.sold:
                 return
             if user.name == "Logger":
-                self.logger.info(f"{order}{current_datetime}")
+                self.logger.info(f"{order}\n")
             value = asset.current_value
             # Simulates binance transaction
             time.sleep(0.05)
             self.database_manager.update_sold_asset(
                 asset._id, current_datetime)
             user.usd_balance += value
-            self.database_manager.update_user(user)
+            self.database_manager.update_user(
+                user, "usd_balance", round(user.usd_balance, 2))

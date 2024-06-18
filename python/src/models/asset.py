@@ -1,6 +1,6 @@
 import datetime
 import bson
-from global_settings import GlobalSettings
+from models.user import UserSettings
 
 
 class Asset:
@@ -57,7 +57,7 @@ class Asset:
             (((self.current_price - self.purchase_price) / self.current_price) * 100), 2
         )
 
-    def update_asset(self, new_price: float) -> "Asset":
+    def update_asset(self, new_price: float, user_settings: UserSettings) -> "Asset":
         """
         Updates the asset with a new price.
 
@@ -72,18 +72,18 @@ class Asset:
         if self.current_price > self.highest_price:
             self.highest_price = self.current_price
         self.current_value = self.calculate_current_value()
-        self.should_be_sold = self.update_should_asset_be_sold()
+        self.should_be_sold = self.update_should_asset_be_sold(user_settings)
         return self
 
-    def update_should_asset_be_sold(self) -> bool:
+    def update_should_asset_be_sold(self, user_settings: UserSettings) -> bool:
         """Determines if the asset should be sold based on predefined criteria."""
-        if self.variation <= (-GlobalSettings.SELLING_UNDER_PURCHASE_PERCENTAGE):
+        if self.variation <= (-user_settings.selling_under_purchase_percentage):
             return True
         if self.current_price <= self.highest_price * (
-            1 - GlobalSettings.SELLING_UNDER_HIGHEST_PERCENTAGE / 100
+            1 - user_settings.selling_under_highest_percentage / 100
         ):
             return True
-        if self.variation >= GlobalSettings.SELLING_ABOVE_PURCHASE_PERCENTAGE:
+        if self.variation >= user_settings.selling_above_purchase_percentage:
             return True
         return False
 

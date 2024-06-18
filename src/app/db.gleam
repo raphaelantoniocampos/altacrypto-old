@@ -1,17 +1,13 @@
-import app/models/asset.{type Asset}
 import bison/bson.{type Value}
-import bison/object_id
+import bison/object_id.{type ObjectId}
 import dot_env
 import dot_env/env
-import gleam/dict
 import gleam/list
 import gleam/result
 import mungo/crud.{type UpdateResult}
 
 import mungo
 import mungo/client.{type Collection}
-
-import app/models/crypto_snapshot.{type CryptoSnapshot}
 
 fn get_connection_string() -> String {
   dot_env.load()
@@ -42,77 +38,41 @@ pub fn get_collection(name: String) -> Result(Collection, String) {
   |> Ok
 }
 
-// CryptoSnapshots
-
-pub fn insert_crypto_snapshots(
-  crypto_snapshots: List(CryptoSnapshot),
+pub fn insert_data(
+  this list: List(value),
+  at collection_name: String,
+  with encoder: fn(List(value)) -> List(List(#(String, bson.Value))),
 ) -> Result(Nil, String) {
-  use collection <- result.try(get_collection("crypto_snapshots"))
-  crypto_snapshot.to_documents(crypto_snapshots)
+  use collection <- result.try(get_collection(collection_name))
+  encoder(list)
   |> list.sized_chunk(10)
   |> list.each(fn(a) { mungo.insert_many(collection, a, 1024) })
   |> Ok
 }
 
-pub fn get_crypto_snapshots(
-  filter: List(#(String, Value)),
-) -> Result(List(CryptoSnapshot), String) {
-  use collection <- result.try(get_collection("crypto_snapshots"))
+pub fn get_data(
+  from collection_name: String,
+  using filter: List(#(String, Value)),
+  with decoder: fn(List(Value)) -> Result(List(value), String),
+) -> Result(List(value), String) {
+  use collection <- result.try(get_collection(collection_name))
   case mungo.find_many(collection, filter, [], 128) {
     Ok(cursor) -> {
       mungo.to_list(cursor, 128)
-      |> crypto_snapshot.values_to_crypto_snapshot
-      |> Ok
+      |> decoder
     }
-    Error(_) -> Error("Error getting crypto snapshots")
+    Error(_) -> Error("Error getting documents from: " <> collection_name)
   }
 }
 
-// Assets
-
-pub fn get_assets(filter: List(#(String, Value))) -> Result(List(Asset), String) {
-  use collection <- result.try(get_collection("assets"))
-  case mungo.find_many(collection, filter, [], 128) {
-    Ok(cursor) -> {
-      mungo.to_list(cursor, 128)
-      |> asset.values_to_asset
-      |> Ok
-    }
-    Error(_) -> Error("Error getting assets")
-  }
-}
-
-pub fn update_asset(asset: Asset) -> Result(UpdateResult, String) {
-  use collection <- result.try(get_collection("assets"))
-  let doc = asset.to_document(asset)
-  mungo.update_one(
-    collection,
-    [#("_id", bson.ObjectId(asset.id))],
-    doc,
-    [],
-    512,
-  )
-  |> result.replace_error(
-    "Error updating asset" <> object_id.to_string(asset.id),
-  )
-}
-
-pub fn update_assets_loop(
-  assets: List(Asset),
-  tickers: dict.Dict(String, Float),
-  updated_assets: List(Asset),
-) -> List(Asset) {
-  case assets {
-    [] -> updated_assets
-    [head, ..tail] -> {
-      case dict.get(tickers, head.symbol) {
-        Ok(price) -> {
-          let updated_asset = asset.update_asset(head, price)
-          update_asset(updated_asset)
-          update_assets_loop(tail, tickers, [updated_asset, ..updated_assets])
-        }
-        Error(_) -> update_assets_loop(tail, tickers, updated_assets)
-      }
-    }
-  }
+pub fn update_one(
+  this value: value,
+  with id: ObjectId,
+  at collection_name: String,
+  using encoder: fn(value) -> List(#(String, bson.Value)),
+) -> Result(UpdateResult, String) {
+  use collection <- result.try(get_collection(collection_name))
+  let doc = encoder(value)
+  mungo.update_one(collection, [#("_id", bson.ObjectId(id))], doc, [], 512)
+  |> result.replace_error("Error updating data" <> object_id.to_string(id))
 }

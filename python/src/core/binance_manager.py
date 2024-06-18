@@ -44,7 +44,7 @@ class BinanceManager:
                 return False
 
         except requests.RequestException as e:
-            self.logger.info(f"Error connecting to binance API: {e}")
+            self.logger.error(f"Error connecting to binance API: {e}")
             return False
 
     def fetch_usdt_pairs(self) -> List[CryptoSnapshot]:
@@ -71,7 +71,7 @@ class BinanceManager:
         except AttributeError:
             return []
         except Exception as e:
-            self.logger.info(f"Error fetching USDT pairs from Binance: {e}")
+            self.logger.error(f"Error fetching USDT pairs from Binance: {e}")
             return crypto_snapshots
 
     def _make_request(self, endpoint: str, params: dict | None = None) -> requests.Response:
@@ -93,14 +93,15 @@ class BinanceManager:
             response = requests.get(url, params=params)
 
             if response.status_code != 200:
-                self.logger.info(
-                    f"Request failed with status code {response.status_code}: {response.text}"
+                self.logger.error(
+                    f"Request failed with status code {
+                        response.status_code}: {response.text}"
                 )
                 return None
             return response
         except requests.exceptions.Timeout:
-            self.logger.info("The request timed out")
+            self.logger.error("The request timed out")
             return None
         except requests.exceptions.RequestException as e:
-            self.logger.info(f"An error occurred: {e}")
+            self.logger.error(f"An error occurred: {e}")
             return None

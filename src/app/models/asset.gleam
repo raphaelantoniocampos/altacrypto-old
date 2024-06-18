@@ -1,10 +1,13 @@
+import app/db
 import app/global_settings
 import birl.{type Time}
 import bison
 import bison/bson
 import bison/decoders
 import bison/object_id.{type ObjectId}
+import gleam/dict
 import gleam/dynamic
+import gleam/list
 import gleam/result
 
 pub type Asset {
@@ -36,30 +39,30 @@ pub fn bson_decoder() {
   )
 }
 
-pub fn values_to_asset(values: List(bson.Value)) -> List(Asset) {
-  values_loop(values, [])
-  |> result.values
-}
-
-fn values_loop(values: List(bson.Value), list) {
-  case values {
-    [] -> list
-    [head, ..tail] -> {
-      case to_asset(head) {
-        asset -> values_loop(tail, [asset, ..list])
+pub fn document_decoder(values: List(bson.Value)) -> Result(List(Asset), String) {
+  list.try_map(values, fn(value) -> Result(Asset, String) {
+    case value {
+      bson.Document(doc) -> {
+        bison.to_custom_type(doc, bson_decoder())
+        |> result.replace_error("Error decoding asset")
       }
+      _ -> Error("Error decoding asset")
     }
-  }
+  })
 }
 
-fn to_asset(value) -> Result(Asset, String) {
-  case value {
-    bson.Document(doc) -> {
-      bison.to_custom_type(doc, bson_decoder())
-      |> result.replace_error("Error decoding asset")
-    }
-    _ -> Error("Error decoding asset")
-  }
+pub fn bson_encoder(asset: Asset) -> List(#(String, bson.Value)) {
+  [
+    #("_id", bson.ObjectId(asset.id)),
+    #("user_id", bson.ObjectId(asset.user_id)),
+    #("symbol", bson.String(asset.symbol)),
+    #("quantity", bson.Double(asset.quantity)),
+    #("purchase_price", bson.Double(asset.purchase_price)),
+    #("highest_price", bson.Double(asset.highest_price)),
+    #("current_price", bson.Double(asset.current_price)),
+    #("should_be_sold", bson.Boolean(asset.should_be_sold)),
+    #("datetime", bson.DateTime(asset.datetime)),
+  ]
 }
 
 pub fn update_asset(asset: Asset, price: Float) -> Asset {
@@ -93,16 +96,20 @@ pub fn update_asset(asset: Asset, price: Float) -> Asset {
   )
 }
 
-pub fn to_document(asset: Asset) {
-  [
-    #("_id", bson.ObjectId(asset.id)),
-    #("user_id", bson.ObjectId(asset.user_id)),
-    #("symbol", bson.String(asset.symbol)),
-    #("quantity", bson.Double(asset.quantity)),
-    #("purchase_price", bson.Double(asset.purchase_price)),
-    #("highest_price", bson.Double(asset.highest_price)),
-    #("current_price", bson.Double(asset.current_price)),
-    #("should_be_sold", bson.Boolean(asset.should_be_sold)),
-    #("datetime", bson.DateTime(asset.datetime)),
-  ]
+pub fn update_assets_with_tickers(
+  assets: List(Asset),
+  values: List(#(String, Float)),
+) -> Result(List(Asset), String) {
+  let tickers = dict.from_list(values)
+  list.try_map(assets, fn(asset: Asset) {
+    case dict.get(tickers, asset.symbol) {
+      Ok(price) -> {
+        let updated_asset = update_asset(asset, price)
+        db.update_one(updated_asset, updated_asset.id, "assets", bson_encoder)
+        updated_asset
+        |> Ok
+      }
+      Error(_) -> Error("Error updating assets")
+    }
+  })
 }
