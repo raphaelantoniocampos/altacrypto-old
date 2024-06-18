@@ -48,7 +48,7 @@ fn update_assets(tickers: List(#(String, Float))) -> Result(List(Asset), String)
   asset.update_assets_with_tickers(assets, tickers)
 }
 
-fn get_intervals_data() {
+fn get_intervals_data() -> Result(List(dict.Dict(String, Int)), String) {
   use crypto_snapshots <- result.try(db.get_data(
     "crypto_snapshots",
     [],
@@ -66,11 +66,11 @@ fn get_intervals_data() {
         use recent <- result.try(list.first(list))
         use past <- result.try(
           list.find(list, fn(snap: crypto_snapshot.CryptoSnapshot) {
-            let difference =
-              birl.difference(recent.datetime, snap.datetime)
-              |> duration.blur_to(duration.Minute)
             [interval - 1, interval, interval + 1]
-            |> list.contains(difference)
+            |> list.contains(
+              birl.difference(recent.datetime, snap.datetime)
+              |> duration.blur_to(duration.Minute),
+            )
           }),
         )
         let interval_time =
@@ -87,10 +87,13 @@ fn get_intervals_data() {
         |> Ok
       },
     )
-    |> dict.filter(fn(_, b) {
+    |> dict.map_values(fn(a, b) {
       case b {
-        Error(Nil) -> True
-        _ -> False
+        Ok(value) -> {
+          dict.new()
+          |> dict.insert(a, value)
+        }
+        _ -> dict.new()
       }
     })
   })
