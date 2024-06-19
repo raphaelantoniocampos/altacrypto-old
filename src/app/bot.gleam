@@ -5,12 +5,10 @@ import app/models/asset.{type Asset}
 import app/models/crypto_snapshot.{type CryptoSnapshot}
 import birl
 import birl/duration
-import birl/interval
 import gleam/dict
 import gleam/int
 import gleam/io
 import gleam/list
-import gleam/order
 import gleam/result
 import pprint
 
@@ -36,8 +34,15 @@ pub fn start() {
   |> list.length
   |> io.debug
 
-  get_interval_data()
-  |> pprint.debug
+  use crypto_snapshots <- result.try(db.get_data(
+    "crypto_snapshots",
+    [],
+    crypto_snapshot.document_decoder,
+  ))
+
+  let now = birl.now()
+  get_interval_data(crypto_snapshots, now)
+  // |> pprint.debug
 
   Ok("end")
 }
@@ -63,14 +68,10 @@ fn update_assets(tickers: List(#(String, Float))) -> Result(List(Asset), String)
   asset.update_assets_with_tickers(assets, tickers)
 }
 
-fn get_interval_data() {
-  use crypto_snapshots <- result.try(db.get_data(
-    "crypto_snapshots",
-    [],
-    crypto_snapshot.document_decoder,
-  ))
-
-  let now = birl.now()
+fn get_interval_data(
+  crypto_snapshots: List(crypto_snapshot.CryptoSnapshot),
+  now: birl.Time,
+) {
   global_settings.intervals_in_minutes
   |> list.map(fn(interval) { process_interval(interval, crypto_snapshots, now) })
   |> Ok
@@ -86,6 +87,7 @@ fn process_interval(
     calculate_interval_data(interval, snapshots, now)
   })
   |> filter_valid_entries()
+  |> dict.map_values(fn(_, dic) { dict.values(dic) })
 }
 
 fn calculate_interval_data(
@@ -101,13 +103,16 @@ fn calculate_interval_data(
     |> duration.blur_to(duration.Minute)
 
   dict.new()
-  |> dict.insert(recent.symbol, #(
-    interval_time,
-    now,
-    recent.price,
-    past.price,
-    calculate_percentage_change(recent.price, past.price),
-  ))
+  |> dict.insert(
+    recent.symbol,
+    IntervalData(
+      interval_time,
+      now,
+      recent.price,
+      past.price,
+      calculate_percentage_change(recent.price, past.price),
+    ),
+  )
   |> Ok
 }
 
