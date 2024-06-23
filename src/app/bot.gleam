@@ -42,7 +42,7 @@ pub fn start() {
 
   let now = birl.now()
   get_interval_data(crypto_snapshots, now)
-  // |> pprint.debug
+  |> io.debug
 
   Ok("end")
 }

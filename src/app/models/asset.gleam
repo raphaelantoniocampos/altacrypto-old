@@ -105,7 +105,8 @@ pub fn update_assets_with_tickers(
     case dict.get(tickers, asset.symbol) {
       Ok(price) -> {
         let updated_asset = update_asset(asset, price)
-        db.update_one(updated_asset, updated_asset.id, "assets", bson_encoder)
+        let _update_result =
+          db.update_one(updated_asset, updated_asset.id, "assets", bson_encoder)
         updated_asset
         |> Ok
       }
