@@ -104,10 +104,7 @@ pub fn update_assets_with_tickers(
   list.try_map(assets, fn(asset: Asset) {
     case dict.get(tickers, asset.symbol) {
       Ok(price) -> {
-        let updated_asset = update_asset(asset, price)
-        let _update_result =
-          db.update_one(updated_asset, updated_asset.id, "assets", bson_encoder)
-        updated_asset
+        update_asset(asset, price)
         |> Ok
       }
       Error(_) -> Error("Error updating assets")

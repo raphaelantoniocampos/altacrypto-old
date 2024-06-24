@@ -42,7 +42,7 @@ pub fn start() {
 
   let now = birl.now()
   get_interval_data(crypto_snapshots, now)
-  |> io.debug
+  |> pprint.debug
 
   Ok("end")
 }
@@ -65,7 +65,15 @@ pub fn feed_database(tickers: List(#(String, Float))) -> Result(String, String) 
 fn update_assets(tickers: List(#(String, Float))) -> Result(List(Asset), String) {
   use assets <- result.try(db.get_data("assets", [], asset.document_decoder))
 
-  asset.update_assets_with_tickers(assets, tickers)
+  use updated_assets <- result.try(asset.update_assets_with_tickers(
+    assets,
+    tickers,
+  ))
+  let _update_result =
+    list.try_map(updated_assets, fn(asset) {
+      db.update_one(asset, asset.id, "assets", asset.bson_encoder)
+    })
+  Ok(updated_assets)
 }
 
 fn get_interval_data(
@@ -73,46 +81,32 @@ fn get_interval_data(
   now: birl.Time,
 ) {
   global_settings.intervals_in_minutes
-  |> list.map(fn(interval) { process_interval(interval, crypto_snapshots, now) })
-  |> Ok
-}
+  |> list.map(fn(interval) {
+    list.group(crypto_snapshots, fn(snapshot) { snapshot.symbol })
+    |> dict.map_values(fn(_, snapshots) {
+      use recent <- result.try(list.first(snapshots))
+      use past <- result.try(find_past_snapshot(interval, recent, snapshots))
 
-fn process_interval(
-  interval: Int,
-  crypto_snapshots: List(crypto_snapshot.CryptoSnapshot),
-  now: birl.Time,
-) {
-  list.group(crypto_snapshots, fn(snapshot) { snapshot.symbol })
-  |> dict.map_values(fn(_, snapshots) {
-    calculate_interval_data(interval, snapshots, now)
+      let interval_time =
+        birl.difference(past.datetime, recent.datetime)
+        |> duration.blur_to(duration.Minute)
+
+      dict.new()
+      |> dict.insert(
+        recent.symbol,
+        IntervalData(
+          interval_time,
+          now,
+          recent.price,
+          past.price,
+          calculate_percentage_change(recent.price, past.price),
+        ),
+      )
+      |> Ok
+    })
+    |> filter_valid_entries()
+    |> dict.map_values(fn(_, dic) { dict.values(dic) })
   })
-  |> filter_valid_entries()
-  |> dict.map_values(fn(_, dic) { dict.values(dic) })
-}
-
-fn calculate_interval_data(
-  interval: Int,
-  snapshots: List(crypto_snapshot.CryptoSnapshot),
-  now: birl.Time,
-) {
-  use recent <- result.try(list.first(snapshots))
-  use past <- result.try(find_past_snapshot(interval, recent, snapshots))
-
-  let interval_time =
-    birl.difference(past.datetime, recent.datetime)
-    |> duration.blur_to(duration.Minute)
-
-  dict.new()
-  |> dict.insert(
-    recent.symbol,
-    IntervalData(
-      interval_time,
-      now,
-      recent.price,
-      past.price,
-      calculate_percentage_change(recent.price, past.price),
-    ),
-  )
   |> Ok
 }
 
