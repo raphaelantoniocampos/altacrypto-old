@@ -13,12 +13,13 @@ import gleam/result
 import pprint
 
 type IntervalData {
-  IntervalData(
+  VariationData(
+    symbol: String,
     interval_time: Int,
     datetime: birl.Time,
     recent_price: Float,
     past_price: Float,
-    percentage_change: Float,
+    variation: Float,
   )
 }
 
@@ -76,14 +77,11 @@ fn update_assets(tickers: List(#(String, Float))) -> Result(List(Asset), String)
   Ok(updated_assets)
 }
 
-fn get_interval_data(
-  crypto_snapshots: List(crypto_snapshot.CryptoSnapshot),
-  now: birl.Time,
-) {
+fn get_interval_data(crypto_snapshots: List(CryptoSnapshot), now: birl.Time) {
   global_settings.intervals_in_minutes
   |> list.map(fn(interval) {
     list.group(crypto_snapshots, fn(snapshot) { snapshot.symbol })
-    |> dict.map_values(fn(_, snapshots) {
+    |> dict.map_values(fn(symbol, snapshots) {
       use recent <- result.try(list.first(snapshots))
       use past <- result.try(find_past_snapshot(interval, recent, snapshots))
 
@@ -91,29 +89,34 @@ fn get_interval_data(
         birl.difference(past.datetime, recent.datetime)
         |> duration.blur_to(duration.Minute)
 
-      dict.new()
-      |> dict.insert(
-        recent.symbol,
-        IntervalData(
-          interval_time,
-          now,
-          recent.price,
-          past.price,
-          calculate_percentage_change(recent.price, past.price),
-        ),
+      VariationData(
+        symbol,
+        interval_time,
+        now,
+        recent.price,
+        past.price,
+        calculate_percentage_change(recent.price, past.price),
       )
       |> Ok
     })
-    |> filter_valid_entries()
-    |> dict.map_values(fn(_, dic) { dict.values(dic) })
+    |> dict.map_values(fn(_, result) {
+      result.lazy_unwrap(result, fn() {
+        VariationData("", 0, now, 0.0, 0.0, 0.0)
+      })
+    })
+    |> dict.filter(fn(_, data) { data.symbol != "" })
+    |> dict.values
   })
-  |> Ok
+  |> list.map(fn(interval_list) {
+    let mean_variation = calculate_mean_variation(interval_list)
+  })
+  // |> calculate_mean_variation
 }
 
 fn find_past_snapshot(
   interval: Int,
-  recent: crypto_snapshot.CryptoSnapshot,
-  snapshots: List(crypto_snapshot.CryptoSnapshot),
+  recent: CryptoSnapshot,
+  snapshots: List(CryptoSnapshot),
 ) {
   list.find(snapshots, fn(snap) {
     [interval - 1, interval, interval + 1]
@@ -128,14 +131,8 @@ fn calculate_percentage_change(recent_price: Float, past_price: Float) {
   { { recent_price -. past_price } /. recent_price } *. 100.0
 }
 
-fn filter_valid_entries(d) {
-  dict.map_values(d, fn(key, result) {
-    case result {
-      Ok(value) -> {
-        dict.new() |> dict.insert(key, value)
-      }
-      _ -> dict.new()
-    }
-  })
-  |> dict.filter(fn(_, entry) { dict.size(entry) != 0 })
+fn calculate_mean_variation(interval_list: List(IntervalData)) {
+  let sum =
+    list.fold(interval_list, 0.0, fn(acc, data) { acc +. data.variation })
+  sum /. int.to_float(list.length(interval_list))
 }
