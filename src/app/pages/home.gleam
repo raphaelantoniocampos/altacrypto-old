@@ -5,45 +5,21 @@ import lustre/element/html.{button, div, form, h1, h2, input, label, span, svg}
 import lustre/element/svg
 
 pub fn root() -> Element(t) {
-  div([class("app")], [
-    h1([class("app-title")], [text("Altacrypto")]),
-    div([class("container")], [
-      h2([class("login-title")], [text("Login")]),
-      form(
-        [
-          class("add-todo-input"),
-          attribute.method("POST"),
-          attribute.action("/login/"),
-        ],
-        [
-          input([
-            name("todo_title"),
-            class("add-todo-input__input"),
-            placeholder("Username"),
-            autofocus(True),
-          ]),
-        ],
+  div(
+    [
+      attribute.class(
+        "bg-white p-12 rounded-lg shadow-md text-center w-full max-w-2xl border-2 border-green-500",
       ),
-    ]),
-    div([class("container")], [
-      h2([class("login-title")], [text("Password")]),
-      form(
-        [
-          class("add-todo-input"),
-          attribute.method("POST"),
-          attribute.action("/login/"),
-        ],
-        [
-          input([
-            name("todo_title"),
-            class("add-todo-input__input"),
-            placeholder("Password"),
-            autofocus(True),
-          ]),
-        ],
-      ),
-    ]),
-  ])
+    ],
+    [
+      html.h1([attribute.class("text-4xl font-bold mb-6 text-green-600")], [
+        text("Work in Progress"),
+      ]),
+      html.p([attribute.class("text-xl text-gray-700")], [
+        text("We're currently working on something amazing. Stay tuned!"),
+      ]),
+    ],
+  )
 }
 // fn todos(items: List(Item)) -> Element(t) {
 //   div([class("todos")], [
