@@ -12,10 +12,11 @@ import gleam/int
 import gleam/io
 import gleam/list
 import gleam/result
+import gleam/set
 import pprint
 
-type VariationData {
-  VariationData(
+type PriceVariation {
+  PriceVariation(
     symbol: String,
     interval_time: Int,
     datetime: birl.Time,
@@ -25,15 +26,16 @@ type VariationData {
   )
 }
 
-type Order {
-  BuyOrder(
-    user_id: ObjectId,
-    side: String,
-    interval: interval.Interval,
-    symbol: String,
-    variation: Float,
-    current_price: Float,
+type IntervalData {
+  IntervalData(
+    interval_time: Int,
+    variation_percentage: Float,
+    variation_data: List(PriceVariation),
   )
+}
+
+type Order {
+  BuyOrder(side: String, symbol: String, variation: Float, current_price: Float)
   SellOrder(user_id: ObjectId, side: String, asset: Asset)
 }
 
@@ -44,8 +46,8 @@ pub fn start() {
   let _feed_result = feed_database(tickers)
 
   use assets <- result.try(update_assets(tickers))
-  let sell_assets = get_sell_orders(assets)
-  pprint.debug(sell_assets)
+  let sell_orders = get_sell_orders(assets)
+  // pprint.debug(sell_orders)
 
   use crypto_snapshots <- result.try(db.get_data(
     "crypto_snapshots",
@@ -53,8 +55,11 @@ pub fn start() {
     crypto_snapshot.document_decoder,
   ))
 
-  let now = birl.now()
-  let interval_data = get_interval_data(crypto_snapshots, now)
+  let current_datetime = birl.now()
+  let interval_data =
+    calculate_interval_data(crypto_snapshots, current_datetime)
+    |> get_buy_orders
+    |> pprint.debug
 
   Ok("end")
 }
@@ -88,39 +93,51 @@ fn update_assets(tickers: List(#(String, Float))) -> Result(List(Asset), String)
   Ok(updated_assets)
 }
 
-fn get_interval_data(
+fn calculate_interval_data(
   crypto_snapshots: List(CryptoSnapshot),
-  now: birl.Time,
-) -> List(Result(#(Int, Float, List(VariationData)), Nil)) {
+  current_datetime: birl.Time,
+) -> List(Result(IntervalData, Nil)) {
   global_settings.intervals_in_minutes
-  |> list.map(fn(interval) {
+  |> list.map(fn(interval_minutes) {
     list.group(crypto_snapshots, fn(snapshot) { snapshot.symbol })
     |> dict.map_values(fn(symbol, snapshots) {
-      use recent <- result.try(list.first(snapshots))
-      use past <- result.try(find_past_snapshot(interval, recent, snapshots))
+      use recent_snapshot <- result.try(list.first(snapshots))
+      use past_snapshot <- result.try(find_past_snapshot(
+        interval_minutes,
+        recent_snapshot,
+        snapshots,
+      ))
 
       let interval_time =
-        birl.difference(past.datetime, recent.datetime)
+        birl.difference(past_snapshot.datetime, recent_snapshot.datetime)
         |> duration.blur_to(duration.Minute)
 
-      VariationData(symbol, interval_time, now, recent.price, past.price, {
-        { recent.price -. past.price } /. recent.price
-      })
+      PriceVariation(
+        symbol,
+        interval_time,
+        current_datetime,
+        recent_snapshot.price,
+        past_snapshot.price,
+        {
+          { recent_snapshot.price -. past_snapshot.price }
+          /. recent_snapshot.price
+        },
+      )
       |> Ok
     })
     |> dict.map_values(fn(_, result) {
       result.lazy_unwrap(result, fn() {
-        VariationData("", 0, now, 0.0, 0.0, 0.0)
+        PriceVariation("", 0, current_datetime, 0.0, 0.0, 0.0)
       })
     })
     |> dict.filter(fn(_, data) { data.symbol != "" })
     |> dict.values
   })
   |> list.map(fn(interval_list) {
-    let mean_variation = calculate_mean_variation(interval_list)
+    let average_variation = calculate_average_variation(interval_list)
     use first_of_list <- result.try(list.first(interval_list))
     let interval_time = first_of_list.interval_time
-    #(interval_time, mean_variation, interval_list)
+    IntervalData(interval_time, average_variation, interval_list)
     |> Ok
   })
 }
@@ -139,7 +156,7 @@ fn find_past_snapshot(
   })
 }
 
-fn calculate_mean_variation(interval_list: List(VariationData)) {
+fn calculate_average_variation(interval_list: List(PriceVariation)) {
   let sum =
     list.fold(interval_list, 0.0, fn(acc, data) { acc +. data.variation })
   sum /. int.to_float(list.length(interval_list))
@@ -152,6 +169,27 @@ fn get_sell_orders(assets: List(Asset)) {
   })
 }
 
-fn get_buy_orders(interval_data) {
-  todo
+fn get_buy_orders(interval_data: List(Result(IntervalData, Nil))) {
+  list.map(interval_data, fn(result) {
+    case result {
+      Ok(interval_data) -> {
+        list.filter(interval_data.variation_data, fn(data) {
+          data.variation
+          >=. {
+            interval_data.variation_percentage
+            +. global_settings.buy_percentage_threshold
+          }
+        })
+        |> list.map(fn(coin_data) {
+          BuyOrder(
+            "BUY",
+            coin_data.symbol,
+            coin_data.variation,
+            coin_data.recent_price,
+          )
+        })
+      }
+      Error(_) -> list.new()
+    }
+  })
 }
