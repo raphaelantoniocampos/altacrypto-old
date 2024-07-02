@@ -48,5 +48,5 @@ lustre = { version = ">= 4.2.4 and < 5.0.0" }
 mist = { version = ">= 1.2.0 and < 2.0.0" }
 mug = { version = ">= 1.0.0 and < 2.0.0" }
 mungo = { version = ">= 0.26.0 and < 1.0.0" }
-pprint = { version = ">= 1.0.3 and < 2.0.0"}
+pprint = { version = ">= 1.0.3 and < 2.0.0" }
 wisp = { version = ">= 0.14.0 and < 1.0.0" }

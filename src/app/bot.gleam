@@ -5,14 +5,13 @@ import app/models/asset.{type Asset}
 import app/models/crypto_snapshot.{type CryptoSnapshot}
 import birl
 import birl/duration
-import birl/interval
 import bison/object_id.{type ObjectId}
+import gleam/bool
 import gleam/dict
 import gleam/int
 import gleam/io
 import gleam/list
 import gleam/result
-import gleam/set
 import pprint
 
 type PriceVariation {
@@ -58,8 +57,11 @@ pub fn start() {
   let current_datetime = birl.now()
   let interval_data =
     calculate_interval_data(crypto_snapshots, current_datetime)
-    |> get_buy_orders
-    |> pprint.debug
+
+  // let buy_orders = get_buy_orders(interval_data)
+
+  pprint.debug(interval_data)
+  // pprint.debug(buy_orders)
 
   Ok("end")
 }
@@ -96,49 +98,61 @@ fn update_assets(tickers: List(#(String, Float))) -> Result(List(Asset), String)
 fn calculate_interval_data(
   crypto_snapshots: List(CryptoSnapshot),
   current_datetime: birl.Time,
-) -> List(Result(IntervalData, Nil)) {
-  global_settings.intervals_in_minutes
-  |> list.map(fn(interval_minutes) {
-    list.group(crypto_snapshots, fn(snapshot) { snapshot.symbol })
-    |> dict.map_values(fn(symbol, snapshots) {
-      use recent_snapshot <- result.try(list.first(snapshots))
-      use past_snapshot <- result.try(find_past_snapshot(
-        interval_minutes,
-        recent_snapshot,
-        snapshots,
-      ))
+) -> List(Result(IntervalData, IntervalData)) {
+  list.map(global_settings.intervals_in_minutes, fn(interval_minutes) {
+    let symbol_snapshots =
+      list.group(crypto_snapshots, fn(snapshot) { snapshot.symbol })
+      |> dict.map_values(fn(symbol, snapshots) {
+        use recent_snapshot <- result.try(list.first(snapshots))
+        use past_snapshot <- result.try(find_past_snapshot(
+          interval_minutes,
+          recent_snapshot,
+          snapshots,
+        ))
 
-      let interval_time =
-        birl.difference(past_snapshot.datetime, recent_snapshot.datetime)
-        |> duration.blur_to(duration.Minute)
+        let interval_duration =
+          birl.difference(past_snapshot.datetime, recent_snapshot.datetime)
+          |> duration.blur_to(duration.Minute)
 
-      PriceVariation(
-        symbol,
-        interval_time,
-        current_datetime,
-        recent_snapshot.price,
-        past_snapshot.price,
-        {
-          { recent_snapshot.price -. past_snapshot.price }
-          /. recent_snapshot.price
-        },
-      )
-      |> Ok
-    })
-    |> dict.map_values(fn(_, result) {
-      result.lazy_unwrap(result, fn() {
-        PriceVariation("", 0, current_datetime, 0.0, 0.0, 0.0)
+        PriceVariation(
+          symbol,
+          interval_duration,
+          current_datetime,
+          recent_snapshot.price,
+          past_snapshot.price,
+          {
+            { recent_snapshot.price -. past_snapshot.price }
+            /. recent_snapshot.price
+          },
+        )
+        |> Ok
       })
-    })
-    |> dict.filter(fn(_, data) { data.symbol != "" })
-    |> dict.values
+      |> dict.map_values(fn(_, result) {
+        result.lazy_unwrap(result, fn() {
+          PriceVariation("", 0, current_datetime, 0.0, 0.0, 0.0)
+        })
+      })
+      |> dict.filter(fn(_, data) { data.symbol != "" })
+      |> dict.values
+    #(interval_minutes, symbol_snapshots)
   })
-  |> list.map(fn(interval_list) {
-    let average_variation = calculate_average_variation(interval_list)
-    use first_of_list <- result.try(list.first(interval_list))
-    let interval_time = first_of_list.interval_time
-    IntervalData(interval_time, average_variation, interval_list)
-    |> Ok
+  |> list.map(fn(interval_data) {
+    case interval_data.1 {
+      [] -> Error(IntervalData(interval_data.0, 0.0, []))
+      _ -> {
+        case list.first(interval_data.1) {
+          Ok(first_snapshot) -> {
+            let average_variation = calculate_average_variation(interval_data.1)
+            Ok(IntervalData(
+              first_snapshot.interval_time,
+              average_variation,
+              interval_data.1,
+            ))
+          }
+          _ -> Error(IntervalData(interval_data.0, 0.0, []))
+        }
+      }
+    }
   })
 }
 
@@ -169,7 +183,9 @@ fn get_sell_orders(assets: List(Asset)) {
   })
 }
 
-fn get_buy_orders(interval_data: List(Result(IntervalData, Nil))) {
+fn get_buy_orders(
+  interval_data: List(Result(IntervalData, Nil)),
+) -> List(Result(List(Order), String)) {
   list.map(interval_data, fn(result) {
     case result {
       Ok(interval_data) -> {
@@ -188,8 +204,9 @@ fn get_buy_orders(interval_data: List(Result(IntervalData, Nil))) {
             coin_data.recent_price,
           )
         })
+        |> Ok
       }
-      Error(_) -> list.new()
+      Error(_) -> Error("Interval Data not found")
     }
   })
 }
