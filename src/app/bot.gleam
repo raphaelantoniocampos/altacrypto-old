@@ -101,7 +101,7 @@ fn calculate_interval_data(
 ) -> List(Result(IntervalData, IntervalData)) {
   list.map(global_settings.intervals_in_minutes, fn(interval_minutes) {
     let symbol_snapshots =
-      list.group(crypto_snapshots, fn(snapshot) { snapshot.symbol })
+      group_snapshots_by_symbol(crypto_snapshots)
       |> dict.map_values(fn(symbol, snapshots) {
         use recent_snapshot <- result.try(list.first(snapshots))
         use past_snapshot <- result.try(find_past_snapshot(
@@ -156,6 +156,41 @@ fn calculate_interval_data(
   })
 }
 
+fn group_snapshots_by_symbol(
+  snapshots: List(CryptoSnapshot),
+) -> dict.Dict(String, List(CryptoSnapshot)) {
+  list.group(snapshots, fn(snapshot) { snapshot.symbol })
+}
+
+fn process_symbol_snapshots(
+  interval_minutes: Int,
+  current_datetime: birl.Time,
+) -> fn(dict.Dict(String, List(CryptoSnapshot))) ->
+  dict.Dict(String, Result(PriceVariation, PriceVariation)) {
+  dict.map_values(_, fn(symbol, snapshots) {
+    use recent_snapshot <- result.try(list.first(snapshots))
+    use past_snapshot <- result.try(find_past_snapshot(
+      interval_minutes,
+      recent_snapshot,
+      snapshots,
+    ))
+
+    let interval_duration =
+      birl.difference(past_snapshot.datetime, recent_snapshot.datetime)
+      |> duration.blur_to(duration.Minute)
+
+    PriceVariation(
+      symbol,
+      interval_duration,
+      current_datetime,
+      recent_snapshot.price,
+      past_snapshot.price,
+      calculate_price_change(recent_snapshot.price, past_snapshot.price),
+    )
+    |> Ok
+  })
+}
+
 fn find_past_snapshot(
   interval: Int,
   recent: CryptoSnapshot,
@@ -168,6 +203,23 @@ fn find_past_snapshot(
       |> duration.blur_to(duration.Minute),
     )
   })
+}
+
+fn calculate_price_change(recent_price: Float, past_price: Float) -> Float {
+  { recent_price -. past_price } /. recent_price
+}
+
+fn filter_valid_snapshots(
+  symbol_snapshots: dict.Dict(String, Result(PriceVariation, PriceVariation)),
+  current_datetime: birl.Time,
+) -> List(PriceVariation) {
+  dict.map_values(symbol_snapshots, fn(_, result) {
+    result.lazy_unwrap(result, fn() {
+      PriceVariation("", 0, current_datetime, 0.0, 0.0, 0.0)
+    })
+  })
+  |> dict.filter(fn(_, data) { data.symbol != "" })
+  |> dict.values
 }
 
 fn calculate_average_variation(interval_list: List(PriceVariation)) {
