@@ -78,11 +78,7 @@ class CryptoTrader:
         sell_orders = self._get_sell_orders(
             assets, crypto_snapshots, current_datetime)
 
-        buy_orders = []
-        for user in users:
-            user_buy_orders = self._get_buy_orders(
-                intervals_dataframe, user)
-            buy_orders.extend(user_buy_orders)
+        buy_orders = self._get_buy_orders(intervals_dataframe)
 
         if sell_orders or buy_orders:
             self._execute_orders(sell_orders, buy_orders)
@@ -222,7 +218,7 @@ class CryptoTrader:
         df = pd.DataFrame(data)
         return [group for _, group in df.groupby("symbol")]
 
-    def _get_buy_orders(self, intervals_dataframes: List[pd.DataFrame], user: User) -> List[BuyOrder]:
+    def _get_buy_orders(self, intervals_dataframes: List[pd.DataFrame]) -> List[BuyOrder]:
         """
         Generates buy orders based on interval dataframes.
 
@@ -239,14 +235,14 @@ class CryptoTrader:
                 mean_variation = interval_dataframe["variation"].mean()
                 interval_recommendations = interval_dataframe[
                     interval_dataframe["variation"]
-                    >= mean_variation + user.user_settings.buying_percentage_threshold
+                    >= mean_variation + GlobalSettings.BUYING_PERCENTAGE_THRESHOLD
                 ].copy()
                 if not interval_recommendations.empty:
                     for _, row in interval_recommendations.iterrows():
                         symbol = row['symbol']
                         if symbol not in symbols_set:
                             order = BuyOrder(
-                                user._id,
+                                "all",
                                 "buy",
                                 row["interval"],
                                 symbol,

@@ -397,9 +397,8 @@ class DatabaseManager:
             updated_assets = []
             for asset in assets:
                 if asset.symbol in crypto_snapshots_dict:
-                    user_settings = self._get_user(asset.user_id).user_settings
                     updated_asset = asset.update_asset(
-                        crypto_snapshots_dict[asset.symbol].price, user_settings)
+                        crypto_snapshots_dict[asset.symbol].price)
                     self._update_asset(updated_asset)
                     updated_assets.append(updated_asset)
             return updated_assets

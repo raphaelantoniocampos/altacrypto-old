@@ -10,10 +10,10 @@ class UserSettings:
         self,
         operation_value_percentage: float = 5.0,
         maximum_operation_value: float = 100.0,
-        buying_percentage_threshold: float = 10.0,
-        selling_under_purchase_percentage: float = 3.0,
-        selling_under_highest_percentage: float = 3.0,
-        selling_above_purchase_percentage: float = 200.0,
+        # buying_percentage_threshold: float = 10.0,
+        # selling_under_purchase_percentage: float = 3.0,
+        # selling_under_highest_percentage: float = 3.0,
+        # selling_above_purchase_percentage: float = 200.0,
     ):
         """
         Initializes a UserSettings object.
@@ -25,48 +25,48 @@ class UserSettings:
         """
         self.operation_value_percentage = operation_value_percentage
         self.maximum_operation_value = maximum_operation_value
-        self.buying_percentage_threshold = buying_percentage_threshold
-        self.selling_under_purchase_percentage = selling_under_purchase_percentage
-        self.selling_under_highest_percentage = selling_under_highest_percentage
-        self.selling_above_purchase_percentage = selling_above_purchase_percentage
+        # self.buying_percentage_threshold = buying_percentage_threshold
+        # self.selling_under_purchase_percentage = selling_under_purchase_percentage
+        # self.selling_under_highest_percentage = selling_under_highest_percentage
+        # self.selling_above_purchase_percentage = selling_above_purchase_percentage
 
-    def __eq__(self, other):
-        """
-        Compares this UserSettings object with another for equality.
+    # def __eq__(self, other):
+    #     """
+    #     Compares this UserSettings object with another for equality.
+    #
+    #     Args:
+    #         other (UserSettings): The other UserSettings object to compare with.
+    #
+    #     Returns:
+    #         bool: True if all attributes are equal, False otherwise.
+    #     """
+    #     if not isinstance(other, UserSettings):
+    #         return False
+    #
+    #     return (
+    #         self.operation_value_percentage == other.operation_value_percentage and
+    #         self.maximum_operation_value == other.maximum_operation_value and
+    #         self.buying_percentage_threshold == other.buying_percentage_threshold and
+    #         self.selling_under_purchase_percentage == other.selling_under_purchase_percentage and
+    #         self.selling_under_highest_percentage == other.selling_under_highest_percentage and
+    #         self.selling_above_purchase_percentage == other.selling_above_purchase_percentage
+    #     )
 
-        Args:
-            other (UserSettings): The other UserSettings object to compare with.
-
-        Returns:
-            bool: True if all attributes are equal, False otherwise.
-        """
-        if not isinstance(other, UserSettings):
-            return False
-
-        return (
-            self.operation_value_percentage == other.operation_value_percentage and
-            self.maximum_operation_value == other.maximum_operation_value and
-            self.buying_percentage_threshold == other.buying_percentage_threshold and
-            self.selling_under_purchase_percentage == other.selling_under_purchase_percentage and
-            self.selling_under_highest_percentage == other.selling_under_highest_percentage and
-            self.selling_above_purchase_percentage == other.selling_above_purchase_percentage
-        )
-
-    def __hash__(self):
-        """
-        Returns the hash value of this UserSettings object.
-
-        Returns:
-            int: Hash value.
-        """
-        return hash((
-            self.operation_value_percentage,
-            self.maximum_operation_value,
-            self.buying_percentage_threshold,
-            self.selling_under_purchase_percentage,
-            self.selling_under_highest_percentage,
-            self.selling_above_purchase_percentage,
-        ))
+    # def __hash__(self):
+    #     """
+    #     Returns the hash value of this UserSettings object.
+    #
+    #     Returns:
+    #         int: Hash value.
+    #     """
+    #     return hash((
+    #         self.operation_value_percentage,
+    #         self.maximum_operation_value,
+    #         self.buying_percentage_threshold,
+    #         self.selling_under_purchase_percentage,
+    #         self.selling_under_highest_percentage,
+    #         self.selling_above_purchase_percentage,
+    #     ))
 
 
 class User:
