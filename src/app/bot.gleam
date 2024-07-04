@@ -58,10 +58,10 @@ pub fn start() {
   let interval_data =
     calculate_interval_data(crypto_snapshots, current_datetime)
 
-  // let buy_orders = get_buy_orders(interval_data)
+  let buy_orders = get_buy_orders(interval_data)
 
-  pprint.debug(interval_data)
-  // pprint.debug(buy_orders)
+  // pprint.debug(interval_data)
+  pprint.debug(buy_orders)
 
   Ok("end")
 }
@@ -102,58 +102,12 @@ fn calculate_interval_data(
   list.map(global_settings.intervals_in_minutes, fn(interval_minutes) {
     let symbol_snapshots =
       group_snapshots_by_symbol(crypto_snapshots)
-      |> dict.map_values(fn(symbol, snapshots) {
-        use recent_snapshot <- result.try(list.first(snapshots))
-        use past_snapshot <- result.try(find_past_snapshot(
-          interval_minutes,
-          recent_snapshot,
-          snapshots,
-        ))
+      |> process_symbol_snapshots(interval_minutes, current_datetime)
+      |> filter_valid_snapshots(current_datetime)
 
-        let interval_duration =
-          birl.difference(past_snapshot.datetime, recent_snapshot.datetime)
-          |> duration.blur_to(duration.Minute)
-
-        PriceVariation(
-          symbol,
-          interval_duration,
-          current_datetime,
-          recent_snapshot.price,
-          past_snapshot.price,
-          {
-            { recent_snapshot.price -. past_snapshot.price }
-            /. recent_snapshot.price
-          },
-        )
-        |> Ok
-      })
-      |> dict.map_values(fn(_, result) {
-        result.lazy_unwrap(result, fn() {
-          PriceVariation("", 0, current_datetime, 0.0, 0.0, 0.0)
-        })
-      })
-      |> dict.filter(fn(_, data) { data.symbol != "" })
-      |> dict.values
     #(interval_minutes, symbol_snapshots)
   })
-  |> list.map(fn(interval_data) {
-    case interval_data.1 {
-      [] -> Error(IntervalData(interval_data.0, 0.0, []))
-      _ -> {
-        case list.first(interval_data.1) {
-          Ok(first_snapshot) -> {
-            let average_variation = calculate_average_variation(interval_data.1)
-            Ok(IntervalData(
-              first_snapshot.interval_time,
-              average_variation,
-              interval_data.1,
-            ))
-          }
-          _ -> Error(IntervalData(interval_data.0, 0.0, []))
-        }
-      }
-    }
-  })
+  |> list.map(fn(interval_data) { create_interval_data(interval_data) })
 }
 
 fn group_snapshots_by_symbol(
@@ -166,7 +120,7 @@ fn process_symbol_snapshots(
   interval_minutes: Int,
   current_datetime: birl.Time,
 ) -> fn(dict.Dict(String, List(CryptoSnapshot))) ->
-  dict.Dict(String, Result(PriceVariation, PriceVariation)) {
+  dict.Dict(String, Result(PriceVariation, Nil)) {
   dict.map_values(_, fn(symbol, snapshots) {
     use recent_snapshot <- result.try(list.first(snapshots))
     use past_snapshot <- result.try(find_past_snapshot(
@@ -210,7 +164,7 @@ fn calculate_price_change(recent_price: Float, past_price: Float) -> Float {
 }
 
 fn filter_valid_snapshots(
-  symbol_snapshots: dict.Dict(String, Result(PriceVariation, PriceVariation)),
+  symbol_snapshots: dict.Dict(String, Result(PriceVariation, Nil)),
   current_datetime: birl.Time,
 ) -> List(PriceVariation) {
   dict.map_values(symbol_snapshots, fn(_, result) {
@@ -220,6 +174,27 @@ fn filter_valid_snapshots(
   })
   |> dict.filter(fn(_, data) { data.symbol != "" })
   |> dict.values
+}
+
+fn create_interval_data(
+  interval_data: #(Int, List(PriceVariation)),
+) -> Result(IntervalData, IntervalData) {
+  case interval_data.1 {
+    [] -> Error(IntervalData(interval_data.0, 0.0, []))
+    _ -> {
+      case list.first(interval_data.1) {
+        Ok(first_snapshot) -> {
+          let average_variation = calculate_average_variation(interval_data.1)
+          Ok(IntervalData(
+            first_snapshot.interval_time,
+            average_variation,
+            interval_data.1,
+          ))
+        }
+        _ -> Error(IntervalData(interval_data.0, 0.0, []))
+      }
+    }
+  }
 }
 
 fn calculate_average_variation(interval_list: List(PriceVariation)) {
@@ -236,29 +211,45 @@ fn get_sell_orders(assets: List(Asset)) {
 }
 
 fn get_buy_orders(
-  interval_data: List(Result(IntervalData, Nil)),
+  interval_data: List(Result(IntervalData, IntervalData)),
 ) -> List(Result(List(Order), String)) {
   list.map(interval_data, fn(result) {
     case result {
       Ok(interval_data) -> {
-        list.filter(interval_data.variation_data, fn(data) {
-          data.variation
-          >=. {
-            interval_data.variation_percentage
-            +. global_settings.buy_percentage_threshold
+        case
+          list.filter(interval_data.variation_data, fn(data) {
+            data.variation
+            >=. {
+              interval_data.variation_percentage
+              +. global_settings.buy_percentage_threshold
+            }
+          })
+        {
+          [] ->
+            Error(
+              "Buy Orders not found for "
+              <> int.to_string(int.negate(interval_data.interval_time))
+              <> " minutes",
+            )
+          symbols -> {
+            list.map(symbols, fn(coin_data) {
+              BuyOrder(
+                "BUY",
+                coin_data.symbol,
+                coin_data.variation,
+                coin_data.recent_price,
+              )
+            })
+            |> Ok
           }
-        })
-        |> list.map(fn(coin_data) {
-          BuyOrder(
-            "BUY",
-            coin_data.symbol,
-            coin_data.variation,
-            coin_data.recent_price,
-          )
-        })
-        |> Ok
+        }
       }
-      Error(_) -> Error("Interval Data not found")
+      Error(interval_data) ->
+        Error(
+          "Interval Data not found for "
+          <> int.to_string(interval_data.interval_time)
+          <> " minutes",
+        )
     }
   })
 }
