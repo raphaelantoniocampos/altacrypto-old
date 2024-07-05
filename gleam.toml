@@ -27,6 +27,7 @@ mug = ">= 1.0.0 and < 2.0.0"
 gleam_http = ">= 3.6.0 and < 4.0.0"
 gleam_httpc = ">= 2.2.0 and < 3.0.0"
 gleam_json = ">= 1.0.1 and < 2.0.0"
+glesha = ">= 0.1.4 and < 1.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"

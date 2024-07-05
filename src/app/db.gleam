@@ -1,7 +1,9 @@
+import bison
 import bison/bson.{type Value}
 import bison/object_id.{type ObjectId}
 import dot_env
 import dot_env/env
+import gleam/dynamic.{type DecodeError, type Dynamic}
 import gleam/list
 import gleam/result
 import mungo/crud.{type UpdateResult}
@@ -52,14 +54,14 @@ pub fn insert_data(
 
 pub fn get_data(
   from collection_name: String,
-  using filter: List(#(String, Value)),
-  with decoder: fn(List(Value)) -> Result(List(value), String),
+  with filter: List(#(String, Value)),
+  using bson_decoder: fn(Dynamic) -> Result(value, List(DecodeError)),
 ) -> Result(List(value), String) {
   use collection <- result.try(get_collection(collection_name))
   case mungo.find_many(collection, filter, [], 128) {
     Ok(cursor) -> {
       mungo.to_list(cursor, 128)
-      |> decoder
+      |> document_decoder(bson_decoder, "Error decoding: " <> collection_name)
     }
     Error(_) -> Error("Error getting documents from: " <> collection_name)
   }
@@ -75,4 +77,20 @@ pub fn update_one(
   let doc = encoder(value)
   mungo.update_one(collection, [#("_id", bson.ObjectId(id))], doc, [], 512)
   |> result.replace_error("Error updating data" <> object_id.to_string(id))
+}
+
+fn document_decoder(
+  values: List(bson.Value),
+  bson_decoder: fn(Dynamic) -> Result(value, List(DecodeError)),
+  error_string: String,
+) -> Result(List(value), String) {
+  list.try_map(values, fn(value) -> Result(value, String) {
+    case value {
+      bson.Document(doc) -> {
+        bison.to_custom_type(doc, bson_decoder)
+        |> result.replace_error(error_string)
+      }
+      _ -> Error(error_string)
+    }
+  })
 }

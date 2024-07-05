@@ -21,20 +21,6 @@ pub fn bson_decoder() {
   )
 }
 
-pub fn document_decoder(
-  values: List(bson.Value),
-) -> Result(List(CryptoSnapshot), String) {
-  list.try_map(values, fn(value) -> Result(CryptoSnapshot, String) {
-    case value {
-      bson.Document(doc) -> {
-        bison.to_custom_type(doc, bson_decoder())
-        |> result.replace_error("Error decoding crypto snapshot")
-      }
-      _ -> Error("Error decoding crypto snapshot")
-    }
-  })
-}
-
 pub fn bson_encoder(
   list: List(CryptoSnapshot),
 ) -> List(List(#(String, bson.Value))) {

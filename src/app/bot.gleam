@@ -3,6 +3,7 @@ import app/db
 import app/global_settings
 import app/models/asset.{type Asset}
 import app/models/crypto_snapshot.{type CryptoSnapshot}
+import app/models/user
 import birl
 import birl/duration
 import bison/object_id.{type ObjectId}
@@ -49,9 +50,9 @@ pub fn start() {
   // pprint.debug(sell_orders)
 
   use crypto_snapshots <- result.try(db.get_data(
-    "crypto_snapshots",
-    [],
-    crypto_snapshot.document_decoder,
+    from: "crypto_snapshots",
+    with: [],
+    using: crypto_snapshot.bson_decoder(),
   ))
 
   let current_datetime = birl.now()
@@ -63,6 +64,7 @@ pub fn start() {
   // pprint.debug(interval_data)
   pprint.debug(buy_orders)
 
+  execute_orders(buy_orders, current_datetime)
   Ok("end")
 }
 
@@ -82,7 +84,11 @@ fn feed_database(tickers: List(#(String, Float))) -> Result(String, String) {
 }
 
 fn update_assets(tickers: List(#(String, Float))) -> Result(List(Asset), String) {
-  use assets <- result.try(db.get_data("assets", [], asset.document_decoder))
+  use assets <- result.try(db.get_data(
+    from: "assets",
+    with: [],
+    using: asset.bson_decoder(),
+  ))
 
   use updated_assets <- result.try(asset.update_assets_with_tickers(
     assets,
@@ -252,4 +258,34 @@ fn get_buy_orders(
         )
     }
   })
+}
+
+fn execute_orders(orders, current_datetime: birl.Time) {
+  // use users <- result.try(db.get_data(
+  //   from: "users",
+  //   with: [],
+  //   using: user.bson_decoder(),
+  // ))
+
+  let users = db.get_data("users", [], user.bson_decoder())
+  pprint.debug(users)
+  // users = {user._id: user for user in users_list}
+  // sell_orders_by_user = self._separate_orders_by_user(sell_orders)
+  // tasks = []
+  // for user_id, user in users.items():
+  //     operation_value = user.get_operation_value()
+  //     user_assets = {
+  //         asset.symbol: asset
+  //         for asset in self.database_manager.get_assets({"user_id": user_id})
+  //     }
+  //     tasks.append(
+  //         self._execute_buy_orders(
+  //             user, buy_orders, current_datetime, operation_value, user_assets
+  //         )
+  //     )
+  //     if user_id in sell_orders_by_user:
+  //         orders = sell_orders_by_user[user_id]
+  //         tasks.append(self._execute_sell_orders(
+  //             user, orders, user_assets, current_datetime))
+  // asyncio.gather(*tasks)
 }

@@ -1,5 +1,5 @@
 // The intervals, in minutes, used for data collection and analysis.
-pub const intervals_in_minutes: List(Int) = [5, 10, 15, 30, 60]
+pub const intervals_in_minutes: List(Int) = [5, 10, 15, 30, 60, 90, 120]
 
 // The frequency, in minutes, at which the application executes its operations.
 pub const execution_frequency_minutes: Float = 1.0

@@ -39,18 +39,6 @@ pub fn bson_decoder() {
   )
 }
 
-pub fn document_decoder(values: List(bson.Value)) -> Result(List(Asset), String) {
-  list.try_map(values, fn(value) -> Result(Asset, String) {
-    case value {
-      bson.Document(doc) -> {
-        bison.to_custom_type(doc, bson_decoder())
-        |> result.replace_error("Error decoding asset")
-      }
-      _ -> Error("Error decoding asset")
-    }
-  })
-}
-
 pub fn bson_encoder(asset: Asset) -> List(#(String, bson.Value)) {
   [
     #("_id", bson.ObjectId(asset.id)),
