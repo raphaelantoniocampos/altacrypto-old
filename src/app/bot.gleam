@@ -43,7 +43,9 @@ pub fn start() {
   io.println("Bot started")
   use tickers <- result.try(binance.get_usdt_tickers())
 
-  let _feed_result = feed_database(tickers)
+  let _feed_result =
+    feed_database(tickers)
+    |> io.debug
 
   use assets <- result.try(update_assets(tickers))
   let sell_orders = get_sell_orders(assets)

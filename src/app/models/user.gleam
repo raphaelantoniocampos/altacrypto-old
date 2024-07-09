@@ -66,22 +66,21 @@ fn hashed_password_decoder(dyn: dynamic.Dynamic) {
   // Ok(glesha.encode_hex(b))
   Ok("hashed_password")
 }
-
-pub fn test_decoder() {
-  let document =
-    // Document BSON aqui, convertido para Dynamic
-    dynamic.from_bson(
-      Document(
-        dict.from_list([
-          #("maximum_operation_value", Double(100.0)),
-          #("operation_value_percentage", Double(5.0)),
-          #("testing", Boolean(True)),
-        ]),
-      ),
-    )
-
-  case user_settings_decoder()(document) {
-    Ok(user_settings) -> gleam.print(user_settings)
-    Error(error) -> gleam.print(error)
-  }
-}
+// pub fn test_decoder() {
+//   let document =
+//     // Document BSON aqui, convertido para Dynamic
+//     dynamic.from_bson(
+//       Document(
+//         dict.from_list([
+//           #("maximum_operation_value", Double(100.0)),
+//           #("operation_value_percentage", Double(5.0)),
+//           #("testing", Boolean(True)),
+//         ]),
+//       ),
+//     )
+//
+//   case user_settings_decoder()(document) {
+//     Ok(user_settings) -> gleam.print(user_settings)
+//     Error(error) -> gleam.print(error)
+//   }
+// }
