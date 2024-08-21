@@ -9,7 +9,6 @@ from datetime import datetime
 from models.crypto_snapshot import CryptoSnapshot
 from models.user import User, UserSettings
 from models.asset import Asset
-from global_settings import GlobalSettings
 
 
 class DatabaseManager:
