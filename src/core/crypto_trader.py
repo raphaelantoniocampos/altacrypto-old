@@ -348,8 +348,6 @@ class CryptoTrader:
         """
         for buy_order in buy_orders:
             if buy_order.symbol not in user_assets:
-                if user.name == "Logger":
-                    self.logger.info(f"{buy_order}\n")
                 if user.usd_balance >= operation_value:
                     quantity = operation_value / buy_order.current_price
                     asset = Asset(
@@ -384,13 +382,14 @@ class CryptoTrader:
             asset = user_assets[order.asset.symbol]
             if asset.sold:
                 return
-            if user.name == "Logger":
-                self.logger.info(f"{order}\n")
             value = asset.current_value
             # Simulates binance transaction
             time.sleep(0.05)
             self.database_manager.update_sold_asset(
                 asset._id, current_datetime)
             user.usd_balance += value
+            formatted_usd_balance = round(user.usd_balance, 2)
             self.database_manager.update_user(
-                user, "usd_balance", round(user.usd_balance, 2))
+                user, "usd_balance", formatted_usd_balance)
+            if user.name == "Logger":
+                self.logger.info(f"{order}\nCurrent Balance: {formatted_usd_balance}$")
